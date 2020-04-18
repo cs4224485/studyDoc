@@ -1,0 +1,1575 @@
+一 Ajax
+	1 Ajax简介
+		AJAX翻译成中文就是"异步Javascript和XML"。即使用JavaScript语言与服务器进行异步交互，传输的数据为XML(当然，传输数据不只是XML,现在更多使用json数据)
+		 同步交互：客户端发出一个请求后,需要等待服务器结束后才能发出第二个请求
+		 异步交互：客户端发出一个请求后无需等待服务器响应结束,就可以发出第二个请求
+		 AJAX除了异步的特定外还有一个就是：浏览器局部刷新,(这一特点就给用户的感受是在不知不觉完成请求和响应过程)
+	2 基于jquery的Ajax实现
+		<script type="text/javascript">
+			   $(function () {
+				$(".Ajax").click(function () {
+
+					// 发送Ajax请求
+					$.ajax({
+						url:"/test_ajax/",        // 请求URL
+						type:"get",     		  // 请求方式post
+						success:function (data) { // 回调函数
+							console.log(data);
+							$("#aj").html(data)
+							}
+						}
+					)
+				})
+			})
+		</script>
+	
+	3 基于Ajax的登录验证
+		(1) 在注册表单中,当用户填写了用户名之后,把光标移开后,会自动向服务器发送异步请求。服务器返回True或False,返回True表示这个用户名以及注册过，
+			返回false表示没有注册过。客户端得到服务器返回结果后，确定是否在用户名文本框显示"用户名已被注册"的错误信息
+		  $.ajax({
+                    url:"/login/",
+                    type:"POST",
+                    data:{
+                        username:$('#username').val(),
+                        password:$('#password').val()
+                    },
+                    success:function (data) {
+                        console.log(data);
+                        var ret = JSON.parse(data);
+                        if (ret.state){
+                            location.href = 'http://www.baidu.com'
+                        }else {
+                            $('.error').html(ret.msg).css({'color':'red'})
+                        }
+                    }
+                })
+		
+		(2) 视图函数代码
+			def login(request):
+				if request.method == 'POST':
+					username = request.POST.get('username')
+					password = request.POST.get('password')
+					ret = Users.objects.filter(username=username,password=password)
+					message = {
+						'state':False,
+						'msg':None
+					}
+					if ret:
+						message['state'] = True
+					else:
+						message['msg'] = '用户名或密码错误'
+					message = json.dumps(message)
+					return HttpResponse(message)
+				return render(request,'index.html')
+	
+	4  基于JS的ajax的实现
+		step1:	var xmlhttp = XMLHttprequest()
+		step2:	xmlhttp.open("")
+		step3:	xmlhttp.send("name=alex")		# 请求体的内容
+		step4：	监听xmlhttp的state属性： xmlhttp(if ==4:{ var context=xmlhttp.resposetext})
+	
+	5 js接收Python的json对象
+		在json的编码过程中，会存在从Python原始类型向json类型的转换过程，具体的转换如下
+		python  ---->     json
+		
+		dict				object
+		list,tuple			arrary
+		str,unicode			string
+		int,long,float		number
+		True				true
+		False				false
+		None				null
+	
+	6 ajax发送JSON数据
+		$(".btn").click(function(){
+			$.ajax({
+				url:"",
+				type:"post",
+				contentType:"application/json"
+				data:JSON.stringfy({
+					a:1,
+					b:2
+				}),
+				success:function(data){
+					console.log(data)
+				}
+			})
+		def get_json(request):
+			if request.method == 'POST':
+				print(request.body)  # 请求报文
+	
+	7 ajax跨域请求
+		方式1
+			<script type="text/javascript">
+				$.ajax({
+					url:"http://127.0.0.1:8002/get_byjsonp",
+					dataType:"jsonp",
+					jsonp:'callbacks',
+					jsonpCallback:"fetch"
+				});
+				function fetch(arg){
+					alert(arg);
+				}	
+				
+			#------------------------------- http://127.0..1:8002/get_byjsonp
+				def get_byjsonp(req):
+					callback = req.GET.get('callbacks')
+					print(callback)
+					return HttpResponse('%s("harry")' %callback)
+		方式2
+			<script type="text/javascript">
+				$.ajax({
+					url:"http://127.0.0.1:8002/get_byjsonp",
+					dataType:"jsonp",
+					jsonp:'callbacks',
+					success:function(data){
+						alert(data)
+					}
+				});
+			
+			#------------------------------- http://127.0..1:8002/get_byjsonp
+				def get_byjsonp(req):
+					callback = req.GET.get('callbacks')
+					print(callback)	# jQuery23232415124215_231243
+					return HttpResponse('%s("harry")' %callback)
+		
+		8	ajax使用seralize
+		如果我们想使用ajax向后端提交数据，但是一个form表单下有多个input标签或select标签，如果我们想一下全部获取可以使用seralize
+				<form id='f1'>
+					<input type='text' name='input1' />
+					<input type='text' name='input2' />
+					<input type='text' name='input3' />
+					<input type='text' name='input4' />
+					<input type='text' name='input5' />
+					<input type='text' name='input6' />
+					<select mulitiple>
+						<option></option>
+					</select>
+				</form>
+				
+				$.ajax({
+					url：
+					data：$("#f1").seralize(),
+					traditional:true,
+					})
+		
+二  文件上传
+	1 基于form表单的文件上传
+		(1) HTML代码
+			<form action="/upload/" method="post" enctype="multipart/form-data">
+			   用户名 <input type="text" name="user">
+				头像  <input type="file" name="avatar">
+				 <input type="submit" >
+			</form>
+		(2) 视图函数
+			def upload(req):
+				if req.method == 'POST':
+					print(req.POST)
+					print(req.FILES)
+					file_obj = req.FILES.get("avatar")    # 拿到文件对象的方法
+					with open("static/%s" % file_obj.name, 'wb') as f:        # 拿到文件名字
+						for line in file_obj:
+							f.write(line)
+					return HttpResponse('OK')
+	
+	2 基于Ajax的文件上传
+		    $("#btn").click(function () {
+                var formadata = new FormData();
+                formadata.append('user',$('#user').val());
+                formadata.append('avatar',$('#avatar')[0].files[0]);     // 取到上传文件的对象
+                $.ajax({
+                    url:/upload/,
+                    type:"post",
+                    contentType:false,
+                    processData:false,
+                    data:formadata,
+                    success:function (data) {
+                        console.log(data);
+                        console.log(123)
+                    }
+                })
+            })
+	
+三 分页器
+	1 首先在数据库中生成大量数据
+		def index(request)
+		book_list = []
+			for i in rang(1000)
+				book = Book(title="book_%s" %i, price=i*i)
+				book_list.append(book)
+		Book.objects.bulk_create(book_list)		  # 批量插入数据
+	
+	2 分页器
+		from django.core.paginator import Paginator
+		分页器的使用
+			paginator = Paginator(book_list,8)          # 每页展示几条内容
+			print("count:",paginator.count)				# 总页数
+			print("page_range",paginator.page_range)	# 页码的列表
+			print("num_pages",paginator.num_pages) 		# 总页数
+			
+			page1 = paginator.page(1)                   # 第1页的page对象
+				for i in page1							# 遍历第1页的所有数据对象
+					print(i)
+				
+			page2 = paginator.page(2)
+			
+			print(page2.hax_next())						# 是否有下一页
+			print(page2.next_page_number())				# 下一页页码
+			print(page2.has_pervious())					# 是否有上一页
+			print(page2.pervious_page_number())			# 上一页的页码
+		
+		
+			  {%实现页面分页 if current_page.has_previous %}
+					<li>
+					 <a href="?page={{ current_page_num|add:-1 }}" aria-label="Previous">
+					   <span aria-hidden="true">&laquo;</span>
+					 </a>
+					</li>
+			{% else %}
+					<li class="disabled">
+					  <a href="" aria-label="Previous">
+						  <span aria-hidden="true">&laquo;</span>
+					  </a>
+					</li>
+			{% endif %}
+
+			  {% for item in page_range %}
+
+				   {% if current_page_num == item %}
+					   <li class="active"><a  href="?page={{ item }}">{{ item }}</a></li>
+				   {% else %}
+					   <li><a  href="?page={{ item }}">{{ item }}</a></li>
+				   {% endif %}
+			   {% endfor %}
+
+			  {% if current_page.has_next %}
+				<li>
+				  <a href="?page={{ current_page_num|add:1 }}" aria-label="Next">
+					<span aria-hidden="true" class="put-right">&raquo;</span>
+				  </a>
+				</li>
+			  {% endif %}
+						
+		视图函数	
+					
+			book_list = Book.objects.all()
+			paginator = Paginator(book_list, 50)
+			current_page_num = int(request.GET.get("page", 1))
+
+			if paginator.num_pages > 11:
+				if current_page_num -5<1:
+					page_range = range(1,11)
+				elif current_page_num +5>paginator.num_pages:
+					page_range=range(paginator.num_pages-11, paginator.num _pages+1)
+				else:
+					page_range = range(current_page_num-5, current_page_num+6)
+			else:
+				page_range = paginator.page_range
+
+				print("count:", paginator.count)
+				print("num_pages:", paginator.num_pages)
+				print("page_range:", page_range)
+				for i in  page_range:
+					print(i)
+				try:
+
+					current_page = paginator.page(current_page_num)   # 第一页的数据对象
+					print("object_list", current_page.object_list)
+				except:
+					current_page = paginator.page(1)
+				return render(request, 'index.html',locals())
+
+四 form组件
+	1 通过form实现校验字段功能
+		
+		模型：models.py
+			class UserInfo(models.Model):
+				name = models.CharField(max_length=32)
+				pwd = models.CharField(max_length=32)
+				email = models.EmaillField()
+				tel = models.CharField(max_length=32)
+				
+		模板：register.html
+			<form action="", method="post">
+				<p>用户名 <input type="text" name="username"></p>
+				<p>密码<input type="password" name="password"></p>
+				<p>确认密码<input type="password" name="repwd"></p>
+				<p>邮箱<input type="text" name="email"></p>
+				<p>手机号<input type="text" name="tel"></p>
+				<input type="submit">
+				{% csrf_token %}
+			</form>
+		
+	2 通过form组件渲染模板：
+		
+	
+		form校验组件
+			from django import forms
+			class UserForm(forms.Form):
+				username = forms.CharField(min_length=4)
+				password = forms.CharField(min_length=4)
+				repwd = forms.CharField(min_length=4)
+				email = forms.EmailField()
+				tel = forms.CharField
+		
+		视图函数
+			def register(req):
+				if req.method == 'POST':
+					# form = UserForm({'name':'cs', 'email': '123@qq.com', 'xxx':'harry'})
+					form = UserForm(req.POST)       # 注意form表单的name属性值应该与forms组件字段名称一致
+					print(form.is_valid())  # 返回布尔值
+					if form.is_valid():
+						print(form.cleaned_data)    # {"name":'cs", "email:'123@qq.com'}
+					else:
+						print(form.cleaned_data)
+						print(form.errors)          # {"name":["......"]}
+					'''
+					if 所有的字段校验成功,则form.cleaned_data以一个字典的形式存放所有校验通过的数据
+					'''
+					return  HttpResponse('ok')
+				return render(req, "register.html")
+				
+	3 form组件的渲染功能
+		(1) form组件渲染方式一
+			<form class="col-md-4  form-group" action="",method="post">
+              <p>
+                  用户名 {{ form.username }}
+              </p>
+              <p>
+                  密码 {{ form.password }}
+              </p>
+              <p>
+                  确认密码  {{ form.repwd }}
+              </p>
+              <p>
+                  email {{ form.email }}
+              </p>
+              <p>
+                  手机号 {{ form.tel }}
+              </p>
+            </form>
+			
+		(2) form组件渲染方式二
+			<form class="col-md-4  form-group" action="",method="post">
+                {% csrf_token %}
+                {% for filed in form %}
+                    <p>
+                        <lable>{{ filed.label }}</lable>
+                        {{ filed }}
+                    </p>
+                {% endfor %}
+            </form>
+			
+			class UserForm(forms.Form):
+				username = forms.CharField(min_length=4, label='用户名')
+				password = forms.CharField(min_length=4, label='密码')
+				repwd = forms.CharField(min_length=4, label='重复密码')
+				email = forms.EmailField(label='邮箱')
+				tel = forms.CharField(label="电话号码")
+
+		
+	4 显示错误与重置输入信息
+		视图函数
+			def register(req):
+				if req.method == 'POST':
+					# form = UserForm({'name':'cs', 'email': '123@qq.com', 'xxx':'harry'})
+					form = UserForm(req.POST)       # 注意form表单的name属性值应该与forms组件字段名称一致
+					'''
+						   if 所有的字段校验成功,则form.cleaned_data以一个字典的形式存放所有校验通过的数据
+					'''
+					if form.is_valid():
+						print(form.cleaned_data)    # 所有干净的字段以及对应的值
+					else:
+						print(form.cleaned_data)
+						print(form.errors)          # {"name":["......"]}
+						return render(req, "register.html", locals())
+				   
+				form = UserForm()
+				return render(req, "register.html", locals())
+				
+		模板：register
+			<form  class="col-md-6" action="" method="post" novalidate>
+                {% csrf_token %}
+                {% for filed in form %}
+                    <p>
+                        <lable>{{ filed.label }}</lable>
+                        {{ filed }} <span>{{ filed.errors.0 }}</span>
+                    </p>
+                {% endfor %}
+				<input type="submit">
+			</form>
+			
+	5  form组件的配置参数
+		
+		Filed参数
+			required=Ture                是否必填
+			widget=None			         HTNL插件
+			label=None			         用于生成Label标签显示内容
+			initial=None			     初始值
+			help_text=''			     帮助信息(在标签旁边显示)
+			error_messages=None          错误信息{'required':'不能为空’, 'invalid':'格式错误’}
+			show_hidden_initial=False    是否在当前插件后再加一个隐藏的具有默认值的插件(可用于两次输入是否一致）
+			validators=[],				 自定义验证规则
+			localize=False				 是否支持本地化
+			disabled=False				 是否可以编辑
+			label_suffix=None			 Lable内容后缀
+		
+		CharField(Field)
+			max_length=None				最大长度
+			min_length=None				最小长度
+			strip=True					是否移除用户输入空白
+			
+		IntergerField(Field)
+			max_value = None			最大值
+			min_value = None			最小值
+		
+		DecimalField(IntergerField)
+			max_value=None				最大值
+			min_value=None				最小值
+			max_digits=None				总长度
+			decimal_places=None			小数位长度
+			
+		BaseTemporalField(Field)		
+			input_forats=None			时间格式化
+		
+		DateField(BaseTemporalField)    格式：2015-09-01
+		TimeField(BaseTemporalField)	格式：11:12
+		DateTimeField(BaseTemporalField) 格式：2015-09-01 11:12
+		
+		RegexField(charField)
+			regex,						自定义正则表达式
+			max_length=None,			最大长度
+			min_length=None,			最小长度
+			error_message=None			{"invalid":"..."}
+			
+		FileField(Field)
+			allow_empty_file=False		是否允许空文件
+		
+		ChoiceField(Field)
+			choices=(),		选项，如：choices = ((0,'上海’),(1,,'北京')
+			required=True	是否必填
+			widget=None		插件，默认select插件
+			label=None		Label内容
+			initial=None	初始值
+			help_text='',	帮助提示
+		
+		TypeChoiceField(ChoiceField)
+			coerce = lambda val: val	对选中的值进行一次转换
+			empty_value = ''			空的默认值
+			
+		ComboFiel(Field)
+			fields=()		使用多个验证，如下：即验证最大程度20，又验证邮箱格式
+								fields.ComboField(fields=[fields.CharField(max_length=20),fields.EmailField(),]
+								
+		GenericIPAddressField
+			protocol='both',			both,ipv4,ipv6支持的IP格式
+			unpack_ipv4=False			解析ipv4地址，如果是::ffff:192.0.0.2.1 可以解析为192.0.0.2.1
+			
+		SlugField(CharField)			数字，字母，下划线，减号(连接符)
+		
+		
+		from django.forms import widgets
+		class UserForm(forms.Form):
+			username = forms.CharField(min_length=4, label='用户名',  error_messages={"required": "该字段不能为空"}, widget=
+						widgets.TextInput(attrs={'class':"form-control"}))
+
+			password = forms.CharField(min_length=4, label='密码',widget=widgets.PasswordInput(attrs={'class':"form-control"}))
+			repwd = forms.CharField(min_length=4, label='重复密码',widget=
+						widgets.TextInput(attrs={'class':"form-control"}))
+			email = forms.EmailField(label='邮箱',  error_messages={"required": "该字段不能为空", "invalid":"格式输入错误"},
+									 widget=
+									 widgets.TextInput(attrs={'class': "form-control"})
+									 )
+			tel = forms.CharField(label="电话号码",  error_messages={"required": "该字段不能为空"},
+								  widget=
+								  widgets.TextInput(attrs={'class': "form-control"})
+                          )
+		
+		# label = '用户名'																自定义字段的label
+		# error_messages={"required": "该字段不能为空", "invalid":"格式输入错误"}		自定义错误消息输出
+		# widget=widgets.PasswordInput(attrs={'class':"form-control"}					设置input的类型并赋予属性
+		
+	6 form组件的局部钩子
+		from  django.core.exceptions import NON_FIELD_ERRORS,ValidationError
+		class UserForm(forms.Form):
+				username = forms.CharField(min_length=2, label='用户名',  error_messages={"required": "该字段不能为空"}, widget=
+                widgets.TextInput(attrs={'class':"form-control"}))
+				password = forms.CharField(min_length=4, label='密码',widget=widgets.PasswordInput(attrs={'class':"form-control"}))
+				repwd = forms.CharField(min_length=4, label='重复密码',widget=
+							widgets.TextInput(attrs={'class':"form-control"}))
+				email = forms.EmailField(label='邮箱',  error_messages={"required": "该字段不能为空", "invalid":"格式输入错误"},
+										 widget=
+										 widgets.TextInput(attrs={'class': "form-control"})
+										 )
+				tel = forms.CharField(label="电话号码",  error_messages={"required": "该字段不能为空"},
+									  widget=
+									  widgets.TextInput(attrs={'class': "form-control"})
+									  )
+
+				def clean_username(self):
+					val = self.cleaned_data.get("username")        # 获取输入的名字
+					print(val)
+					ret = UserInfo.objects.filter(name=val)   # 从数据库中查询是否有该用户存在
+					print(ret)
+					if not ret:
+						return val
+					else:
+						raise ValidationError("该用户已注册")
+
+				def clean_tel(self):
+					var = self.cleaned_data.get("tel")
+					if len(var) == 11:
+						return var
+					else:
+						raise ValidationError("手机号码必须为11位！")	
+						
+	
+
+    7  form组件全局钩子
+		class UserForm(forms.Form):
+			username = forms.CharField(min_length=2, label='用户名',  error_messages={"required": "该字段不能为空"}, widget=
+						widgets.TextInput(attrs={'class':"form-control"}))
+
+			password = forms.CharField(min_length=4, label='密码',widget=widgets.PasswordInput(attrs={'class':"form-control"}))
+			repwd = forms.CharField(min_length=4, label='重复密码',widget=
+						widgets.TextInput(attrs={'class':"form-control"}))
+			email = forms.EmailField(label='邮箱',  error_messages={"required": "该字段不能为空", "invalid":"格式输入错误"},
+									 widget=
+									 widgets.TextInput(attrs={'class': "form-control"})
+									 )
+			tel = forms.CharField(label="电话号码",  error_messages={"required": "该字段不能为空"},
+								  widget=
+								  widgets.TextInput(attrs={'class': "form-control"})
+                          )
+						  
+			def clean(self):
+				pwd = self.cleaned_data.get("password")
+				r_pwd = self.cleaned_data.get("repwd")
+				if pwd and r_pwd:
+					if pwd == r_pwd:
+						return self.cleaned_data
+					else:
+						raise ValidationError('两次密码不一致')
+				else:
+					return self.cleaned_data
+	
+	
+		
+五 Cookie
+	1 什么是Cookie
+	   Cookie翻译成中文是小饼干的意思。其实Cookie是key-value结构,类似于一个Python中的字典。随着服务器端的响应发送给客户端浏览器。
+	   然后客户端浏览器会把Cookie保存起来,当下一次在再访问服务器时把Cookie在发送给服务器。Cookie是由服务器创建，然后通过响应发送给客户端的一个键值对。
+	   客户端会保存Cookie,并会标注出Cookie的来源(哪个服务器的Cookie)。当客户端向服务器发出请求是会把所有这个服务器Cookie包含在请求中几个发送给服务器,这样服务器就可以识别客户端了。
+	2 Cookie的规范
+		(1) Cookie大小上限为4kb
+		(2)	一个服务器最多在客户端浏览器保存20个Cookie
+		(3)	一个浏览器最多保存300个Cookie
+	3 代码中操作cookie
+		cookie相关参数
+		'''
+		class HttpResponse:
+			def set_cookie(self,key,			    键
+								value='',		    值
+								max_age=None		超长时间，如果参数是None,这个cookie会延续到浏览器关闭为止。
+								expires=None		超长时间，expires默认是None，cookie失效的实际日期/时间。
+								path='/'			Cookie生效的路径,浏览器只会把cookie回传给带有路径的页面，这样可以避免将cookie传给站点中的其他的应用
+								domian=None			Cookie生效的域名， 你可以用这个来构造一个跨站cookie
+								secure = False		如果设置为True,浏览器将通过HTTPS来回传cookie
+								httponly = False	只能http协议传输,无法被JavaScript获取
+		'''
+	
+	    # 设置cookie	
+		respose = HttpResponse("登录成功")
+		respose.set_cookie("is_login", True)		# 向客户端返回cookie
+		return render(request,"login.html")
+		
+		# 取出cooki并进行验证
+		is_login = request.COOKIES.get("is_login")
+		if is_login：
+			return render(request,"index.html")
+		else:
+			return redirect("login")
+		
+		# 删除cookie
+		respose.delete_cookie("cookie_key",path="/",domian=name)
+		
+		# 设置cookie超时时间
+		respose.set_cookie("is_login",True,max_age=10)      # 10秒后超时
+		import datatime
+		timeout = datatime.datetime.utcnow() + datetime.timedelta(seconds=10)
+		response.set_cookie("username","harry" expires=timeout)			# 设置expire需要通过datetime设置
+		
+	4	使用cookie验证此前是否登录成功
+		def login(req):
+			if req.method == 'POST':
+				username = req.POST.get("user")
+				pwd = req.POST.get("pwd")
+				user = UserInfo.objects.filter(username=username,password=pwd).first()
+				print(user)
+				if user:
+					response = HttpResponse("登录成功")
+					response.set_cookie('is_login',True)
+					response.set_cookie('username', user.username)
+					return response
+			return render(req, "login.html")
+			
+		def index(req):
+			username = req.COOKIES.get('username')
+			is_login = req.COOKIES.get('is_login')
+			if is_login:
+				return render(req,'index.html', locals())
+
+			return  redirect('/login/')
+
+		
+	
+	5 示例一 保存上一次的访问时间
+		def login(req):
+			if req.method == 'POST':
+				username = req.POST.get("user")
+				pwd = req.POST.get("pwd")
+				user = UserInfo.objects.filter(username=username,password=pwd).first()
+				print(user)
+				if user:
+					response = HttpResponse("登录成功")
+					response.set_cookie('is_login',True)
+					response.set_cookie('username', user.username)
+
+					return response
+			return render(req, "login.html")
+			
+	6 示例二 显示上一次浏览过的商品
+		def show_goods(req):
+			'''
+			展示商品
+			'''
+			username = req.COOKIES.get('username')
+			is_login = req.COOKIES.get('is_login')
+			goods_obj = Goods.objects.all()
+			return render(req,'shopping.html',locals())
+
+		def visit_goods(req, gid):
+			good_obj = Goods.objects.filter(id=gid).first()
+			visit_list = req.COOKIES.get('visit_goods')
+			response = render(req, 'item.html', locals())
+			if visit_list:
+				visit_list = (json.loads(visit_list))
+				visit_list.append(good_obj.name)
+				visit_list_json = json.dumps(visit_list)
+				response.set_cookie('visit_goods', visit_list_json)
+			else:
+				response.set_cookie('visit_goods', [])
+
+			return response
+
+
+		def visit_history(req):
+			visited = req.COOKIES.get('visit_goods')
+			visited_list = json.loads(visited)
+			return render(req,'visit_history.html',locals())
+			
+	
+
+六 session
+	Session是服务器端技术，利用这个技术，服务器在运行时可以为每一个用户的浏览器创建一个其独享的session对象，由于session为用户浏览器独享，
+	所以用户在访问服务器web资源时, 可以把各自的数据放在各自的session中,当用户再去访问该浏览器的其它web资源时,其它web资源再从用户各自的session中取出数据为用户服务
+	
+	1 django中session语法
+		# 设置sessions值
+			request.session{'seesion_name'} = "admin"
+		# 获取sessions值
+			session_name = request.session["session_name"]
+		# 删除Session值
+			del request.session["session_name"]
+		# flush()
+			删除当前的会话数据并删除会话的Cookie
+			这个用于确保前面的会话数据不可以再次被用户浏览器访问
+		# 所有键，值，键值对
+			request.session.keys()
+			request.session.values()
+			request.session.items()
+			request.session.iterkeys()
+			request.session.itervalues()
+			request.session.iteritems()
+		# 用户session的随机字符串
+			request.session.session_key
+		
+		# 将有所Session的失效日期小于当前日期的数据删除
+			request.session.clear_expired()
+		# 检查用户session的随机字符串 在数据库中是否存在
+			reques.session.exists("session_key")
+		# 删除当前用户的所有Session数据
+			request.session.delete("session_key")
+		
+	
+	2 session之保存登录状态信息
+		def login_session(request):
+			if request.method == "POST":
+				user = request.POST.get("user")
+				pwd = request.POST.get("pwd")
+				
+				username = UserInfo.objects.filter(user=user, pwd=pwd).first()
+				
+				if username:
+					request.session["is_login"] = True
+					request.session["username"] = "harry"
+					'''
+						注意：如果能读出来session_id 那么会进行一次更新操作
+						1 生成随机字符串    234sd23asdjdasd
+						2 respose.set_cookie("sessionod",234sd23asdj)
+						3 在django-session表中创建一条记录：
+							session-key        session-data
+							234sd23asdj			{"is_login":True, "username":"harry"}
+					'''
+					return HttpResponse("登录成功")
+			return render(request,"login.html")
+			
+		def index_session(request):
+			is_login = request.sessio.get("is_login")
+			'''
+			  1  request.COOKIE.get("session")
+			  2  django-session表中过滤记录
+			  3  obj.session-data.get('is_login')
+			'''
+			if is_login:
+				return render(request,"index.html")
+		
+			return redirect("/login_session/")
+	
+	3 session之注销用户
+		def logout(request)
+			request.sessio.flush()          # 删除当前对话数据并删除会话的cookie
+			return redirect("/login/")
+	
+	4 session配置选项
+		配置 settings.py
+		SESSION_COOKIE_NAME = "sessionid" 		 # Session的cookie保存在浏览器上时的keyt 即：sessionid=随机字符串(默认)
+		SESSION_COOKIE_PATH	= "/"		   		 # Session的cookie保存的路径(默认)
+		SESSION_COOKIE_DOMAIN = None	 		 # Session的cookie保存的域名(默认)
+		SESSION_COOKIE_SECURE = False	 		 # 是否Https传输cookie(默认)
+		SESSION_COOKIE_HTTPONLY = True	  		 # 是否session的cookie只支持http传输(默认)
+		SESSION_COOKIE_AGE = 1209600	  		 # Session是cookie失效日期(2周) (默认)
+		SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # 是否关闭浏览器使得Session过期(默认)
+		SESSION_SAVE_EVERY_REQUEST = False		 # 每次请求都保存Session, 默认修改之后保存
+		
+
+		
+七 Django的用户认证组件
+	用户认证组件：
+		功能：用session记录登录验证状态
+		前提：用户表dajango自带的auth_user
+	1 用户认证
+		auth模块
+		from django.contrib import auth
+		django.contrib.中提供了许多方法,这里主要介绍三种
+		(1) authenticate()
+			提供了用户认证,即验证用户名以及密码是否正确，一般需要username password两个关键字参数
+			如果认证消息有效,会返回一个User对象。authenticate()会在User对象上设置一个属性标识那种认证后端认证了该用户,且该信息在后面的登录过程是需要的。
+			当我们试图登录一个从数据库中直接取过来不经过authenticate()的User对象会报错
+			user = authenticate(username='someone', password='somepassword')
+		(2) login(HttpRequest,user)
+			该函数接受一个HttpRequest对象，以及一个认证了的User对象
+			此函数使用django的session框架给某个已认证的用户附加上session id等信息
+			
+			from django.contrib.auth import authenticat,login
+			
+			def login(req):
+				if req.method == "POST":
+					user = req.POST.get("user")
+					pwd = req.POST.get("pwd")
+					# 如果验证成功返回user对象 否则返回None
+					print(user,pwd)
+					user = auth.authenticate(username=user, password=pwd)
+					if user:
+						auth.login(req,user) # request.user=user 当前登录对象
+						return HttpResponse('登录成功')
+				return render(req, "login.html")
+
+			def index(req):
+
+				print("request.user:", req.user.username)          # 用户对象，默认为空
+				print("request.user:", req.user.id)                # id默认是None
+				print("request.user:", req.user.is_anonymous)      # 是否是匿名用户
+
+				if req.user.is_anonymous:
+					return redirect("/login/")
+
+				return render(req, 'index.html', {"username":req.user.username})
+							
+		(3) 注销功能	
+			def logout(req):
+				auth.logout(req)
+				return redirect("/login/")
+				
+	2 User对象
+		User对象属性：username password(必须填) password用哈希算法保存到数据库
+		
+		(1) user对象的is_authenticate()
+		如果是真正的User对象，返回值恒为True。用于检查用户是否已经通过了认证。
+		通过认证并不意味着用户拥有任何权限,甚至不线程该用户是否处于激活状态，这只是表面成功通过了认证。
+		request.user.is_authenticated()判断用户是否已经登录，如果true则可以向前台展示request.user.name
+		
+		要求
+			1 用户登录号才能访问某些页面
+			2 如果用户没有登录就访问该页面的话直接跳到登录页面
+			3 用户在跳转的登录界面中完成验证后自动访问跳转到之前访问的地址
+		
+				
+	   (2) 创建用户
+		使用create_user辅助函数创建用户
+		from django.contrib.auth.models import UserForm
+		user = User.objects.create_user (username='', password='', email='')
+		
+	   (3) 修改密码
+		使用set_password()来修改密码
+		user = User.objects.get(username='')
+		user.set_password(password='')
+		user.save
+		
+		(4) 注册示例
+		def reg(request):
+			if request.method == "POST":
+				user = request.POST.get("user")
+				pwd = request.POST.get("pwd")
+				User.objects.create_user(username=user, password=pwd)
+			return render(request,"reg.html")
+	3 认证装饰器 login_requierd()
+		django为我们提供了一个login_requierd()的装饰器，这样就可以在有需要进行认证的视图函数中进行调用，以减少重复代码
+		from django.contrib.auth.decorators import login_requierd		
+		def login(req):
+			if req.method == "POST":
+				user = req.POST.get("user")
+				pwd = req.POST.get("pwd")
+				# 如果验证成功返回user对象 否则返回None
+				print(user,pwd)
+				user = auth.authenticate(username=user, password=pwd)
+				if user:
+					auth.login(req,user) # request.user=user 当前登录对象
+					next_url = req.GET.get("next")
+					return redirect(next_url)
+			return render(req, "login.html")
+
+		@login_requierd
+		def my_view(request):
+			.....
+		若用户没有登录,则会跳转到django默认的登录URL'/accounts/login/'(这个值可以在settings文件中通过LOGIN_URL进行修改)。并传递 当前访问url的绝对路径(登录成功后,会重新定向到该路径）
+
+八 CBV
+	我们之前往往在django中将一个路径对应到一个视图函数执行，这种模型简称为FBV。那么如果要使用到类的方式那么就要使用到CBV了
+	使用CBV是在django url控制器添加一条  path('login/', views.Login.as_view()),   # 调用的Login 类下的as_view方法
+	
+	1 使用CBV写一个登录认证
+		# 注意每个类继承views.View, 父类下的dispatch会根据http的不同方法执行类下的方法
+		from django views.View
+		class Login(views.View):
+			msg = ''
+
+			def get(self, request, *args, **kwargs):
+				return render(request,'login.html', {"msg": self.msg})
+
+			def post(self, request, *args, **kwargs):
+				username = request.POST.get('username')
+				password = request.POST.get('password')
+				print(username, password)
+				user_obj = UserInfo.objects.filter(username=username, password=password).first()
+				print(user_obj)
+				if user_obj:
+					request.session['is_login'] = True
+					request.session['username'] = username
+					return render(request, "index.html", {'username': username})
+				self.msg = '用户名或密码错误'
+				return render(request, 'login.html', {'msg': self.msg})
+		
+	2 给类加装饰器
+		首先导入django的装饰器工具 from django.utils.decorators import method_decorator
+		
+		自己写的装饰：
+			def login_require(func):
+				def inner(req, *args, **kwargs):
+					is_login = req.session.get('is_login')
+					print(is_login)
+					username = req.session.get('username')
+					if is_login:
+						return func(req, username, *args, **kwargs)
+					return redirect('/login/')
+				return inner
+		给index的get方法添加装饰器
+			class Index(views.View):
+				@method_decorator(login_require)
+				def get(self, request, username, *args, **kwargs):
+					print(username)
+					return render(request, 'index.html', {'username': username})
+	
+	3 父类的dispatch方法
+		如果要是想在父类的方法执行之前，先执行某个自定义的功能，可以通过继承dispat方法实现
+		class Order(views.View):
+			def dispatch(self, request, *args, **kwargs):
+				is_login = request.session.get('is_login')
+				print(is_login)
+				username = request.session.get('username')
+				if is_login:
+					ret = super(Order, self).dispatch(request, *args, **kwargs)
+					return ret
+				else:
+					return redirect('/login/')
+
+			def get(self, request, *args, **kwargs):
+				return render(request, 'Order.html')
+		补充：如果多个类需要在执行get或post等方法执行额外功能，可以在每个类的dispatch方法前面加一个装饰器	
+		class Buy(views.View):
+			@method_decorator(login_require)
+			def dispatch(self, request, *args, **kwargs):
+				ret = super(Buy,self).dispatch(request, *args, **kwargs) 
+				return ret
+
+九 自定义分页
+	def get_data(req):
+		if req.metho == 'GET':
+			current_page = request.GET.get('page',1)    # 获取用户传来的请求页面(相当于当前页面)，默认是1
+			current_page = int(current_page)
+			
+			# 制造切片
+			start = (current_page - 1) * 10
+			end = current_page * 10	
+			data = models.User.objects.all()[start:end] 		# 一次取10条数据
+			
+			# 总个数
+			total_count = models.Classes.objects.all().count()
+			# 用总个数和每页显示的个数相处，求商和余数，如果有余数总页码还需+1
+			v,a = divmod(total_count,10)  # 相当于总页数 
+			if a != 0:
+				v+=1
+			
+			# 生成页码
+			page_list = []
+			# 如果是第一页那么上一页的功能就取消
+			if current_page == 1:
+				page_list.append('<a href="#">上一页</a>' %(current_page-1)
+			else:
+				page_list.append('<a href="/index?page=%s">上一页</a>' %(current_page-1)
+			
+			# 判断并生成page_range
+			if v <= 11:
+				pager_range_start =1
+				pager_range_end = v
+			else:
+				if current_page <6:
+					pager_range_start = 1
+					pager_range_end = 11 +1
+				else:
+					pager_range_start = current_page -5
+					pager_range_end = current_page +6
+					if pager_range_end > v:
+						page_range_start = current_page - 10
+						pager_range_end = v +1
+						
+				
+			for i in range(pager_range_star,pager_range_end)
+				if i == current_page:
+					page_list.append('<a href="/index?page=%s" class=actice>%s</a>' %(i,i))
+				page_list.append('<a href="/index?page=%s">%s</a>' %(i,i))
+			
+			# 如果当前页是最后一页那么下一页功能就取消
+			if current_page == v:
+				page_list.append('<a href="#">下一页</a>' %(current_page+1)
+			else：
+				page_list.append('<a href="/index?page=%s">下一页</a>' %(current_page+1)
+			
+			pager = "".join(pager_list)
+			return render(request,{'data':data,'str_page':pager})
+	
+	将上面的代码封装成一个类
+	
+		class PagerHandler：
+			def __inin__(self,total_count,current_page, base_url. per_page=10):
+				self.total_count = total_count
+				self.current_page = current_page
+				self.base_url = base_url
+				self.per_page = per_page
+				
+			def db_start(self):
+				return (self.current_page -1) * self.per_page
+				
+			def db_end(self):
+				return (self.current_page) * self.per_page
+			
+			def tootal_page(self):
+				v,a = divmod(total_count,10)  # 相当于总页数 
+				if a != 0:
+					v+=1
+				return v
+				
+			
+			
+			def pager_str(self):
+				
+				v = self.tootal_page()
+				# 生成页码
+				page_list = []
+				# 如果是第一页那么上一页的功能就取消
+				if self.current_page == 1:
+					page_list.append('<a href="#">上一页</a>' %(self.current_page-1)
+				else:
+					page_list.append('<a href="/%s?page=%s">上一页</a>' %(self.base_url,self.current_page-1)
+				
+				# 判断并生成page_range
+				if v <= 11:
+					pager_range_start =1
+					pager_range_end = v
+				else:
+					if current_page <6:
+						pager_range_start = 1
+						pager_range_end = 11 +1
+					else:
+						pager_range_start = self.current_page -5
+						pager_range_end = self.current_page +6
+						if pager_range_end > v:
+							page_range_start = self.current_page - 10
+							pager_range_end = v +1
+							
+					
+				for i in range(pager_range_star,pager_range_end)
+					if i == self.current_page:
+						page_list.append('<a href="/%s?page=%s" class=actice>%s</a>' %(self.base_url,i,i))
+					page_list.append('<a href="/%s?page=%s">%s</a>' %(self.base_url,i,i))
+				
+				# 如果当前页是最后一页那么下一页功能就取消
+				if self.current_page == v:
+					page_list.append('<a href="#">下一页</a>' %(self.current_page+1)
+				else：
+					page_list.append('<a href="/%s?page=%s">下一页</a>' %(self.base_url,self.current_page+1)
+				
+				pager = "".join(pager_list)
+				return pager
+	
+	以调用类的方式优化分页代码
+		def index(request)
+			if request.method == 'GET':
+				current_page = request.GET.get('page',1)
+				current_page = int(current_page)
+				# 数据总数
+				total_count = models.Classes.objects.all().count()
+				page_obj = PagerHandler(total_count,current_page,'/index/')
+				pager = page_obj.pager_str()
+				
+				data = models.Classes.objects.all()[page_obj.db_start():page_obj.db_end()]
+				
+
+十  Djano的中间件
+	1 中间件的概念
+		中间件顾名思义，是介于request与respose处理之间的一道处理过程，相对比较轻量级，并且全局上改变django的输入与输出。因为改变是全局，
+		所有需要谨慎使用，用不好会影响到性能
+	
+	2 自定义中间件
+		中间件中一般有四个方法：
+			process_request
+			process_view
+			process_exception
+			process_response
+			
+		process_request, process_respose
+		当用户发起请求的时候依次讲过所有的中间件，这个时候的请求时process_request,最后到达views的函数中,views函数处理后，在依次穿过中间件，
+		这个时候process_response最后返回给请求者
+		我们自己定义一个中间件首先需要定义一个类再继承MiddlewareMixin
+		from django.utils.deprecation import MiddlewareMixin
+
+		class CustomerMiddleware1(MiddlewareMixin):
+			def process_request(self, request):
+				print('CustomerMiddleware process_request1.....')
+				
+			def process_response(self, request, response):
+				print("中间件....返回1”）
+				return response
+		
+		
+		class CustomerMiddleware2(MiddlewareMixin):
+			def process_request(self, request):
+				print('CustomerMiddleware process_request2.....')
+				
+			def process_response(self, request, response):
+				print("中间件....返回2”）
+				return response
+		
+		执行顺序：
+			CustomerMiddleware process_request
+			CustomerMiddleware process_request2.....
+			Index
+			中间件....返回2
+			中间件....返回1
+	3  process_view
+		当最后一个中间的process_request到达路由映射之后,返回到中间件1的process_view, 然后依次往下到达views函数
+		最后通过process_responese依次返回到达用户
+		from django.utils.deprecation import MiddlewareMixin
+		from django.shortcuts import HttpResponse
+		
+		class Md1(MiddlewareMixin)
+			
+			def process_request(self,request)：
+				print("Md1请求")
+				# return HttpResponse("MD1中断")
+			
+			def process_response(self,request, response)
+				print("MD1返回")
+				return response
+			
+			def process_view(self, request, callback, callback_args, callback_kwargs)
+			
+				# callback 要执行的那个视图函数
+				# callback_args  函数的参数
+				print("Md1view")
+			
+		Class Md2(MiddlewareMixin)
+			def process_request(self, request)
+				print("Md2请求")
+				return HttpResponse("Md2中断")
+			
+			def process_response(self, request, response)
+				print("Md2返回")
+				return response
+			
+			def process_view(self, request, callback, callback_args, callback_kwargs)
+			    print("Md2view")
+				
+	4  process_exception
+		如果在执行视图函数中出现错误，会依次走process_exception
+		from django.utils.deprecation import MiddlewareMixin
+		from django.shortcuts import HttpResponse
+		
+		class Md1(MiddlewareMixin)
+			
+			def process_request(self,request)：
+				print("Md1请求")
+				# return HttpResponse("MD1中断")
+			
+			def process_response(self,request, response)
+				print("MD1返回")
+				return response
+			
+			def process_view(self, request, callback, callback_args, callback_kwargs)
+				print("Md1view")
+				
+			def process_exception(self, exception):
+				print("md1 process_exception")
+			
+		Class Md2(MiddlewareMixin)
+			def process_request(self, request)
+				print("Md2请求")
+				return HttpResponse("Md2中断")
+			
+			def process_response(self, request, response)
+				print("Md2返回")
+				return response
+			
+			def process_view(self, request, callback, callback_args, callback_kwargs)
+			    print("Md2view")
+				
+			def process_exception(self, exception):
+				print("md2 process_exception")
+				
+十一 JSOP跨域请求
+	浏览器有一个很重要的概念--同源策略。 所谓同源是指，域名协议,端口相同。不同源的客户脚本在没有明确授权的情况下不能读写对方资源。
+	
+	1 JSONP的js实现
+		JSONP是JSONwith Padding的略城。可以让网页从别的域名获取资料，即跨域读取数据
+		它是一个非官方的协议，它允许服务器端集成Script tags返回客户端, 通过JavaScript callback的形式实现跨域访问
+		
+		
+	示例一
+			
+			<input type="button" onclick="jonpRequest()" value="跨域请求"> 
+	
+				<script>
+					tag = null;
+					function jonpRequest(){
+						var tag = document.createElement('script');
+						tag.src = "http://baidu.com/";
+						document.head.appendchild(tag);
+					} 
+					function list(arg){
+						console.log(arg);
+						document.head.removeChild(tag);
+					}
+				</script>
+	
+	示例 二
+			<script>
+				function test1(w){
+					alert(w)
+				}
+			</script>	
+			
+			<script>
+				tag = null;
+				function jonpRequest(){
+					var tag = document.createElement('script');
+					tag.setAttribute("type", "text/javascript")
+					tag.src = "http://127.0.1/jquery_get";
+					document.head.appendchild(tag);
+				} 
+				function list(arg){
+					console.log(arg);
+					document.head.removeChild(tag);
+				}
+			</script>
+			
+			def jquery_get(req):
+				print("hello")
+				
+				return HttpResponse("test1('kkk')")
+				
+十二 评论树	
+		class Comment(models.Model):
+			'''
+			评论表
+			'''
+			nid = models.AutoField(primary_key=True)
+			article = models.ForeignKey(verbose_name='评论文章', to='Article', to_field='nid')
+			user = models.ForeignKey(verbose_name'评论者', to='UserInfo', to_field='nid')
+			content = models.CharField(verbose_name='评论内容'， max_length=255)
+			create_time = models.DateTimeField(verbose_name='创建时间'， auto_now_add=True)
+			parent_comment = models.ForeignKey('self', null=True, related_name="c")
+				
+		''''
+			评论
+			自增ID			   文章id						parent_comment
+			1       Harry        1           今晚德国3-0	
+			2		sam		     1           阿根廷6666
+			3		jerry	     1	         墨西哥必胜
+			4		alex		 1			 瑞典加油
+			5		beal	     2 			 输到上天台
+			6		ago			 2			 哈哈哈	
+			7		二大爷		 1			 梅西牛逼			2
+			8		鱼鱼		 1			 棒子必败			1
+			9		鱼鱼		 1			 66666		     	7
+			
+		''''
+		递归实现评论数据结构
+			def comment(request):
+				news_id = 1
+				comment_list = models.Comment.objects.filter(news_id=news_id)
+				
+			
+			def create_tree(comment_list)
+				ret = []
+				for row in comment_list:
+					if not row["parent_id"]:
+						row['children'] = []
+						ret.append(row)
+					else:
+						degui(ret,row)
+				return ret
+			
+			def digui(ret,row):
+				# 递归建立评论树
+				for rt in ret：
+					if rt['id'] == row['parent_id']:
+						row['children'] = []
+						rt['children'].append(row)
+						return 
+					else:
+						digui(rt['children'], row)
+		
+		循环实现评论数
+			方式1  使用列表
+				ret = []
+				for item in comment_list：
+					current_row = item
+					current_row_parent_id = current_row['parent_id']
+					if not current_row_parent_id:
+						ret.append(item)
+					else:
+						for row in comment_list:
+							if row['id'] == current_row_parent_id:
+								row["children"].append(item)
+			
+			方式2  使用字典	
+				cooment_dic = {}
+				
+				# 先将数据转换为字典， 字典的Key是评论的pid
+				for row in comment_list:
+					row.update({'children':{}})
+					comment_dic[row{"id"}] = row
+					
+					
+				for item in comment_list：
+					current_row = item
+					current_row_parent_id = current_row['parent_id']
+					if  not current_row_parent_id:
+						ret.append(item)
+					else:
+						comment_dic[current_row_parent_id]['children'].append(current_row)
+						
+		Js递归展示评论树
+				<div class="item">
+					<a news_id="19" class="com">评论</a>
+					<div class="comment-list">
+						<div class="comment-box">
+								
+						</div>
+					</div>
+				</div>
+				function doGui(children_list){
+					var html = "";
+					$.each(children_list, function(ck,cv){
+						var subComment = '<div class="comment-box"><span>';
+							subComment+=cv.content;
+							subComment+="</span>";
+							var result = doGui(cv.children);
+							
+							subComment+="/div";
+							html += subComment;
+							
+					})
+					
+					retur html;
+				
+				
+				function crate_tree(data,this){
+					var html = '<div class="comment_list">';
+					$.each(data, function(k,v){
+						var a = "<div class="comment-box"><span>"
+							a+=v.comment;
+							a+="</span>";
+							result = diGui(v.children)
+							a += result
+							a+="</div>"
+							html += a;
+							
+					}
+					html += "</div>"
+					_this.after(html)
+				}
+				
+				function bindCommentEvent(){
+					$(".com").click(function(){
+							var news_id = $(this).attr("news_id");
+							var _this = $(this)
+							$.ajax({
+								url: '/comment/'
+								type:"get",
+								data: {news_id：news_id}，
+								dataType： "JSON",
+								success:function(arg){
+										crate_tree(arg,_this)
+								}
+					})
+					
+		使用simpleTag实现评论数
+			  from django impor templat
+				register = template.Library()
+				
+			
+				def recursion(children_list):
+					html = ''
+					for cv in children_list:
+						b = '<div class="comment-box" style="margin-left:20px;"><span>'
+						b += cv['content'] + "</span>"
+						b += recursion(cv['children'])
+						b += "</div>"
+						html += b
+
+					return html
+
+
+				@register.simple_tag
+				def create_tree(comment_list):
+					html = "<div class='comment-list'"
+					for v in comment_list:
+						print(v)
+						a = '<div class="comment-box"<span>'
+						a += v['content'] +"</span>"
+						a += recursion(v['children'])
+						a += "</div>"
+						html += a
+
+					return mark_safe(html)
+ 
+ 十三  ModelForm
+	class UserModelForm(forms.ModelForm):
+		class Meta:
+			model = models.User
+			# fields = "__all__"
+			# fields = ['name']     # 指定页面上所显示的字段
+			# exclude = ['name']	# 排除指定的字段
+			labels = {				# 提示信息
+				"email":"邮箱"
+			}                  
+			help_text =				# 帮助信息
+			widgets = {				# 插件
+				 'name':widget.Textarea(attrs={'class':'c1'})
+			error_messages = {
+				'name':{'reqiored':'必填', 'invalid':'格式错误'}
+			}
+			 
+			field_classes = {                # 给model中的某个字段通过form再次做一个约束
+				'name':forms.EmailField}
+			
+			localized_fields = ('birth_date,)  # 本地化， 如：根据不同时区显示数据
+				
+	def index(request):
+		if request.method == "GET":
+			obj = UserModelForm()
+			return render(request,"index.html",{'obj':obj})
+		elif request.method == "POST":
+			obj = UserModelForm(request.POST)
+			if obj.is_valid()
+				print(obj.cleand_data)
+				obj.save()  # 直接将数据写入数据库
+			return render(request,"index.html",{'obj':obj})
+			
+			
+	def edit_index(request,nid):
+		if request.method == "GET"
+			model_obj = models.User.objects.get(id=nid)
+			obj = UserModelForm(instance=model_obj)  # instance可以将之前数据渲染到前端
+			reture render(request,"edit.html",  {"obj":obj})
+		elif request.method == "POST":
+			model_obj = models.User.objects.get(id=nid)
+			obj = UserModelForm(request.post, instance=model_obj)  # 如果没有instance表示增加 如果有表示更新
+			if obj.is_valid():
+				obj.save()
+			reture render(request,"edit.html",  {"obj":obj})
+
+十四 缓存
+	由于Django是动态网站，所以每次请求均会去数据库进行响应的操作，当程序访问量大时，耗时必然会更加明显。使用缓存讲一个或某个view的返回值保存在内存或者memcache中，5分钟内有人来访问时则不再去执行view中的操作，而是直接从
+	内存或者redis之类的缓存中拿到内容并返回
+	Django中提供了6中缓存方式
+		1 开发调试
+		2 内存
+		3 文件
+		4 数据库
+		5 Memcache缓存(python-memcached模块)
+		6 Memcache缓存(pylibmc模块)
+		
+	(1) 开发测试
+		# 此为开始调试用，实际内部不做任何操作
+    # 配置：
+        CACHES = {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.dummy.DummyCache',     # 引擎
+                'TIMEOUT': 300,                                               # 缓存超时时间（默认300，None表示永不过期，0表示立即过期）
+                'OPTIONS':{
+                    'MAX_ENTRIES': 300,                                       # 最大缓存个数（默认300）
+                    'CULL_FREQUENCY': 3,                                      # 缓存到达最大个数之后，剔除缓存个数的比例，即：1/CULL_FREQUENCY（默认3）
+                },
+                'KEY_PREFIX': '',                                             # 缓存key的前缀（默认空）
+                'VERSION': 1,                                                 # 缓存key的版本（默认1）
+                'KEY_FUNCTION' 函数名                                          # 生成key的函数（默认函数会生成为：【前缀:版本:key】）
+            }
+        }
+
+		# 自定义key
+		def default_key_func(key, key_prefix, version):
+			"""
+			Default function to generate keys.
+
+			Constructs the key used by all other methods. By default it prepends
+			the `key_prefix'. KEY_FUNCTION can be used to specify an alternate
+			function with custom key making behavior.
+			"""
+			return '%s:%s:%s' % (key_prefix, version, key)
+
+		def get_key_func(key_func):
+			"""
+			Function to decide which key function to use.
+
+			Defaults to ``default_key_func``.
+			"""
+			if key_func is not None:
+				if callable(key_func):
+					return key_func
+				else:
+					return import_string(key_func)
+			return default_key_func
+	(2) 内存
+		# 此缓存将内容保存至内存的变量中
+		# 配置：
+			CACHES = {
+				'default': {
+					'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+					'LOCATION': 'unique-snowflake',
+				}
+			}
+
+		# 注：其他配置同开发调试版本
+	
+	(3) 文件
+		# 此缓存将内容保存至文件
+		# 配置：
+
+			CACHES = {
+				'default': {
+					'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+					'LOCATION': '/var/tmp/django_cache',
+				}
+			}
+		# 注：其他配置同开发调试版本
+		
+	(4) 数据库
+		# 此缓存将内容保存至数据库
+
+		# 配置：
+			CACHES = {
+				'default': {
+					'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+					'LOCATION': 'my_cache_table', # 数据库表
+				}
+			}
+
+		# 注：执行创建表命令 python manage.py createcachetable
+	
+	(5) Memcache缓存（python-memcached模块）
+		# 此缓存使用python-memcached模块连接memcache
+
+		CACHES = {
+			'default': {
+				'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+				'LOCATION': '127.0.0.1:11211',
+			}
+		}
+
+		CACHES = {
+			'default': {
+				'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+				'LOCATION': 'unix:/tmp/memcached.sock',
+			}
+		}   
+
+		CACHES = {
+			'default': {
+				'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+				'LOCATION': [
+					'172.19.26.240:11211',
+					'172.19.26.242:11211',
+				]
+			}
+		}
+	
+	(6) Memcache缓存（pylibmc模块）
+		    # 此缓存使用pylibmc模块连接memcache
+    
+			CACHES = {
+				'default': {
+					'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+					'LOCATION': '127.0.0.1:11211',
+				}
+			}
+
+			CACHES = {
+				'default': {
+					'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+					'LOCATION': '/tmp/memcached.sock',
+				}
+			}   
+
+			CACHES = {
+				'default': {
+					'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+					'LOCATION': [
+						'172.19.26.240:11211',
+						'172.19.26.242:11211',
+					]
+				}
+			}
+			
+十五 Django Admin

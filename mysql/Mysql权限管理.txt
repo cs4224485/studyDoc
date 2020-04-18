@@ -1,0 +1,21 @@
+权限管理
+	1 创建账号
+	    crate user 'harry'@'192.168.0.%' identified by '123';  # mysql -uharry -p123 -h服务端ip
+	2 授权
+		user：*.*
+		db:db1.*
+		tables_priv:db1.t1
+		columns_priv:t1.id
+		
+		grant all on *.* to 'harry'@'localhost';      用户级别授权
+		grant select on *.* to 'harry'@'localhost';
+		revoke select on *.* from 'harry'@'localhost';
+		
+		grant select on db1.* to 'harry'@'localhost'  表级别授权
+		revoke select on db1.* form 'harry'@'localhost'
+		
+		grant select(id,name),update(age) on db1.t2 to 'harry'@'localhost';
+		
+		
+		
+		

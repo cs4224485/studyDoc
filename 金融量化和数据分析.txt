@@ -1,0 +1,437 @@
+一 什么是金融
+金融就是对现有资源进行重新整合之后,实现价值和利润的等效流通
+金融工具:在金融市场中可交易的金融资产
+	股票 期货 黄金 外汇 基金等
+	
+股票 
+股票是股份公司发给出资人的一种凭证, 股票的持有者就是股份公司的股东
+股票的作用：
+	出资证明 证明股东身份 对公司经营发表意见
+	公司红利 交易获利
+上市/IPO: 企业通过证券交易所公开向社会增发股票以募集资金
+
+二 金融量化概念
+
+量化投资：利用计算机技术并且采用一定的数学模型取实践投资理念,实现投资策略的过程
+量化投资的优势：
+	* 避免主观情绪人性弱点和认知偏差 选择更加客观
+	* 能同时包括多角度的观察和多层次的模型
+	* 及时跟踪市场变化, 不断发现新的统计模型, 寻找交易机会
+	* 在绝对投资策略后，能通过回测验证其效果
+	
+量化策略：通过一套固定的逻辑分析判断和决策, 自动化地进行股票交易
+策略的周期：
+	产生想法/学习知识
+	实现策略：Python
+	检查策略：回测/模拟交易
+	实盘交易
+	优化策略/放弃策略
+
+三 科学计算基础包--numpy
+	NumPy是高性能科学计算和数据分析的基础包。它是pandas等其他各种工具的基础。
+	NumPy的主要功能：
+		ndarray, 一个多维数据结构, 高新且节省空间
+		无需循环对数据进行快速运算的数学函数
+		线性代数 随机数生成和傅里叶变换功能
+	安装方法: pip install numpy
+	引用方式: import numpy as np
+
+	创建ndarray: np.adday(array_like)
+	数组与列表的区别：
+		* 数组对象内的元素类型必须相同
+		* 数组大小不可修改
+
+		
+	ndarray数据类型
+		布尔型:bool_
+		整形：int_ int8 int16 int32 int64
+		无符号整形: unit8 unit16 unit32 unit 64
+		浮点型：float float16 float32 float64
+		复数型：complex_ complex64 complex128	
+	ndarray的常用属性
+		T 		数组的转置(对高维数组而言)
+		size 	数组元素的个数
+		ndim 	数组的维数
+		shape   数组的维度大小(元祖形式)
+		dtype   数组元素的数据类型
+	ndarray的创建
+		array()  	将列表转换为数组, 可选择显示指定dtype
+		arange() 	range的numpy版, 支持浮点数
+		linespace() 类似arange(),第三个参数为数组长度
+		zeros()		根据指定形态和dtype创建全0数组
+		ones()	    根据指定形态和dtype创建全1数组
+		empty()	    根据指定形态和dtype创建空数组(随机值)
+		eye()		根据指定边长和dtyoe创建单位矩阵
+
+	ndarray批量运算
+		数组和标量之间的运算
+		a+1    a*3	 1//a   a**0.5  a>5
+		
+		同样大小数组之间的运算
+		a+b    a/b   a**b   a%b    a==b
+		
+	ndarray索引和切片
+		一维数组的索引: a[5]
+		多维数组的索引：
+			列表式写法：a[2][3]
+			新式写法：a[2,3]
+		
+		一维数组的切片： a[5:8]  a[4:]  a[2:10] = 1
+		多维数组的切片:  a[1:2, 3:4]  a[:,3:5]  a[:,1]
+		数组切片与列表切片的不同:数组切片时并不会自动复制(而是创建一个视图),在切片数组上的修改会影响原数组
+		copy()方法可以创建数组的深拷贝
+
+	ndarray布尔型索引
+		给定一个数组选出数组中所有大于5的偶数
+			a[(a>5) & (a%2 == 0)]
+		给一个数组, 选出数组中所有大于5的数和偶数
+			a[(a>5) | (a%2==0)]
+			
+	ndarray花式索引
+		对于一个数组，选出其第1,3,4,6,7个元素，组成新的二维数组
+			a[[1,3,4,6,7]]
+		对一个二维数组,选出其第一列和第三列, 组成新的二维数组
+			a[:,[1,3]]
+			
+	ndarry通用函数
+		通用函数:能同时对数组中所有元素进行运算的函数
+		常见通用函数:
+			一元函数: abs, sqrt, exp, log, ceil(向上取整), floor(向下取整), rint, trunc(向零取整), modf(将整数和小数分开), isnan(判断是不是nan), isinf(判断是不是inf), cos, sin, tan
+			二元函数: add, substract, multiply, divide, power, mod, maximun, mininum
+		
+		补充-浮点数特殊值
+			nam(Not a Number):不等于任何浮点数(nan != nan)
+			inf(infinity)： 比任何浮点数都大
+			NumPy中创建特殊值: np.nan  np.inf
+			在数据分析中, nan常被用作表示数据缺失值
+			
+	numpy数学和统计方法
+		[1 2 3 4 5]
+		sum 	求和
+		mean    求平均数	
+		std		求标准差	((1-3)**2+(2-3)**2+(3-3)**2+(4-3)**2+(5-3)**3)/5
+		var     求方差
+		min     求最小数
+		max     求最大值
+		argmin  求最小值索引
+		argmax  去最大值索引
+
+	numpy随机数生成
+		随机数函数在np.random子包内
+		rand		给定形态产生随机数组(0到1之间的数)
+		randint		给定形态产生随机整数
+		choice		给定形态产生随机选择
+		shuffle		与random.shuff相同
+		uniform		给定形态产生随机数组
+			
+	示例：
+		1 已知购物车中每件商品的价格与商品件数,求总金额
+			a = [random.unifor(10.0, 20.0) for i in rang(50)]
+			b = [random.randint(1,10) for i in rang(50)]
+			a = np.array(a)
+			b = np.array(b)
+			(a*b).sum()
+
+四 数据分析核心包pandas
+	pandas是一个强大的Python数据分析的工具包, 是基于NumPy构建的
+	pandas的主要功能
+		* 具备对其功能的数据结构DateFrame Series
+		* 集成时间序列功能
+		* 提供丰富的数学运算和操作
+		* 灵活处理缺失数据
+	安装方法: pip install pandas
+	引用方法：import pandas as pd
+	
+	1 Series 一维数据对象
+		Seriaes是一种类似于一位数组的对象, 由一组数据和一组与之相关的数据标签(索引)组成新的二维数组
+		创建方式: 
+			pd.Series([4,7,-5,3])
+			pd.Series([4,7,-5,3], index=['a', 'b', 'c', 'd'])
+			pd.Series({'a':1, 'b':2})
+			pd.Series(0, index=['a','b','c','d'])
+		获取值数组和索引数据: values属性和index属性
+		Series比较像列表(数组)和字典的结合体
+	2 Series使用特性
+		Series支持array的特性(下标)：
+			从ndarray创建Series:Series(arr)
+			与标量运算: sr*2
+			两个Series运算： sr1+sr2
+			索引：sr[0], sr[[1,2,4]]
+			切片：sr[0:2]
+			通用函数:np.abs(sr)
+			布尔值过滤: sr[sr>0]
+		Series支持字典的特性(标签):
+			* 从字典创建Series: Series(dic)
+			* in运算: 'a' in sr
+			* 键索引：sr['a'], sr[['a','b', 'd']]
+			
+	3 Series整数索引问题
+		整数索引的pandas对象往往会使新手抓狂的地方
+		例如：
+			sr = pd.Series(np.arange(4.))
+			sr[-1]
+		如果索引是整数类型,则根据整数进行下标获取值时总是面向标签的。
+		解决方法: loc属性(将索引解释为标签)和iloc属性(将索引解释为下标)
+		如：sr2.loc[10] sr2.iloc[-1]
+	
+	4 Series数据对齐
+		例：
+			sr1 = pd.Series([12,23,34], index=['c','a','d'])
+			sr2 = pd.Series([11,20,10], index=['d', 'c', 'a'])
+			sr1+sr2
+		pandas在进行两个Series对象的运算时,会按索引进行对齐然后计算
+			a:33
+			c:32
+			d:45
+		
+		如何使用结果再索引'b'处的值为11， 在索引‘d’处的值为34?
+			灵活的算术方法: add, sub, div, mul
+			sr1.add(sr2, fill_value=0)
+			
+	5 Series缺失值处理
+		sr.isnull()		Nan返回True
+		sr.notnull()	Nan但会False
+		sr.dropna()		删除索引Nan
+		sr.fillna(0)	填充所有的nan
+
+五 Pandas之DataFrame-二维数据对象
+	DataFrame是一个表格型的数据结构, 含有一组有序的列。DataFrame可以被看做是由Series组成的字典,并且共用一个索引
+	创建方式:
+		pd.DataFrame({'one':[1,2,3,4], 'two':[4,3,2,1]})
+		pd.DataFrame({'one':pd.Series([1,2,3], index=['a','b','c']), 'two':pd.Series([1,2,3,4],index=['b','a','c','d'])})
+	csv文件读取与写入：
+		df.read_csv('filename.csv')
+		df.to_csv()
+		
+	DataFrame常用的属性
+		index  		获取索引	行索引
+		T			转置		行变成列 列变成行
+		columns		获取列索引  
+		values		获取值数组
+		describe()	获取快速统计
+		
+	DataFrame索引和切片
+		DataFrame是一个二维数据类型,所以有行索引和列索引。
+		DataFrame同样可以通过标签和位置两种方法进行索引和切片。
+		loc属性和iloc属性：
+			使用方法: 逗号隔开,前面是行索引, 后面是列索引
+			行/列索引部分可以是常规索引,切片,布尔索引,花式索引任意搭配
+		示例:
+			df['one']['a'] 先取列再取行
+			推荐使用loc
+			df.loc['a', 'one']
+			查看一行数据
+			dc.loc['a', :]
+			
+	DataFrame数据对齐与缺失数据
+		DataFrame对象在运算时, 同样会进行数据对齐, 其行索引和列索引分别对齐
+		DataFrame处理缺失数据的相关方法：
+			dropna(axis=0, where='any', ...)  # 当行所有都是Nan才删除dropna(how='any') 
+			fillna()
+			isnull()
+			notnull()
+	
+六 pandas其他常用方法
+	
+	常用函数
+	mean(axis=0, skipna=False)    		对列(行)求平均数
+	sum(axis=1)						    对列(行)求和
+	sort_index(axis, ..., ascending)	对列(行)索引排序
+	sort_values(by,axis, ascending)		安某一列(行)的值排序
+	NumPy的通用函数同样适用于pandas
+
+七 pandas-时间对象处理
+	时间序列类型：
+		时间戳：特定时刻
+		固定时刻: 如2017年7月
+		时间间隔：起始时间-结束时间
+	
+	Python标准库处理时间对象:datetime
+	灵活处理时间对象: dateutil
+		dateutil.parser.parse()
+	成组处理时间对象:pandas
+		pd.to_datetime()
+	生成时间范围：date_range
+		* start       开始时间
+		* end		  结束时间
+		* periods     时间长度
+		* freq        时间频率, 默认为'D', 可选H(our)， W(eek)， B(usiness), S(emi0)M(onth), (min)T(es), S(econd), A(year)
+		pd.date_range('2010-01-01', '2010-5-1')
+	
+	pandas-时间序列
+		时间序列就是以时间对象为索引的Series或DataFrame
+		datetime对象作为索引时是存储在DatetimeIndex对象中的。
+		时间序列特殊功能：
+			* 传入“年”或“年月”作为切边方式
+			* 传入日期范围作为切片方式
+			* 丰富的函数支持: resample(), truncate()
+		
+八 pandas-文件处理
+	数据文件常用格式: csv(以某间隔符分割数据)
+	pandas读取文件: 从文件名,URL,文件对象中加载数据
+		read_csv     默认分隔符为逗号
+		read_table   默认分隔符为制表符
+	read_csv, read_table函数主要参数:
+		sep   			指定分隔符,可用正则表达式如"\s+"
+		header=None   	指定文件无列名
+		name			指定列名
+		index_col		指定某列为索引
+		skip_row		指定跳过某些行
+		na_values		指定某些字符串表示缺失值
+		parse_dates		指定某些列是否被解析为日期，类型布尔值或列表
+		
+	pandas写入csv文件: to_csv函数
+		* sep        	指定文件分隔符
+		* na_rep     	指定缺失值转换的字符串,默认为空字符串
+		* header=False  不输出列名一行
+		* index=False   不输出索引一列
+		* cols			指定输出的列,传入列表
+		
+九 Matplotlib介绍
+	Matplotlib是一个强大的Python绘图和数据可视化工具包
+	安装方法: pip install matplotlib
+	引用方法: import matplotlib.pyplot as plt
+	绘图函数：plt.plot()
+	显示图像: plt.show()
+	
+	matplotlib-plot函数 画折线图
+			线型linestyle (-,-.,--,...)
+			点型marker(V,^,S,*,H,+,x,D,o,...)
+			颜色color(b,g,r,y,k,w,...)
+		plot函数绘制多条曲线
+		pandas包对plot的支持
+	
+	Matplotlib-图像标注
+		设置图像标题:plt.title()
+		设置X轴名称:plt.xlabel()
+		设置y轴名称:plt.ylabel()
+		设置X轴范围:plt.xlim()
+		设置y轴范围：plt.ylim()
+		设置x轴刻度: plt.xticks()
+		设置y轴刻度: plt.yticks()
+		设置曲线图裂: plt.legend()
+	
+	Matplotlib 绘制数学函数
+		x = np.linespace(-100, 100, 10000)
+		y1 = x.copy()
+		y2 = x ** 2
+		y3 = x**3+5*x**2_2*x+1
+		plt.plot(x, y1, color='red', label="y=x")
+		plt.plot(x, y2, color='green', label="y=x^2")
+		plt.plot(x, y3, color='blue', label="y=x^3+5x^2+2x+1")
+		plt.ylim(-1000, 1000)
+		plt.legend()
+		plt.show()
+	
+	Matplotlib-画布与子图
+		画布：figure
+			fig = plt.figure()
+		图： subpot
+			ax1 = fig.add_subplot(2,2,1)
+		调节子图间距:
+			subplots_adjust(left, bottom, right, top, wspace, hspace)
+	
+	Matplotlib条形图和饼图
+	
+	
+	Matplotlib--绘制K线图
+		matplotlib.finance子包中有许多绘制金融相关图的函数接口
+		绘制K线图: matplotlib.finance.candlestick_ochl函数
+
+十 	金融数据分析实战	
+	1 几个练习
+		使用tushare包获取某股票的历史行情数据
+		输出该股票所有收盘比开票上涨3%以上的日期
+		输出该股票所有开票比前日收盘跌幅超过2%的日期
+		假如我从2010年1月1日开始,每月第一个交易日买入1手股票，每年最后一个交易日卖出所有股票，到今为止收益如何
+		df = df['2001-09':'2017-11']  # 剔除收尾无用的数据
+		price_last = df['open'][-1]
+		df_monthly = df.resample("M").first()         #  每月第一个交易日的数据
+		df_yearly =  df.resample("A").last()[:-1]       #  到每年最后一个交易日
+		# 花费钱数
+		cost_money = 0
+		hold = 0
+		for year in range(2001, 2018):
+			cost_money += df_monthly(str(year))['open'].sum() * 100
+			# 买入的股票数量
+			hold += len( df_monthly(str(year))['open']) * 100
+			if year != 2018:
+				# 每年卖出的股票
+				cost_money -= df_yearly[str(year)]['open'][0] * hold
+				hold = 0
+		# 进行最后赚赔结算
+		cost_money -= hold * price_last	
+		print(-cost_money)
+		
+	2 查找历史金叉死叉日期
+		均线:对于每一个交易日,都可以计算出前N天的移动平均值,然后把这些移动平均值连起来，成为一条线，就叫做N日移动平均线。移动平均线常用线有5天 10天 30天 60天 120天和240天的指标
+			* 5天和10天的是短线操作的参照指标，乘坐日均线指标 
+			* 30天和60天的是中期均线指标, 称为季均线指标
+			* 120天和240天的是长期均线指标, 乘坐年均线指标
+		金叉: 短期均线上穿长期均线, 买入信号
+		死叉: 短期均线下穿长期均线, 卖出信号
+		
+		使用tushare包获取某股票历史行情数据
+		使用pandas包计算该股票历史数据的5日均线和60日均线
+		使用matplotlib包可视化历史数据的收盘价和两条均线
+		分析输出所有金叉日期和死叉日期
+		如果我从2010年1月1日开始, 初始资金为100000元,金叉尽量买入四叉全部卖出,则今天为止，我的炒股收益如何
+		df = pd.read_csv("601318.csv", index_col='date', parse_dates['date'])[['open', 'close', 'low', 'high']]
+		df['ma5'] = np.nan
+		df['ma30'] = np.nan
+		求均线循环方式
+			# 5日均线
+			for i in range(4, len(df)):
+				df.loc[df.indexp[i], 'ma5'] = df['open'][i-4:i+1].mean()
+			# 30日均线
+			for i in range(29, len(df)):
+				df.loc[df.indexp[i], 'ma30'] = df['open'][i-29:i+1].mean()
+		rolling函数求均线
+			df['ma5']=df['open'].rolling(5).mean()
+			df['ma30']=df['open'].rolling(30).mean()
+			
+		画均线
+			df[['close', 'ma5', 'ma30']].plot()
+			plt.show()
+		
+		计算所有金叉日期和死叉日期
+			df = df.dropna()
+			df = df['2010-01-01':]
+			golden_cross = []
+			death_cross = []
+			方式一：
+				for i in range(1, len(df)):
+					if df['ma5'][i] >= df['ma30'] and df['ma5'][i-1] < df['ma30'][i-1]:
+						golden_cross.append(df.index[i])
+					if df['ma5'][i] <= df['ma30'] and df['ma5'][i-1] > df['ma30'][i-1]:
+						death_cross.append(df.index[i])
+			方式二:
+				sr1 = df['ma5'] < df['ma30']
+				sr2 = df['ma5'] > df['ma30']
+				
+				death_cross = df[sr1 $ sr2.shift(1)].index
+				golden_cross = df[~(sr1 | sr2.shift(1))]
+		模拟收益
+			first_money = 10000
+			money = first_money
+			hold = 0 #持有多股
+			sr1 = pd.Series(1, index=golden_cross)
+			sr2 = pd.Series(0, index=death_cross)
+			sr = sr1.append(sr2).sort_index()
+			for i in rang(0, len(sr)):
+				p = df['open'][sr.index(i)]
+					if sr.iloc[i] ==1:
+						# 表示金叉买入
+						buy = (money // (100 * p)
+						hold += buy*100
+						money -= buy*100*p
+					else:
+						money += hold * p 
+						hold = 0
+			p = df['open'][-1]
+			now_money = hold * p +money 
+	3 第一个量化策略
+		设置股票池为沪深300的所有成分股
+		如果当前股价小于10元/股且当前不持仓, 则买入
+		如果当前股价比买入时上涨了25%, 则清仓止盈
+		如果当前股价比买入时下跌了10%, 则清仓止损

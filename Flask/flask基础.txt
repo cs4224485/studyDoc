@@ -1,0 +1,681 @@
+一 什么是Flask
+	Flask是一个基于Python开发并且依赖jinja2模板和Werkzeug WSGI服务的一个微型框架，对于Werkzeug本质是Socket服务端，
+	其用于接收http请求并对请求进行预处理，然后触发Flask框架，开发人员基于Flask框架提供的功能对请求进行相应的处理，并返回给用户，如果要返回给用户复杂的内容时，需要借助jinja2模板来实现对模板的处理，即：将模板和数据进行渲染，将渲染后的字符串返回给用户浏览器
+	
+	
+	
+二  Werkzeug WSGI
+	from werkzeug.wrappers import Request, Response
+
+	@Request.application
+	def hello(request):
+		return Response('Hello World!')
+
+	if __name__ == '__main__':
+		from werkzeug.serving import run_simple
+		run_simple('localhost', 4000, hello)
+		
+
+三 Flask基本使用
+	from flask import Flask
+	app = Flask(__name__)
+	 
+	@app.route('/')
+	def hello_world():
+		return 'Hello World!'
+	 
+	if __name__ == '__main__':
+		app.run()
+
+四 路由系统
+	@app.route('/user/<username>')
+	@app.route('/post/<int:post_id>')
+	@app.route('/post/<float:post_id>')
+	@app.route('/post/<path:path>')
+	@app.route('/login', methods=['GET', 'POST'])
+	
+	- endpoint,反向生成url
+		@app.route('/index/', endpoint='index')
+	- url_for("index")
+	
+	常用路由系统有以上五种，所有的路由系统都是基于一下对应关系来处理：
+	
+	DEFAULT_CONVERTERS = {
+		'default':          UnicodeConverter,
+		'string':           UnicodeConverter,
+		'any':              AnyConverter,
+		'path':             PathConverter,
+		'int':              IntegerConverter,
+		'float':            FloatConverter,
+		'uuid':             UUIDConverter,
+	}
+
+	自定制正则路由匹配
+	
+	    from flask import Flask, views, url_for
+		from werkzeug.routing import BaseConverter
+
+		app = Flask(import_name=__name__)
+
+
+		class RegexConverter(BaseConverter):
+			"""
+			自定义URL匹配正则表达式 
+			"""
+			def __init__(self, map, regex):
+				super(RegexConverter, self).__init__(map)
+				self.regex = regex
+
+			def to_python(self, value):
+				"""
+				路由匹配时，匹配成功后传递给视图函数中参数的值
+				:param value: 
+				:return: 
+				"""
+				return int(value)
+
+			def to_url(self, value):
+				"""
+				使用url_for反向生成URL时，传递的参数经过该方法处理，返回的值用于生成URL中的参数
+				:param value: 
+				:return: 
+				"""
+				val = super(RegexConverter, self).to_url(value)
+				return val
+
+		# 添加到flask中
+		app.url_map.converters['regex'] = RegexConverter
+
+
+		@app.route('/index/<regex("\d+"):nid>')
+		def index(nid):
+			print(url_for('index', nid='888'))
+			return 'Index'
+
+
+		if __name__ == '__main__':
+			app.run()
+			
+			
+			
+	@app.route和app.add_url_rule参数：
+            rule,                       URL规则
+            view_func,                  视图函数名称
+            defaults=None,              默认值,当URL中无参数，函数需要参数时，使用defaults={'k':'v'}为函数提供参数
+            endpoint=None,              名称，用于反向生成URL，即： url_for('名称')
+            methods=None,               允许的请求方式，如：["GET","POST"]
+            
+
+            strict_slashes=None,        对URL最后的 / 符号是否严格要求，
+                                        如：
+                                            @app.route('/index',strict_slashes=False)，
+                                                访问 http://www.xx.com/index/ 或 http://www.xx.com/index均可
+                                            @app.route('/index',strict_slashes=True)
+                                                仅访问 http://www.xx.com/index 
+            redirect_to=None,           重定向到指定地址
+                                        如：
+                                            @app.route('/index/<int:nid>', redirect_to='/home/<nid>')
+                                            或
+                                            def func(adapter, nid):
+                                                return "/home/888"
+                                            @app.route('/index/<int:nid>', redirect_to=func)
+            subdomain=None,             子域名访问
+                                                from flask import Flask, views, url_for
+
+                                                app = Flask(import_name=__name__)
+                                                app.config['SERVER_NAME'] = 'wupeiqi.com:5000'
+
+
+                                                @app.route("/", subdomain="admin")
+                                                def static_index():
+                                                    """Flask supports static subdomains
+                                                    This is available at static.your-domain.tld"""
+                                                    return "static.your-domain.tld"
+
+
+                                                @app.route("/dynamic", subdomain="<username>")
+                                                def username_index(username):
+                                                    """Dynamic subdomains are also supported
+                                                    Try going to user1.your-domain.tld/dynamic"""
+                                                    return username + ".your-domain.tld"
+
+
+                                                if __name__ == '__main__':
+                                                    app.run()
+        
+			
+			
+五 视图函数
+	1 FBV
+		from flask import Flask
+		# 实例化Flask对象
+		app = Flask(__name__)
+
+		# 生成路由关系，并把关系保存到某个地方,app对象的 url_map字段中
+		@app.route('/xxxx')  # @decorator
+		def index():
+			return "Index"
+
+
+
+		if __name__ == '__main__':
+			# 启动程序，监听用户请求
+			# 一旦请求到来，执行 app.__call__方法
+			# 封装用户请求
+			# 进行路由匹配
+			app.run()
+	
+	2 CBV	
+		class IndexView(views.View):
+            methods = ['GET']
+            decorators = [auth, ]
+
+            def dispatch_request(self):
+                print('Index')
+                return 'Index!'
+
+        app.add_url_rule('/index', view_func=IndexView.as_view(name='index'))  # name=endpoint
+		
+	3 Flask的一个登录示例
+		from flask import Flask, render_template, request, redirect, session
+		app = Flask(__name__, template_folder="templates", static_folder='static')
+		app.secret_key = 'asefsdf'
+
+		@app.route('/login/', methods=["GET", "POST"])
+		def login():
+			if request.method == 'GET':
+				return render_template('login.html')
+			user = request.form.get('user')
+			pwd = request.form.get('pwd')
+			print(user, pwd)
+			if user == 'harry' and pwd == 'cs1993413':
+				session['user'] = user
+				return redirect('/index')
+			return render_template('login.html', error='用户名或密码错误')
+			# return render_template('login.html', **{error='用户名或密码错误'})
+
+		@app.route('/index/')
+		def index():
+			user = session.get('user')
+			if not user:
+				return redirect('/login')
+			return render_template('index.html')
+
+		if __name__ == '__main__':
+			app.run()
+
+六 Flask配置文件
+	flask中的配置文件是一个flask.config.Config对象（继承字典）,默认配置为：
+    {
+        'DEBUG':                                get_debug_flag(default=False),  是否开启Debug模式
+        'TESTING':                              False,                          是否开启测试模式
+        'PROPAGATE_EXCEPTIONS':                 None,                          
+        'PRESERVE_CONTEXT_ON_EXCEPTION':        None,
+        'SECRET_KEY':                           None,
+        'PERMANENT_SESSION_LIFETIME':           timedelta(days=31),
+        'USE_X_SENDFILE':                       False,
+        'LOGGER_NAME':                          None,
+        'LOGGER_HANDLER_POLICY':               'always',
+        'SERVER_NAME':                          None,
+        'APPLICATION_ROOT':                     None,
+        'SESSION_COOKIE_NAME':                  'session',
+        'SESSION_COOKIE_DOMAIN':                None,
+        'SESSION_COOKIE_PATH':                  None,
+        'SESSION_COOKIE_HTTPONLY':              True,
+        'SESSION_COOKIE_SECURE':                False,
+        'SESSION_REFRESH_EACH_REQUEST':         True,
+        'MAX_CONTENT_LENGTH':                   None,
+        'SEND_FILE_MAX_AGE_DEFAULT':            timedelta(hours=12),
+        'TRAP_BAD_REQUEST_ERRORS':              False,
+        'TRAP_HTTP_EXCEPTIONS':                 False,
+        'EXPLAIN_TEMPLATE_LOADING':             False,
+        'PREFERRED_URL_SCHEME':                 'http',
+        'JSON_AS_ASCII':                        True,
+        'JSON_SORT_KEYS':                       True,
+        'JSONIFY_PRETTYPRINT_REGULAR':          True,
+        'JSONIFY_MIMETYPE':                     'application/json',
+        'TEMPLATES_AUTO_RELOAD':                None,
+	}
+	
+	方式一：
+    app.config['DEBUG'] = True
+ 
+    PS： 由于Config对象本质上是字典，所以还可以使用app.config.update(...)
+	
+	方式二：
+	 app.config.from_object("python类或类的路径")
+	 
+	  settings.py
+ 
+            class Config(object):
+                DEBUG = False
+                TESTING = False
+                DATABASE_URI = 'sqlite://:memory:'
+ 
+            class ProductionConfig(Config):
+                DATABASE_URI = 'mysql://user@localhost/foo'
+ 
+            class DevelopmentConfig(Config):
+                DEBUG = True
+ 
+            class TestingConfig(Config):
+                TESTING = True
+ 
+    PS: 从sys.path中已经存在路径开始写  
+    PS: settings.py文件默认路径要放在程序root_path目录，如果instance_relative_config为True，则就是instance_path目录
+	
+七 请求和响应
+
+
+    from flask import Flask
+    from flask import request
+    from flask import render_template
+    from flask import redirect
+    from flask import make_response
+
+    app = Flask(__name__)
+
+
+    @app.route('/login.html', methods=['GET', "POST"])
+    def login():
+
+    # 请求相关信息
+        # request.method
+        # request.args
+        # request.form
+        # request.values
+        # request.cookies
+        # request.headers
+        # request.path
+        # request.full_path
+        # request.script_root
+        # request.url
+        # request.base_url
+        # request.url_root
+        # request.host_url
+        # request.host
+        # request.files
+        # obj = request.files['the_file_name']
+        # obj.save('/var/www/uploads/' + secure_filename(f.filename))
+
+   # 响应相关信息
+        # return "字符串"
+        # return render_template('html模板路径',**{})
+        # return redirect('/index.html')
+
+		
+        # response = make_response(render_template('index.html'))
+        # response是flask.wrappers.Response类型
+        # response.delete_cookie('key')
+        # response.set_cookie('key', 'value')
+        # response.headers['X-Something'] = 'A value'
+        # return response
+
+
+八 模板
+	1、模板的使用
+	Flask使用的是Jinja2模板，所以其语法和Django无差别
+
+	2、自定义模板方法
+	Flask中自定义模板方法的方式和Bottle相似，创建一个函数并通过参数的形式传入render_template，如：
+	
+		from flask import Flask,url_for,request,redirect,render_template,jsonify,make_response,Markup
+		from urllib.parse import urlencode,quote,unquote
+		app = Flask(__name__)
+
+		def test(a1,a2):
+			return a1+a2
+
+		@app.template_global()
+		def sb(a1,a2):
+			return a1 + a2 + 100
+
+
+		@app.template_filter()
+		def db(a1, a2, a3):
+			return a1 + a2 + a3
+
+
+		@app.route('/index',endpoint='xx')
+		def index():
+			v1 = "字符串"
+			v2 = [11,22,33]
+			v3 = {'k1':'v1','k2':'v2'}
+			v4 = Markup("<input type='text' />")
+			return render_template('index.html',v1=v1,v2=v2,v3=v3,v4=v4,test=test)
+
+
+		if __name__ == '__main__':
+			# app.__call__
+			app.run()
+		
+	layout.html
+		<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<title>Title</title>
+		</head>
+		<body>
+			<h1>模板</h1>
+			{%block body %} {%endblock%}
+
+		</body>
+		</html>
+	
+	index.html
+		{% extends 'layout.html'%}
+
+		{%block body %}
+			{{v1}}
+
+			<ul>
+				{% for item in v2 %}
+				<li>{{item}}</li>
+				{% endfor %}
+			</ul>
+			{{v2.1}}
+
+			<ul>
+				{% for k,v in v3.items() %}
+				<li>{{k}}  {{v}}</li>
+				{% endfor %}
+			</ul>
+			{{v3.k1}}
+			{{v3.get('k1')}}
+
+			{{v4}}
+			<!--{{v4|safe}}-->
+
+			<h1>{{test(1,19)}}</h1>
+
+			{{sb(1,2)}}
+
+			{{ 1|db(2,3)}}
+
+
+			{% macro xxxx(name, type='text', value='') %}
+				<input type="{{ type }}" name="{{ name }}" value="{{ value }}">
+				<input type="{{ type }}" name="{{ name }}" value="{{ value }}">
+				<input type="{{ type }}" name="{{ name }}" value="{{ value }}">
+				<input type="{{ type }}" name="{{ name }}" value="{{ value }}">
+			{% endmacro %}
+
+			{{ xxxx('n1') }}
+
+
+		{%endblock%}
+	
+		
+	
+	
+	
+九 session
+	当请求刚到来时：Flask会读取cookie中session对应的值。 将这个值解密并反序列化成字典放入内存以便视图函数使用
+	视图函数：
+		@app.route('/ses')
+		def ses():
+			session['k1'] = 123
+			session['k2'] = 456
+			del session['k1']
+			
+			return session
+		
+	当请求结束时，Flask会读取内存中字典的值,进行序列化+加密，再写入到用户的cookie中
+	
+
+ 十 闪现
+	闪现是指在session中存储一个数据，读取时通过pop将数据移除
+	from flask import Flask,flash,get_flashed_messages
+	
+	@app.route('/page1')
+	def page1():
+		flash('临时数据存储', 'error')
+		flash('sdfsdfsdffsdf', 'error')
+		flash('asdfsdfsdfdsf', 'info')
+		
+		return "Session"
+	
+	@app.route('/page2')
+	def page2():
+		print(get_flashed_messages(category_filter=['error']))
+		return "Session"
+	
+		
+ 十一 中间件
+	
+	from flask import Flask, flash, redirect, render_template, request
+	app = Flask(__name__)
+	app.secret_key = 'some_secret'
+	 
+	@app.route('/')
+	def index1():
+		return render_template('index.html')
+	 
+	@app.route('/set')
+	def index2():
+		v = request.args.get('p')
+		flash(v)
+		return 'ok'
+	 
+	class MiddleWare:
+		def __init__(self,wsgi_app):
+			self.wsgi_app = wsgi_app
+	 
+		def __call__(self, *args, **kwargs):
+			#  在call方法执行之前加入其它功能，实现类似中间件的功能
+			return self.wsgi_app(*args, **kwargs)
+	 
+	if __name__ == "__main__":
+		app.wsgi_app = MiddleWare(app.wsgi_app)
+		app.run(port=9999)
+		
+		
+ 十二 特殊装饰器
+	 - before_firset_request                  
+	 - before_request
+	 - after_request
+	 - template_global()
+	 - template_filter()
+	 - errorhandler (404)
+	 
+	 
+ 十三 蓝图
+	结构：
+		Mycrm
+			crm
+				static
+				template
+					login.html
+				views
+					account.py
+					order.py
+				models.py
+				__init__.py
+			manage.py
+			settings.py
+	
+	account.py
+		from flask import Blueprint,render_template
+		account = Blueprint('account',__name__,)
+
+		@account.route('/login')
+		def login():
+			# return 'Login'
+			return render_template('login.html')
+	
+	order.py
+		from flask import Blueprint
+
+		order = Blueprint('order',__name__)
+		@order.route('/order')
+		def login():
+			return 'Order'
+	
+	__init__.py
+		from flask import Flask
+		from .views import account
+		from .views import order
+
+		app = Flask(__name__)
+		print(app.root_path)
+		app.register_blueprint(account.account)
+		app.register_blueprint(order.order)
+	
+	manage.py
+		import mycrm
+		if __name__ == '__main__'
+			mycrm.app.runn()
+	
+  十四 上下文管理
+	请求到来时：
+		ctx = RequestContext(self, environ) # self是app对象, environ请求相关的原始数据
+		ctx.request = Request(environ)
+		ctx.session = None
+		
+		将包含了request/session的ctx对象放到‘特殊的地方’
+	
+	视图函数：
+		from flask import request,session
+		request.method
+		根据当前线程取到ctx对象, 再去ctx取到request，最后在request取到method
+		
+	请求结束：
+		根据当前线程的唯一标记，将‘特殊位置’上的数据移除
+			
+	
+十五 flask-sqlalchemy
+		1 下载安装
+			pip3 install flask-sqlalchemy
+		
+		2 crm.__init__.py
+			导入并实例化SQLAlchemy 
+			from flask_sqlalchemy import SQLAlchemy
+			db = SQLAlchemy()
+			注意事项：
+				- 必须在导入蓝图的上边
+				- 必须导入models.py
+		3 初始化
+			db.init_app(app)
+			
+		4 早配置文件中写入配置
+			SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:123456@127.0.0.1:3306/databasename?charset=utf8"
+			SQLALCHEMY_POOL_SIZE = 10
+			SQLALCHEMY_MAX_OVERFLOW = 5
+		
+		5 创建models.py中的类(对应数据库的表)
+			from sqlalchemy.ext.declarative import declarative_base
+			from sqlalchemy import Column
+			from sqlalchemy import Integer,String,Text,Date,DateTime
+			from sqlallchemy import create_engine
+			from crm import db
+			
+			class Users(db.model):
+				__tablename__ = 'users'
+				id = Column(Integer, primary_key=True)
+				name = Column(String(32), index=True, nullable=False)
+				depart_id = Column(Integer)
+		
+		6 生成表(使用app上下文) createtale.py
+			from crm import db,create_app		
+			app = create_app()
+			app_ctx = app.app_context() # app_ctx = app/g
+			with app_ctx: # __enter__,通过LocalStack放入Local中
+				db.create_all()
+				
+		7 基于sqlalchemy生成数据
+			
+			def index():
+				db.session.add(models.User(name='harry', depart_id=1))
+				db.session.commit()
+				db.session.remove()
+			
+
+十六 flask-script
+	安装：pip3 install flask-script
+	功能：
+		1 增加 runserver
+			from crm import create_app
+			from flask_script import Manager
+			
+			app = create_app()
+			manager = Manager(app)
+			
+			if __name__ == '__main__':
+				manager.run()
+				
+		2 位置传参
+			from crm import create_app
+			from flask_script import Manager
+			
+		    app = create_app()
+			manager = Manager(app)
+			
+			@manager.command
+			def custom(arg):
+				'''
+				自定义命令
+				python manag.py custom 123
+				'''
+				print(arg)
+				
+				if __name__ == '__main__':
+					manager.run()
+					
+		3 关键字传参
+			from crm import create_app
+			from flask_script import Manager
+			
+		    app = create_app()
+			manager = Manager(app)
+			
+			@manager.option('-n', '--name', dest='name')
+			@manager.option('-u', '--url', dest='url')
+			def cmd(name, password):
+				'''
+				自定义命令
+				执行 python manag.py cmd -n harry -u 123123
+				'''
+				print(name,password)
+				
+				
+				if __name__ == '__main__':
+					manager.run()
+
+十七 flask-migrate
+		安装： pip3  install flask-migrate
+		依赖：flask-script
+		
+		from flask_script import Manager
+		from flask_migrate import Migrate, MigrateCommand
+		
+		app = create_app()
+		manager = Manager(app)
+		Migrate(app, db)
+		
+		'''
+		数据库迁移命令
+			python manage.py db  init_app
+			python manage.py db  migrate 
+			python manage.py db  upgrate
+		'''
+		
+		manager.add_command('db', MigrateCommand)
+		if __name__ == '__main__':
+			manager.run()
+
+十八 找到项目中所使用组件和版本
+		pip install pipreqs
+		
+		pipreqs ./  --encoding=utf-8             找当前文件所依赖的组件
+
+十九 虚拟环境
+		pip3 install virtualenv
+		
+		virtualenv  env1  --no-site-packages         创建一个虚拟环境
+		
+		activate									 激活功能
+		deactive									 退出
+		
+		
+		

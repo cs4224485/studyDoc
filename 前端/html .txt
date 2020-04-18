@@ -1,0 +1,240 @@
+HTML基础
+
+一 什么是HTML
+
+HTML，全称是超文本标记语言（HyperText Markup Language），它是一种用于创建网页的标记语言。标记语言是一种将文本（Text）以及文本相关的其他信息结合起来，展现出关于文档结构和数据处理细节的计算机文字编码。
+与文本相关的其他信息（包括例如文本的结构和表示信息等）与原来的文本结合在一起，但是使用标记（markup）进行标识。
+
+二 HTML文档结构
+
+一个HTML文档有一个固定树形结构
+	<!DOCTYPE HTML>  声明一个HTML文件 必须写在html文档第一行
+
+	<html>				      根标签所有的网页都在<html></html>中
+		<head>...</head>	  标签用于定义文档的头部，他说所有头部元素的容器，常见的头部元素
+		<body>...</body>	  标签直接的内容是网页的主要内容 如<h1>,<p>,<a>,<img>
+	</heml>
+
+三 head标签详解
+
+ 1 <meta>标签
+	   meta标签的组成：
+			meta标签共有两个属性，他们分别是http-equiv属性和name属性，不同的属性又有不同的参数值，这些不同的参数就实现了不同的网页功能
+	   (1):name属性主要用于描述网页，与之对应的属性值为content，content中的内容主要是便于搜索引擎机器人查找信息和分类信息用
+			   <meta name="keywords" content="mete总结，html meta，meta属性，meta跳转">
+			   <meta name="description" content="csdfss ">               
+	   (2): http-euiv,相当于http的文件头作用，它可以向浏览器传回一些有用的信息， 以帮助正确和精确显示网页内容，与之对应的属性值为content
+			   <meta http-euiv="Refresh" content="2;url=https://www.baidu.com"   实现URl跳转，2秒后跳转到百度
+			   <meta http-euiv="conten-type" charset=UTF8">						 指定文档内容类型和编码类型
+			   <mate http-quiv="x-ua-compatible" content="IE=edge">			     告诉IE浏览器一最高级模式渲染当前页面
+ 2 <title>标签
+	<title>Cai</title>             
+	<title>标签可以用于定义浏览器在标签栏页面标记所显示的内容
+	
+ 3 其他标签
+	<link rel="icon" href="http://www.jd.com/favicon.ico">             title上的图标
+	<link rel="stylesheet" type="text/css" href="./index.css">         链接css文件
+	<scripy src="./index.js"</script>                                  链接js
+	
+	
+四 body标签详解
+	1 body标签三种类型：
+	   (1)块级元素，  独占一行，可设宽高，如果不设置宽高，默认是浏览器宽度   常用标签：<div> <p> <h1>~<h6> <ol> <ul> <table> <form> <li>
+	   (2)行内元素，  在一行内展示不能设置宽高  他的宽高根据内容填充		 常用行内标签：<a> <span> <br> <i> <em> <strong> <label>
+	   (3)行内块元素，在一行内展示 可设宽高							         常用行内块标签：<img> <input>
+	2 body常用标签
+	   (1) 标题标签H1-H6
+			<h1> - <h6> 标签可定义标题。<h1> 定义最大的标题。<h6> 定义最小的标题。 
+			由于 h 元素拥有确切的语义，因此请慎重地选择恰当的标签层级来构建文档的结构。
+			因此，请不要利用标题标签来改变同一行中的字体大小。
+			相反，我们应当使用css来定义来达到漂亮的显示效果。 标题标签通常用来制作文章或网站的标题。
+	   (2) 段落标签<P>
+			段落标签是用来定义一个段落它的特定有：
+				① 根普通文本一样,但我们可以通过css来设置当前段落样式
+				② 它是一个块级元素可以独占一行
+	   (3) 超链接标签<a>
+		   超级链接<a>标记代表一个链接点，是英文anchor（锚点）的简写。
+		   它的作用是把当前位置的文本或图片连接到其他的页面、文本或图像
+		   <a href="http://www.baidu.com" target="_blank" title="百度">百度</a>
+           <a href="a.zip">下载包</a>
+           <a href="mailto:zhaoxu@tedu.cn">联系我们</a>
+		   target:_blank 在新的网站打开链接的资源地址 target：_self 在当前网站打开链接的资源地址 title: 表示鼠标悬停时显示的标题
+	3 列表标签ul,ol
+		网站页面上一些列表相关的内容比如说物品列表、人名列表等等都可以使用列表标签来展示。通常后面跟<li>标签一起用，每条li表示列表的内容
+		<ul>:unordered lists的缩写 无序列表 <ol>:ordered listsde的缩写 有序列表
+		<!--无序列表-->
+        <ul>
+            <li>我的账户</li>
+            <li>我的订单</li>
+            <li>我的优惠券</li>
+            <li>我的收藏</li>
+            <li>退出</li>
+        </ul>
+
+		<!--有序列表-->
+        <ol>
+            <li>我的账户</li>
+            <li>我的订单</li>
+            <li>我的优惠券</li>
+            <li>我的收藏</li>
+            <li>退出</li>
+        </ol>
+	
+	4 盒子标签<div>
+		<div>可定义文档的分区 division的缩写 
+		<div> 标签可以把文档分割为独立的、不同的部分。
+		HTML <div> 元素是块级元素，它是可用于组合其他 HTML 元素的容器。
+		<div> 元素没有特定的含义。除此之外，由于它属于块级元素，浏览器会在其前后显示折行。
+		如果与 CSS 一同使用，<div> 元素可用于对大的内容块设置样式属性。
+		
+		<!--图片标签-->
+        <div class="image">
+            <img src="../css/5.jpg" alt="失败" title="测试照片">
+        </div>
+
+        <!--展示两张图片独占一行，鼠标以上去显示小手的状态    -->
+        <div class="picture">
+            <div><a href="#"><img src="../jQuery/4(1).jpg"></a></div>
+            <div><a href="#"><img src="../css/5.jpg"></a></div>
+
+        </div>
+	
+	5 图片标签 <img/>
+		一个网页除了有文字，还会有图片。我们使用<img/>标签在网页中插入图片。
+		语法：<img src="图片地址" alt="图片加载失败时显示的内容" title = "提示信息" />
+		注意：
+			(1) src设置的图片地址可以是本地的地址也可以是一个网络地址。
+		    (2) 图片的格式可以是png、jpg和gif。
+			(3) alt属性的值会在图片加载失败时显示在网页上。
+			(4) 还可以为图片设置宽度(width)和高度(height)，不设置就显示图片默认的宽度和高度
+				 <div>
+					 <span>与行内元素展示的标签<span>
+					 <span>与行内元素展示的标签<span>
+					 <img src="./machine-right.png" alt="金融量化分析" style="width:200px;height:200px">
+					 <img src="./finance-right.png" alt="人工智能实战"  style="width: 200px;height: 200px">
+				 </div>
+			(5) 浏览器查看效果：行内块元素
+			(6) 与行内元素在一行内显示
+			(7) 可以设置宽度和高度
+			(8) span标签可以单独摘出某块内容，结合css设置相应的样式
+	
+	6 表格标签<table>
+		表格由<table> 标签来定义。每个表格均有若干行（由 <tr> 标签定义），每行被分割为若干单元格（由<td>标签定义）。
+		字母 td 指表格数据（table data），即数据单元格的内容。
+		数据单元格可以包含文本、图片、列表、段落、表单、水平线、表格等等
+		表格行和列的合并
+			rowspan 合并行(竖着合并)
+			colspan 合并列(横着合并)
+		<div class="table">
+            <table border="1" cellspacing="0" >
+				<caption>课程表</caption>  
+                <!--表格头-->
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>星期一</th>
+                        <th>星期二</th>
+                        <th>星期三</th>
+                        <th>星期四</th>
+                        <th>星期五</th>
+                    </tr>
+                </thead>
+
+                <!--表主体-->
+                <tbody>
+
+                    <!--表格主体的每一行-->
+                    <tr>
+                        <td rowspan="2">上午</td>
+                        <td>语文</td>
+                        <td>数学</td>
+                        <td>生物</td>
+                        <td>化学</td>
+                        <td>英语</td>
+                    </tr>
+                    <tr>
+
+                        <td>语文</td>
+                        <td>数学</td>
+                        <td>生物</td>
+                        <td>化学</td>
+                        <td>英语</td>
+                    </tr>
+                    <tr>
+                         <td rowspan="2">下午</td>
+                        <td>语文</td>
+                        <td>数学</td>
+                        <td>生物</td>
+                        <td>化学</td>
+                        <td>英语</td>
+                    </tr>
+                    <tr>
+                        <td>语文</td>
+                        <td>数学</td>
+                        <td>生物</td>
+                        <td>化学</td>
+                        <td>英语</td>
+                    </tr>
+                    <tr>
+
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="6">课程表</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+		
+
+
+    7 form表单标签
+	   表单是一个包含表单元素的区域
+       表单元素是允许用户在表单中输入内容，比如：文本域(textarea)、输入框(input)、单选框（）
+	   表单用于向服务器传输数据
+	   <form  action="127.0.0.1:8080/index" method="get"> 
+			<!--文本框-->
+				<p>姓名：<input type:"text" name="username"></p>
+				<p>姓名：<input type:"password" name="pwd"></p>
+				<p>性别：<input type:"text"></p>
+			 <!-- 按钮 -->
+			    <input type="submit" name="btnsbt" value="提交">
+                <input type="reset" name="btnrst" value="重置">
+                <input type="button" name="btnbtn" value="普通按钮">
+			<!--复选框-->
+				<p>爱好：足球 <input type:"checkbox" name="hobby" value='football' "></p>
+				<p>篮球 <input type:"checkbox" name="hobby" value="102"></p>
+			<!--单选框-->
+				<p>男 <input type:"radion" name ="sex" value="男"></p>
+				<p>女 <input type:"radion" name ="sex" value="女"></p>
+		    <!--文件选择框-->
+			     <p><input type:"file" name='file_name'></p>
+		</form>
+
+		select标签
+			<select name="city">
+				<optgroup label="河北省">
+					<option value="shijiazhuang">石家庄</option>
+					<option value="langfang">廊坊</option>
+				</optgroup>
+			<!--下拉列表-->
+				<option value="beijing">北京</option>
+				<option value="tianjing">天津</option>
+				<option value="shanghai">上海</option>
+			</select>
+	
+五 body的其他标签
+	1 `<b></b>`：加粗
+	2 `<i></i>`：斜体
+	3 `<u></u>`：下划线
+	4 `<s></s>`：删除线
+	5 `<sup></sup>`：上标 
+	6 `<sub></sub>`：下标
+	7 `<em>`或`<strong>`标签: 加强显示。
+	8 <br>换行
+
+			
+
+		
+	 

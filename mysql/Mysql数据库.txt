@@ -1,0 +1,546 @@
+﻿一 什么是数据库
+	一般来说，所有的数据都要存储在硬盘中，为了方便对这些数据的管理因此就出现了例如MySQL SQLserver oracle等数据库管理软件。
+	数据库中的数据按一定的数据模型组织、描述和储存，具有较小的冗余度、较高的数据独立性和易扩展性，并可为各种用户共享
+	数据库管理系统:
+		表：student,scholl,class_list（即文件）
+		数据库：student_db（即文件夹）
+		数据库管理系统：如mysql（是一个软件）
+		数据库服务器：一台计算机（对内存要求比较高）
+		
+二 Mysql的安装和基本管理
+	1 Linux版本安装
+		#二进制rpm包安装
+		yum -y install mysql-server mysql
+		源码安装见：http://www.cnblogs.com/linhaifeng/articles/7126847.html
+		
+	2 Window版本安装
+		#1、下载：MySQL Community Server 5.7.16
+		http://dev.mysql.com/downloads/mysql/
+		#2、解压
+		如果想要让MySQL安装在指定目录，那么就将解压后的文件夹移动到指定目录，如：C:\mysql-5.7.16-winx64
+		#3、添加环境变量
+		【右键计算机】--》【属性】--》【高级系统设置】--》【高级】--》【环境变量】--》【在第二个内容框中找到 变量名为Path 的一行，双击】 --> 【将MySQL的bin目录路径追加到变值值中，用 ； 分割】
+		#4、初始化
+		mysqld --initialize-insecure
+		#5、启动MySQL服务
+		mysqld # 启动MySQL服务
+		#6、启动MySQL客户端并连接MySQL服务
+		mysql -u root -p # 连接MySQL服务器
+		
+	3 登录设置用户名密码
+		初始状态下，管理员root，密码为空，默认只允许从本机登录localhost
+		设置密码
+		[root@egon ~]# mysqladmin -uroot password "123"        设置初始密码 由于原密码为空，因此-p可以不用
+		[root@egon ~]# mysqladmin -uroot -p"123" password "456"        修改mysql密码,因为已经有密码了，所以必须输入原密码才能设置新密码
+
+		命令格式:
+		[root@egon ~]# mysql -h172.31.0.2 -uroot -p456
+		[root@egon ~]# mysql -uroot -p
+		[root@egon ~]# mysql                    以root用户登录本机，密码为空
+	
+	4 同一字符管理
+		#在mysql的解压目录下，新建my.ini,然后配置
+		#1. 在执行mysqld命令时，下列配置会生效，即mysql服务启动时生效
+		[mysqld]
+		;skip-grant-tables
+		port=3306
+		character-set-server=utf8
+		default-storage-engine=innodb
+		innodb_file_per_table=1
+
+		#解压的目录
+		basedir=E:\mysql-5.7.19-winx64
+		#data目录
+		datadir=E:\my_data #在mysqld --initialize时，就会将初始数据存入此处指定的目录，在初始化之后，启动mysql时，就会去这个目录里找数据
+
+		#2. 针对客户端命令的全局配置，当mysql客户端命令执行时，下列配置生效
+		[client]
+		port=3306
+		default-character-set=utf8
+		user=root
+		password=123
+
+		#3. 只针对mysql这个客户端的配置，2中的是全局配置，而此处的则是只针对mysql这个命令的局部配置
+		[mysql]
+		;port=3306
+		;default-character-set=utf8
+		user=egon
+		password=4573
+
+		#！！！如果没有[mysql],则用户在执行mysql命令时的配置以[client]为准
+		统一字符编码
+
+		修改配置文件
+		[mysqld]
+		default-character-set=utf8 
+		[client]
+		default-character-set=utf8 
+		[mysql]
+		default-character-set=utf8
+
+		#mysql5.5以上：修改方式有所改动
+		[mysqld]
+		character-set-server=utf8
+		collation-server=utf8_general_ci
+		[client]
+		default-character-set=utf8
+		[mysql]
+		default-character-set=utf8
+
+		#2. 重启服务
+		#3. 查看修改结果：
+		\s
+		show variables like '%char%'
+		
+三 SQL语句
+
+	SQL语言主要用于存取数据、查询数据、更新数据和管理关系数据库系统,SQL语言由IBM开发。SQL语言分为3种类型：
+		(1)DDL语句    数据库定义语言： 数据库、表、视图、索引、存储过程，例如CREATE DROP ALTER
+
+		(2)DML语句    数据库操纵语言： 插入数据INSERT、删除数据DELETE、更新数据UPDATE、查询数据SELECT
+
+		(3)DCL语句    数据库控制语言： 例如控制用户的访问权限GRANT、REVOKE	
+
+	数据库导入导出命令
+    mysqldump -uroot -p666 dbname > 1.sql
+    mysqldump -uroot -p666 dbname < 1.sql
+	
+	1 数据库级别
+		增
+			create database 数据库名称；
+			create database 数据库名称 default charset utf8 cpllate utf8_general_ci;
+			use 数据库名称
+		查
+			show databases；
+			show create databases 数据库名称
+		改
+			alter database 数据库名称 charset gbk
+
+		删
+			drop database 数据库名称
+
+	2 表级表
+		show tables；
+		desc tb1；
+		创建示例: create table tb1(nid int notnull auto_increment primary kay,
+								  num int default 10);
+		指定表的存储引擎：
+			create table t1 (id int) engine = innodb;
+
+		a  默认值：default VALUE
+		b  是否可以为空： not null or null
+		c  自增列：一张表只能有一个并且不行是索引-主键  auto_increment
+		d  主键索引： 一张表只能有一个主键，唯一不能重复，不能为null,一般情况下，自增列设置为主键，可以多列组成主键
+		   唯一键： 可以为null，一张表可以有多个
+		e  外键foreign key， 一对多
+
+		直接删除表： drop table tb1
+		清空表内容： delete from tb1
+		清空表内突（清空速度快，自增回到起点）：truncate table tb1
+		查看表内容：select * from tb1
+		增加一个外键约束： alter table userinfo add constraint fk_u_p foreign key userinfo(part_nid) references part(nid);
+		增加列： alter table 表名 add 列名 类型
+		在某一列后面 插入 alter table TABLE_NAME add column NEW_COLUMN_NAME varchar(20) not null after COLUMN_NAME;
+		删除列： alter table 表名 drop column 列名
+		修改列： alter table 表名  MODIFY  字段名 数据类型 ；
+				 alter table 表名CHANGE 旧字段名 新字段名 旧数据类型|新数据类型；
+				 ALTER TABLE tablename CHANGE oldname newname varchar(10) ;
+		添加主键： alter table 表名 add primary key（列名）；
+		删除主键： alter table 表名 drop primary key；
+				   alter table 表名 modify 列名 int， drop primary kay；
+		添加外键： alter table 从表 add constraint 外键名称（形如: Fk_从表_主表） foreign key 从表（外键字段） references 主表（主表字段）
+		删除外键： alter table 表名 drop foreign key 外键名称;
+		修改默认值： alter table testalter_tb1 alter i set default 1000;
+		删除默认值： alter table testalter_tb1 alter i drop default;
+		外键创建时添加 on delete cascade 可以删除关联表内容
+			crate table emp（
+				id int primary key，
+				name char（10），
+				dep int，
+				foreign key（dep_id) references dep(id) on delete cascade on update cascade
+				);
+
+		复制表：
+			create table t1 select host,user from mysql.user;
+			如果只复制表结构不复制表数据只需在select 后面where 一个不存在的条件
+
+		查看和设置auto_increment
+			show variables like 'auto_inc%';
+			步长
+			auto_increment_increment 默认为1
+			起始偏移量
+			auto_increment_offset 默认为1
+			设置步长
+			set session auto_increment_increment=5;
+			set global auto_increment_increment=5
+			设置起始偏移量
+
+		表之间的关系：
+			1 多对一
+			2 多对多
+			3 一对一
+
+	3 数据行级别
+		select * from tb1;
+		# 增
+		   insert into tb1(name,age) values ('alex', 18);
+		   insert into tb1(name,age) values ('alex', 18)，（harry,20);
+		   insert into tb1(name,age) select caption,gender from tb2 插入另一张表的值
+		# 删
+		   delete from tab1 where id=1 and name='alex';
+		# 改
+		   update tb1 set name='alex' where id>1
+		# 查
+		   select * from tb1
+		   select * from tb1 where id>1
+		   select nid,name,gender as gg from tb1 where id > 1
+		# 其他
+		   a 条件
+			  select * from tb1 where id>1 and name != 'alex' and num=12;
+			  select * from tb1 id between 5 and 16;
+			  select * from tb1 where id in (11,22,33);
+			  select * from tb1 where id not in (11,22,33);
+			  select * from tb1 where id in (select nid from 表）
+
+		   b 通配符
+			  select * from tb1 where name like 'ale%' - ale开头的所有（多个字符）
+			  select * from tb1 where name like
+
+		   c 限制
+			  select * from tb1 limit 5;                    前5行
+			  select * from tb1 limit 4,5;                  从第4行开始，向后取5行
+			  select * from tb1 limit 5 offset 4            从第4行开始，向后取5行
+
+		   d 排序
+			  select * from tb1 order by nid asc              顺序，根据列从小到大排列
+			  select * from tb1 order by nid desc             倒序，根据列从大到小排列
+			  select * from tb1 order by nid desc，name asc   根据'列1'从大到小排列，如果相同则按列2从小到大排列
+
+		   e 分组
+			  select num from tb1 group by num
+			  select num,nid from tb1 group by num,nid
+			  select num,nid from tb1 where nid > 10 group by num,nid
+			  select num,nid,count(*),sum（score),max(score),min(score) from tb1  group by num,nid
+			  select num from tb1 group by num having max(id) > 10
+			  特别的：group by 必须在where之后，order by 之前
+
+		   f 连表操作
+			  无对应关系则不显示
+			  select A.num, A.name, B.NAME
+			  from A,B
+			  Where A.nid = B.nid
+
+			  无对应关系则不显示
+			  select A.num, A.name, B.name
+			  from A inner join B
+			  on A.nid = B.nid
+
+			  A表所有显示，如果B表中无对应关系，赋值为null
+			  select A.num, A.name, B.name
+			  from A left join B
+			  on A.nid = B.nid
+
+			 B表所有显示，如果A表中无对应关系，赋值为null
+			   select A.num, A.name, B.name
+			   from A right join B
+			   on A.nid = B.nid
+
+四 Mysql的数据类型
+	数值
+		bit(M)
+			二进制位（1001001），m表示二进制长度（1-64），默认m=1
+		tinyint（m） [unsigned] [zerofill]
+			小整数，数据类型用于保存一些范围的整数数值范围
+			有符号： -128 ~ 127
+			无符号： 0 ~ 255
+		smallint
+		int
+		bigint
+
+		decimal -- 精确的小数 精度最高
+		float      单精度 浮点数值
+		double     单精度浮点数值
+
+	字符串
+		char（m）         定长    create table  tb13（n char（7））    定长占7个字符     查找速度快，浪费空间
+		varchar （m）     变长    create table  tb13 (n varchar(7))   最多占7个字符     查找速度相对慢，节省空间
+		text              文本
+		mediumtext
+		longtext
+		查看字符长度: select char_length(name) from tb13
+	二进制数据
+		TinyBlob Blob  MediumBlob  LongBlob
+
+	时间
+		DATA
+			YYYY-MM-DD (1000-01-01/9999-12-31)
+		TIME
+			HH:MM:SS
+		YEAR
+			YYYY
+		DTATTIME
+			YYYY-MM-DD  HH:MM:SS
+		TIMESTRAMP
+			YYYYMMDD HHMMSS
+
+	enum
+		枚举类型
+		示例：
+			create table shirts(
+				name varchar(40),
+				size ENUM('x-small', 'small', 'medium', 'large', 'x-large')
+				);
+			insert into shirts (name,size) values ('dress shirt', 'large')
+
+	set
+		集合类型
+		示例：
+			create table myset (col set('a','b','c','d');
+			insert into myset (col) values ('a,d')
+
+	set和enum的区别在于，set可以进行多选
+			   
+			   
+五 存储引擎介绍
+	1 什么是存储引擎
+		数据库中的表也有不同的类型，表的类型不同，会对应mysql不同的存取机制，表类型又称为存储引擎。
+		存储引擎说白了就是如何存储数据、如何为存储的数据建立索引和如何更新、查询数据等技术的实现方
+		法。因为在关系数据库中数据的存储是以表的形式存储的，所以存储引擎也可以称为表类型（即存储和
+		
+	2 mysql支持的存储引擎
+		(1) innodb:目前mysql表创建默认的引擎，特点是支持事务，
+		(2) MyISAM存储引擎:不支持事务、表锁设计、支持全文索引,主要面向一些 OLAP 数 据库应用,在 MySQL 5.5.8 版本之前是默认的存储引擎(除 Windows 版本)
+		(3) Memory存储引擎:正如其名,Memory 存储引擎中的数据都存放在内存中,数据库重 启或发生崩溃,表中的数据都将消失。
+		(4) BLACKHOLE:黑洞存储引擎，可以应用于主备复制中的分发主库。
+		
+六 完整性约束
+	1 简介
+		完整性约束主要分为：
+			PRIMARY KEY (PK)    标识该字段为该表的主键，可以唯一的标识记录
+			FOREIGN KEY (FK)    标识该字段为该表的外键
+			NOT NULL            标识该字段不能为空
+			UNIQUE KEY (UK)     标识该字段的值是唯一的
+			AUTO_INCREMENT      标识该字段的值自动增长（整数类型，而且为主键）
+			DEFAULT             为该字段设置默认值
+			
+			UNSIGNED 无符号
+			ZEROFILL 使用0填充
+	2 not null与default
+		not null 表示不能为空
+		default表示在创建一张表给表中的某个字段一个默认值
+			create table tb1(
+			nid int not null defalut 2,
+			num int not null
+			)
+	
+	3 unique唯一键约束
+		唯一键中的值在表中必须唯一
+	  ============设置唯一约束 UNIQUE===============
+			方法一：
+			create table department1(
+			id int,
+			name varchar(20) unique,
+			comment varchar(100)
+			);
+
+
+			方法二：
+			create table department2(
+			id int,
+			name varchar(20),
+			comment varchar(100),
+			constraint uk_name unique(name)
+			);
+			
+	4 primary key
+		primay key 字段的值不为空且唯一
+		一个表中可以：
+			单列做主键
+			多列做主键(复合主键)
+			
+		============单列做主键===============
+			#方法一：not null+unique
+			create table department1(
+			id int not null unique, #主键
+			name varchar(20) not null unique,
+			comment varchar(100)
+			);
+			
+			#方法二：在某一个字段后用primary key
+			create table department2(
+			id int primary key, #主键
+			name varchar(20),
+			comment varchar(100)
+			);
+			
+			#方法三：在所有字段后单独定义primary key
+			create table department3(
+			id int,
+			name varchar(20),
+			comment varchar(100),
+			constraint pk_name primary key(id); #创建主键并为其命名pk_name
+	
+	5 foreign key 
+	  当一张表需要和另外一张表做关联时可以通过 foreign key进行约束
+	  
+	  创建表时添加一个外键示例
+		(1) 先创建一张部门表
+			create table department(
+				id int primary key,
+				name varchar(20) not null
+				)engine=innodb;
+			
+		(2) 创建员工表 dep_id字段与部门表的id进行关联
+			#dpt_id外键，关联父表（department主键id），同步更新，同步删除
+			create table employee(
+				id int primary key,
+				name varchar(20) not null,
+				dpt_id int,
+				constraint fk_name foreign key(dpt_id)
+				references department(id)
+				on delete cascade    同步删除
+				on update cascade    同步更新
+			)engine=innodb;
+	    (3) 往父级表和子表插入一些数据
+			insert into department values (1,'IT'),(2,'市场'),(3,'运维');
+			insert into employee values (1,'harry',1),(2,'sam',3),(3,'jerry',2),(4,'alex',1);
+		(4) 连表查询
+			MariaDB [testdb]> select * from employees inner join department on employees.dpt_id=department.id;
+				+----+-------+--------+----+--------+
+				| id | name  | dpt_id | id | name   |
+				+----+-------+--------+----+--------+
+				|  1 | harry |      1 |  1 | IT     |
+				|  2 | sam   |      3 |  3 | 运维   |
+				|  3 | jerry |      2 |  2 | 市场   |
+				|  4 | alex  |      1 |  1 | IT     |
+				+----+-------+--------+----+--------+
+		(5) 删除父表department, 子表employee中对应的记录跟着删	
+			MariaDB [testdb]> delete from department where id=3;
+			MariaDB [testdb]> select * from employees;
+				+----+-------+--------+
+				| id | name  | dpt_id |
+				+----+-------+--------+
+				|  1 | harry |      1 |
+				|  3 | jerry |      2 |
+				|  4 | alex  |      1 |
+				+----+-------+--------+
+				3 rows in set (0.00 sec)
+		
+七 多表之间建立关系	
+	1 如何找出两张表之间的关系
+		分析步骤：
+		#1、先站在左表的角度去找
+		是否左表的多条记录可以对应右表的一条记录，如果是，则证明左表的一个字段foreign key 右表一个字段（通常是id）
+
+		#2、再站在右表的角度去找
+		是否右表的多条记录可以对应左表的一条记录，如果是，则证明右表的一个字段foreign key 左表一个字段（通常是id）
+
+		#3、总结：
+		#多对一：
+		如果只有步骤1成立，则是左表多对一右表
+		如果只有步骤2成立，则是右表多对一左表
+
+		#多对多
+		如果步骤1和2同时成立，则证明这两张表时一个双向的多对一，即多对多,需要定义一个这两张表的关系表来专门存放二者的关系
+
+		#一对一:
+		如果1和2都不成立，而是左表的一条记录唯一对应右表的一条记录，反之亦然。这种情况很简单，就是在左表foreign key右表的基础上，将左表的外键字段设置成unique即可
+    2 建立表之间的关系
+		三张表：出版社,作者信息，书
+		一对多关系：一个出版社可以出版多本书
+		关联方式：foreign key
+		=====================多对一=====================
+			create table press(             # 建立出版社表
+			id int primary key auto_increment,
+			name varchar(20)
+			);
+			
+			create table book(
+			id int primary key auto_increment,
+			name varchar(20)
+			press_id int not null,
+			foreign key(press_id) references press(id)
+			on delete cascade
+			on update cascade
+			);
+			
+			insert into press(name) values
+			('北京工业地雷出版社'),
+			('人民音乐不好听出版社'),
+			('知识产权没有用出版社')
+			;
+			
+			insert into book(name,press_id) values
+			('九阳神功',1),
+			('九阴真经',2),
+			('九阴白骨爪',2),
+			('独孤九剑',3),
+			('降龙十巴掌',2),
+			('葵花宝典',3)
+			;
+			
+		=====================多对多=====================				
+			#多对多
+			三张表：出版社，作者信息，书
+			多对多：一个作者可以写多本书，一本书也可以有多个作者，双向的一对多，即多对多
+			关联方式：foreign key+一张新的表
+			
+			# 创建作者表
+			create table author(
+				id int primary key auto_increment,
+				name varchar(20)
+			);
+			
+			#这张表就存放作者表与书表的关系，即查询二者的关系查这表就可以了
+			create table author2book(
+				id int not null unique auto_increment,
+				author_id int not null,
+				book_id int not null,
+				constraint fk_author foreign key(author_id) references author(id)
+				on delete cascade
+				on update cascade,
+				constraint fk_book foreign key(book_id) references book(id)
+				on delete cascade
+				on update cascade,
+				primary key(author_id,book_id)
+			);
+			
+		=====================一对一=====================	
+			两张表：学生表和客户表
+			一对一：一个学生是一个客户，一个客户有可能变成一个学生，即一对一的关系
+			关联方式：foreign key+unique
+			#一定是student来foreign key表customer，这样就保证了：
+			#1 学生一定是一个客户，
+			#2 客户不一定是学生，但有可能成为一个学生
+				
+			create table customer(
+			id int primary key auto_increment,
+			name varchar(20) not null,
+			qq varchar(10) not null,
+			phone char(16) not null
+			);
+
+			create table student(
+			id int primary key auto_increment,
+			class_name varchar(20) not null,
+			customer_id int unique, #该字段一定要是唯一的
+			foreign key(customer_id) references customer(id) #外键的字段一定要保证unique
+			on delete cascade
+			on update cascade
+			);
+
+			#增加客户
+			insert into customer(name,qq,phone) values
+			('李飞机','31811231',13811341220),
+			('王大炮','123123123',15213146809),
+			('守榴弹','283818181',1867141331),
+			('吴坦克','283818181',1851143312),
+			('赢火箭','888818181',1861243314),
+			('战地雷','112312312',18811431230)
+			;
+
+			#增加学生
+			insert into student(class_name,customer_id) values
+			('脱产3班',3),
+			('周末19期',4),
+			('周末19期',5);

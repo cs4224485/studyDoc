@@ -1,0 +1,1039 @@
+一 什么是设计模式
+在软件设计中普遍存在(反复出现)的各种问题， 所提出的解决方案。每一个设计模式系统地命名,解释和平均面向对象系统中一个重要的和重复出现的设计
+
+二 复习面向对象
+面向对象的三大特性：
+	* 封装
+	* 继承
+	* 多态
+	
+接口：若干抽象方法的集合。
+作用：限制实现接口的类必须按照接口给定的调用方式实现这些方法； 对高层模块隐藏了类的内部实现
+
+例子：
+	'''
+	继承Payment的类必须包含pay方法
+	'''
+	class Payment:
+		def pay(self, money):
+			raise NotImplementedError
+
+
+	class Alipay(Payment):
+		def pay(self, money):
+			pass
+
+
+	class WechatPay(Payment):
+		def pay(self, money):
+			pass
+
+
+	p = Alipay()
+
+	p.pay(100)
+	def finish_pay(p_obj, money):
+	p_obj.pay(100)
+	
+抽象类：
+
+	from abc import ABCMeta, abstractmethod
+
+	class Payment(metaclass=ABCMeta):
+		@abstractmethod
+		def pay(self, money):
+			pass
+
+
+	class Alipay(Payment):
+		def pay(self, money):
+			pass
+
+
+	class WechatPay(Payment):
+		def pay(self, money):
+			pass
+
+
+	p = Alipay()
+
+	p.pay(100)
+
+
+	def finish_pay(p_obj, money):
+		p_obj.pay(100)
+		
+三 面向对象设计SOLID原则
+开发封闭原则：一个软件实体如类,模块和函数应该对扩展开放,对修改关闭。 即软件实体应尽量在不修改原有代码的情况下扩展
+里氏替换原则：所有引用父类的地方必须能透明地使用其子类的对象
+依赖倒置原则：高层模块不应该依赖底层模块， 二者都应该依赖其抽象；抽象不应该依赖细节; 细节应该依赖抽象。 换言之，要针对接口编程而不是针对实现编程。
+接口隔离原则：使用多个专门的接口,而不使用单一的总接口，即客户端(这里指调用该接口的人)不应该依赖那些它不需要的接口
+单一职责原则：不要存在多于一个导致类变更的原因。通俗的说,即一个类只负责一项职责
+
+四 创建型模式
+1 简单工厂模式
+内容： 不直接向客户端暴露对象创建的实现细节, 而是通过一个工厂类来负责创建产品
+角色：
+	* 工厂角色 (Creator)
+	* 抽象产品角色 (Product)
+	* 具体产品角色(Concrete Product)
+	
+优点：
+	* 隐藏了对象创建实现细节
+	* 客户端不需要修改代码
+缺点：
+	* 违反了单一职责, 将创建逻辑几种到一个工厂类里
+	* 当添加新产品时，需要修改工厂类代码,违反了开闭原则
+	
+	from abc import ABCMeta, abstractmethod
+
+
+	class Payment(metaclass=ABCMeta):
+		@abstractmethod
+		def pay(self, money):
+			pass
+
+
+	class Alipay(Payment):
+		def __init__(self, use_huabei=False):
+			self.use_huabei = use_huabei
+
+		def pay(self, money):
+			if self.use_huabei:
+				print("花呗支付%d元" % money)
+			else:
+				print("支付宝支付%d元" % money)
+
+
+	class WechatPay(Payment):
+		def pay(self, money):
+			print("微信支付%d元" % money)
+
+
+	class PaymentFactory:
+		def create_payment(self, method):
+			if method == 'alipay':
+				# 可以在这里写自己的逻辑或参数（使用者无需关注）,
+				return Alipay()
+			elif method == 'wechat':
+				return WechatPay()
+			elif method == 'huabei':
+				return Alipay(use_huabei=True)
+			else:
+				raise TypeError("no such method named" % method)
+	pf = PaymentFactory()
+	p = pf.create_payment('huabei')
+	p.pay(100)
+	
+2 工厂方法模式
+	内容：定义一个用户创建对象的接口（工厂接口）, 让子类决定实例化哪一个产品类
+	
+	角色：
+		* 抽象工厂角色(Creator)
+		* 具体工厂角色(Concrete Creator)
+		* 抽象产品角色(Product)
+		* 具体产品角色(Concrete Product)
+	优点：
+		* 每个具体产品都对应一个具体工厂类,不需要修改工厂类代码
+		* 隐藏了对象创建的实现细节
+	缺点：
+		* 每添加一个具体产品类, 就必须增加一个相应的具体工厂类
+	
+	from abc import ABCMeta, abstractmethod
+
+	class Payment(metaclass=ABCMeta):
+		@abstractmethod
+		def pay(self, money):
+			pass
+
+
+	class Alipay(Payment):
+		def __init__(self, use_huabei=False):
+			self.use_huabei = use_huabei
+
+		def pay(self, money):
+			if self.use_huabei:
+				print("花呗支付%d元" % money)
+			else:
+				print("支付宝支付%d元" % money)
+
+
+	class WechatPay(Payment):
+		def pay(self, money):
+			print("微信支付%d元" % money)
+
+
+	class PaymentFactory(metaclass=ABCMeta):
+		@abstractmethod
+		def create_payment(self):
+			pass
+
+
+	class AlipayFactory(PaymentFactory):
+		def create_payment(self):
+			return Alipay()
+
+
+	class WechatPayFactory(PaymentFactory):
+		def create_payment(self):
+			return WechatPay()
+
+
+	class HuabeiFactory(PaymentFactory):
+		def create_payment(self):
+			return Alipay(use_huabei=True)
+
+
+	# client
+	pf = HuabeiFactory()
+	p = pf.create_payment()
+	p.pay(100)
+
+3 抽象工厂模式
+	内容：定义一个工厂类接口,让工厂子类来创建一系列相关或相互依赖的对象。
+	例如：生产一部手机，需要手机壳,CPU,操作系统三类对象进行组装, 其中每类对象都有不同的种类。对每个具体工厂，分别生产一部手机所需要的三个对象
+	相比工厂方法模式,抽象工厂模式中的每个具体工厂都生成一套产品
+	角色：	
+		* 抽象工厂角色(Creator)
+		* 具体工厂角色(Concrete Creator)
+		* 抽象产品角色(Product)
+		* 具体产品角色(Concrete Product)
+		* 客户端(Client)
+	优点：
+		* 将客户端与类的具体实现分离
+		* 每个工厂创建了一个完整的产品系列, 使得易于交换产品系列
+		* 有利于产品的一致性(即产品之间的约束)
+		
+	缺点：
+		* 难以支持新种类的(抽象)产品
+	from abc import abstractmethod, ABCMeta
+
+	# ---- 抽象产品 ----
+	class PhoneShell(metaclass=ABCMeta):
+		@abstractmethod
+		def show_shell(self):
+			pass
+
+
+	class CPU(metaclass=ABCMeta):
+		@abstractmethod
+		def show_cpu(self):
+			pass
+
+
+	class OS(metaclass=ABCMeta):
+		@abstractmethod
+		def show_os(self):
+			pass
+
+
+	# ---- 抽象工厂 ----
+	class PhoneFactory(metaclass=ABCMeta):
+		@abstractmethod
+		def make_shell(self):
+			pass
+
+		@abstractmethod
+		def make_cpu(self):
+			pass
+
+		@abstractmethod
+		def make_os(self):
+			pass
+
+
+	# ---- 具体产品 ----
+	class SmallShell(PhoneShell):
+		def show_shell(self):
+			print("普通手机小手机壳")
+
+
+	class BigShell(PhoneShell):
+		def show_shell(self):
+			print("普通手机大手机壳")
+
+
+	class AppleSchell(PhoneShell):
+		def show_shell(self):
+			print("苹果手机壳")
+
+
+	class SnapDragonCPU(CPU):
+		def show_cpu(self):
+			print("骁龙CPU")
+
+
+	class MediaTekCPU(CPU):
+		def show_cpu(self):
+			print('联发科CPU')
+
+
+	class AppleCpu(CPU):
+		def show_cpu(self):
+			print("苹果CPU")
+
+
+	class Android(OS):
+		def show_os(self):
+			print("Android系统")
+
+
+	class IOS(OS):
+		def show_os(self):
+			print("IOS系统")
+
+
+	# ---- 具体工厂 ----
+	class MiFactory(PhoneFactory):
+		def make_cpu(self):
+			return SnapDragonCPU()
+
+		def make_os(self):
+			return Android()
+
+		def make_shell(self):
+			return BigShell()
+
+
+	class IphoneFactory(PhoneFactory):
+		def make_cpu(self):
+			return AppleCpu()
+
+		def make_os(self):
+			return IOS()
+
+		def make_shell(self):
+			return AppleSchell()
+
+
+	# --- 客户端 ---
+	class Phone:
+		def __init__(self, cpu, os, shell):
+			self.cpu = cpu
+			self.os = os
+			self.shell = shell
+
+		def show_info(self):
+			print("手机信息：")
+			self.cpu.show_cpu()
+			self.os.show_os()
+			self.shell.show_shell()
+
+
+	def make_phone(factory):
+		cpu = factory.make_cpu()
+		os = factory.make_os()
+		shell = factory.make_shell()
+		return Phone(cpu, os, shell)
+
+	p1 = make_phone(MiFactory())
+	p1.show_info()
+	
+4 建造者模式
+	内容: 将一个复杂对象的构建与它的表示分离, 使得同样的构建过程可以创建不同的表示.
+	角色：
+		抽象建造者(Builder)
+		具体建造者(Concrete Builder)
+		指挥者(Director)
+		产品(Product)
+	建造者模式与抽象工厂模式相似,也用来创建复杂对象。主要区别是建造者模式着重一步步构建一个复杂对象，而抽象工厂模式着重与多个系列的产品对象
+	优点：
+		隐藏一个产品内部结构和装配过程
+		将构造代码与表示代码分开
+		可以对构造过程进行更精细的控制
+	
+	from abc import ABCMeta, abstractmethod
+
+	class Player:
+		def __init__(self, face=None, body=None, arm=None, leg=None):
+			self.face = face
+			self.body = body
+			self.arm = arm
+			self.leg = leg
+
+		def __str__(self):
+			return "%s, %s, %s, %s" % (self.face, self.body, self.arm, self.leg)
+
+
+	class PlayerBuilder(metaclass=ABCMeta):
+		@abstractmethod
+		def build_face(self):
+			pass
+
+		@abstractmethod
+		def build_body(self):
+			pass
+
+		@abstractmethod
+		def build_arm(self):
+			pass
+
+		@abstractmethod
+		def build_leg(self):
+			pass
+
+
+	class SexyGirBuilder(PlayerBuilder):
+		def __init__(self):
+			self.player = Player()
+
+		def build_face(self):
+			self.player.face = "beautiful face"
+
+		def build_body(self):
+			self.player.body = "苗条"
+
+		def build_arm(self):
+			self.player.arm = "麒麟臂"
+
+		def build_leg(self):
+			self.player.leg = "小短腿"
+
+
+	class Monster(PlayerBuilder):
+		def __init__(self):
+			self.player = Player()
+
+		def build_face(self):
+			self.player.face = "怪兽脸"
+
+		def build_body(self):
+			self.player.body = "怪兽身材"
+
+		def build_arm(self):
+			self.player.arm = "长毛胳膊"
+
+		def build_leg(self):
+			self.player.leg = "长毛腿"
+
+	# 控制组装顺序
+	class PlayerDirector:
+		def build_player(self, builder):
+			builder.build_body()
+			builder.build_face()
+			builder.build_arm()
+			builder.build_leg()
+			return builder.player
+
+
+	# --- Client
+
+	builder = SexyGirBuilder()
+	director = PlayerDirector()
+	p = director.build_player(builder)
+	print(p)
+	
+5 单例模式
+	内容：保证一个类只有一个实例, 并提供一个访问它的全局访问点。
+	角色：
+		单例(Singleton)
+	
+	优点：
+		* 对唯一实例的受控访问
+		* 单例相当于全局变量, 单防止了命名空间被污染
+	
+	from abc import abstractmethod, ABCMeta
+
+	class Singleton:
+		def __new__(cls, *args, **kwargs):
+			if not hasattr(cls, "_instance"):
+				cls._instance = super(Singleton, cls).__new__(cls)
+			return cls._instance
+
+
+	class MyClass(Singleton):
+		def __init__(self, a):
+			self.a = a
+
+
+	a = MyClass(10)
+	b = MyClass(20)
+	print(a.a)
+	print(b.a)
+	
+五 结构型模型
+	1 适配器模式
+	
+	角色：
+		* 目标接口(Target)
+		* 待适配的类(Adaptee)
+		* 适配器(Adapter)
+		
+	适用场景：
+		想使用一个已存在的类, 而他的接口不符合你的要求
+		(对象适配器)想使用一些已经存在的子类,但不可能对每一个都进行子类化以匹配它们的接口。对象适配器可以适配它的父类接口
+		
+		from abc import ABCMeta, abstractmethod
+
+		class Payment(metaclass=ABCMeta):
+			@abstractmethod
+			def pay(self, money):
+				pass
+
+
+		class Alipay(Payment):
+			def pay(self, money):
+				print("支付宝支付%d元" % money)
+
+
+		class WechatPay(Payment):
+			def pay(self, money):
+				print("微信支付%d元" % money)
+
+
+		class BankPay:
+			def cost(self, money):
+				print("银联支付%d元" % money)
+
+
+		class ApplePay:
+			def cost(self, money):
+				print("苹果支付%d元" % money)
+
+
+		# 适配器类
+		class NewBankPay(Payment, BankPay):
+			def pay(self, money):
+				self.cost(money)
+
+
+		# 适配器另外的写法
+		class PaymentAdapter(Payment):
+			def __init__(self, payment):
+				self.payment = payment
+
+			def pay(self, money):
+				self.payment.cost(money)
+
+
+		p = PaymentAdapter(ApplePay())
+
+		p.pay(100)
+		
+	2 桥模式
+	内容：
+		将一个事物的两个维度分离, 是其都可以独立地变化
+		
+	角色：
+		* 抽象(Abstraction)
+		* 细化抽象(RefinedAbstraction)
+		* 实现者(Implementor)
+		* 具体实现者(ConcreteImplementor)
+	应用场景：
+		当事物有两个维度上的表现, 两个维度都有可能扩展时
+	优点：
+		* 抽象和实现相分离
+		* 优秀的扩展能力
+	
+		from abc import ABCMeta, abstractmethod
+
+
+		class Shape(metaclass=ABCMeta):
+			def __init__(self, color):
+				self.color = color
+
+			@abstractmethod
+			def draw(self):
+				pass
+
+
+		class Color(metaclass=ABCMeta):
+			@abstractmethod
+			def paint(self, shape):
+				pass
+
+
+		class Rectangle(Shape):
+			name = "长方形"
+
+			def draw(self):
+				# 长方形逻辑
+				self.color.paint(self)
+
+
+		class Circle(Shape):
+			name = "圆形"
+
+			def draw(self):
+				# 圆形逻辑
+				self.color.paint(self)
+
+
+		class Red(Color):
+
+			def paint(self, shape):
+				print("红色的%s" % shape.name)
+
+
+		class Green(Color):
+			def paint(self, shape):
+				print("绿色的%s" % shape.name)
+
+
+		# --- 客户端 --
+
+		shape = Rectangle(Red())
+		shape.draw()
+	
+	3 组合模式
+	内容：将对象组合成树形结构以表示"部分-整体"的层次结构。组合模式使得用户单个对象和组合对象使用具有一致性
+	角色：
+		* 抽象组件(Componet)
+		* 叶子组件(Leaf)
+		* 组合组件(Composite)
+		* 客户端(Cilent)
+	使用场景：
+		* 表示对象的"部分-整体"层次结构(特别是结构是递归的)
+		* 希望用户忽略组合对象与单个对象的不同,用户统一第使用组合结构中的所有对象
+	优点：
+		* 定义了包含基本对象和组合对象的类层次结构
+		* 简化客户端代码, 即客户端可以一致地使用组合对象和单个对象
+		* 更容易添加新类型的组件
+		
+	from abc import ABCMeta, abstractmethod
+
+	# 抽象组件
+	class Graphic(metaclass=ABCMeta):
+		@abstractmethod
+		def draw(self):
+			pass
+
+
+	# 叶子节点
+	class Point(Graphic):
+		def __init__(self, x, y):
+			self.x = x
+			self.y = y
+
+		def __str__(self):
+			return "点(%s, %s)" % (self.x, self.y)
+
+		def draw(self):
+			print(str(self))
+
+
+	# 叶子组件
+	class Line(Graphic):
+		def __init__(self, p1, p2):
+			self.p1 = p1
+			self.p2 = p2
+
+		def __str__(self):
+			return "线段[%s, %s]" % (self.p1, self.p2)
+
+		def draw(self):
+			print(str(self))
+
+
+	l = Line(Point(1, 1), Point(2, 2))
+	print(l)
+
+
+	# 复合组件包括好多叶子组成
+	class Picture(Graphic):
+		def __init__(self, iterable):
+			self.children = []
+			for g in iterable:
+				self.add(g)
+
+		def add(self, graphic):
+			self.children.append(graphic)
+
+		def draw(self):
+			print("-----复合图形-----")
+			for g in self.children:
+				g.draw()
+			print("-----复合图形-----")
+
+
+	p1 = Point(2, 3)
+	l1 = Line(Point(3, 4), Point(6, 7))
+	l2 = Line(Point(1, 5), Point(2, 8))
+
+	pic1 = Picture([p1, l1, l2])
+
+	p2 = Point(4, 4)
+	l3 = Line(Point(1, 1), Point(0, 0))
+	pic2 = Picture([p2, l3])
+
+	pic = Picture([pic1, pic2])
+	pic.draw()
+
+	4 外观模式
+	内容:为子系统中的一组接口提供一个一致的界面， 外观模式定义了一个高层接口, 这个接口使得这一子系统更加容易使用
+	角色：
+		外观(facede)
+		子系统类(subsystem classes)
+	优点：	
+		减少系统相互依赖
+		提高了灵活性
+		提高了安全性
+		
+	class CPU:
+		def run(self):
+			print("CPU开始运行")
+
+		def stop(self):
+			print("CPU停止运行")
+
+
+	class Disk:
+		def run(self):
+			print("硬盘开始工作")
+
+		def stop(self):
+			print("硬盘停止工作")
+
+
+	class Memory:
+		def run(self):
+			print("内存通电")
+
+		def stop(self):
+			print("内存断电")
+
+
+	# 外观(facede)
+	class Computer:
+		def __init__(self):
+			self.cpu = CPU()
+			self.disk = Disk()
+			self.memory = Memory()
+
+		def run(self):
+			self.cpu.run()
+			self.disk.run()
+			self.memory.run()
+
+		def stop(self):
+			self.cpu.stop()
+			self.disk.stop()
+			self.memory.stop()
+
+
+	computer = Computer()
+	computer.run()
+	computer.stop()
+	
+	5 代理模式
+	内容：为其他对象提供一种代理以控制对这个对象的访问
+	应用场景：
+		远程代理：为远程的对象提供代理
+		虚代理：根据需要创建很大的对象
+		保护代理：控制对原始对象的访问,用户对象有不同访问权限时
+	角色：
+		* 抽象实体(Subject)
+		* 实体(RealSubject)
+		* 代理(Proxy)
+	优点：
+		远程代理: 可以隐藏对象位于远程地址空间的事实
+		虚代理: 可以进行优化, 例如根据要求创建对象
+		保护代理: 允许在访问一个对象时有一些附加的内务处理
+	
+		from abc import ABCMeta, abstractmethod
+
+		class Subject(metaclass=ABCMeta):
+
+			@abstractmethod
+			def get_content(self):
+				pass
+
+			@abstractmethod
+			def set_content(self, content):
+				pass
+
+
+		# 代理
+		class RealSubject(Subject):
+			def __init__(self, filename):
+				self.filename = filename
+				f = open(filename, 'r', encoding='utf-8')
+				print('读取文件内容')
+				self.content = f.read()
+				f.close()
+
+			def get_content(self):
+				return self.content
+
+			def set_content(self, content):
+				f = open(self.filename, 'w', encoding='utf-8')
+				f.write(content)
+				f.close()
+
+
+		# 虚代理
+		class VirtualProxy(Subject):
+			def __init__(self, filename):
+				self.filename = filename
+				self.subj = None
+
+			def get_content(self):
+				if not self.subj:
+					self.subj = RealSubject(self.filename)
+				return self.subj.get_content()
+
+			def set_content(self, content):
+				if not self.subj:
+					self.subj = RealSubject(self.filename)
+				return self.subj.set_content(content)
+
+
+		subj = VirtualProxy("test.txt")
+		print(subj.get_content())
+
+
+		# 保护代理
+		class ProtectedProxy(Subject):
+			def __init__(self, filename):
+				self.subj = RealSubject(filename)
+
+			def get_content(self):
+				return self.subj.get_content()
+
+			def set_content(self, content):
+				raise PermissionError("无写入权限")
+
+
+		subj2 = ProtectedProxy("test.txt")
+		print(subj.get_content())
+		subj2.set_content('1111')
+		
+六 行为型模式
+1 责任链模式
+	内容：使多个对象都有机会处理请求,从而避免请求的发送者和接收者之间的耦合关系。将这些对象连成一条链，并沿着这条链传递请求，知道有一个对象处理它为止。
+	角色：
+		* 抽象处理者(Handler)
+		* 具体处理者(ConcreteHandler)
+		* 客户端(Client)
+	适用场景:
+		* 有多个对象可以处理一个请求,哪个对象处理由运行时决定
+		* 在不明确接收者的情况下,向多个对象中的一个提交一个请求
+	优点:
+		降低耦合度: 一个对象无需知道是其他哪一个对象处理其请求
+	from abc import ABCMeta, abstractmethod
+
+
+	class Hanldler(metaclass=ABCMeta):
+		@abstractmethod
+		def handle_leave(self, day):
+			pass
+
+
+	class GeneralMangeer(Hanldler):
+		def handle_leave(self, day):
+			if day <= 10:
+				print("总经理准假%d天" % day)
+			else:
+				print("你还是辞职吧")
+
+
+	class DepartmentManager(Hanldler):
+		def __init__(self):
+			self.next = GeneralMangeer()
+
+		def handle_leave(self, day):
+			if day <= 5:
+				print("部门经理准假")
+			else:
+				print("部门经理职权不足")
+				self.next.handle_leave(day)
+
+
+	class ProjectDirector(Hanldler):
+		def __init__(self):
+			self.next = DepartmentManager()
+
+		def handle_leave(self, day):
+			if day <= 3:
+				print("项目主管准假%d天" % day)
+			else:
+				print("项目主管职权不足")
+				self.next.handle_leave(day)
+
+	# 客户端
+	day = 11
+	h = ProjectDirector()
+	h.handle_leave(day)
+
+2观察者模式
+	内容: 定义对象间的一种一对多的依赖关系,当一个对象的状态发生改变时，所有依赖于它的对象都得到并通知并被自动更新。观察者模式又称"发布-订阅"模式
+	角色:
+		* 抽象主体(Subject)
+		* 具体主体(ConcreteSubject) --发布者
+		* 抽象观察者(Observer)
+		* 具体观察者(ConcreteObservier) --- 订阅者
+	
+	适用场景：
+		* 当一个抽象模型有两个方面,其中一个方面依赖于另一个方面。将这两者封装在独立对象中以使它们可以各自独立地改变和复用
+		* 当对一个对象的改变需要同时改变其他对象,而不知道具体多少对象有待改变。
+		* 当一个对象必须通知其他对象，而它又不能假定其它对象是谁。换言之,你不希望这些对象紧密耦合的。
+	优点：
+		* 目标和观察者之间的抽象耦合最小
+		* 支持广播通信
+	from abc import ABCMeta, abstractmethod
+
+
+	class Observer(metaclass=ABCMeta):  # 抽象订阅者
+		@abstractmethod
+		def update(self, notice):  # notice 是一个Notice类的对象
+			pass
+
+
+	class Notice:  # 抽象发布者
+		def __init__(self):
+			self.observers = []
+
+		def attach(self, obs):
+			self.observers.append(obs)
+
+		def detach(self, obs):
+			self.observers.remove(obs)
+
+		def notify(self):
+			for obs in self.observers:
+				obs.update(self)
+
+
+	class StaffNotice(Notice):  # 具体发布者
+		def __init__(self, company_info=None):
+			super().__init__()
+			self.__company_info = company_info
+
+		@property
+		def company_info(self):
+			return self.__company_info
+
+		# 负责写入 例如: obj.company_info = "xyz"
+		@company_info.setter
+		def company_info(self, info):
+			self.__company_info = info
+			self.notify()  # 推送给所有的观察者
+
+
+	class Staff(Observer):  # 具体观察者(订阅者)
+		def __init__(self):
+			self.company_info = None
+
+		def update(self, notice):
+			self.company_info = notice.company_info
+
+
+	notice = StaffNotice("初始公司信息")
+	s1 = Staff()
+	s2 = Staff()
+	notice.attach(s1)
+	notice.attach(s2)
+	print(s1.company_info)
+	notice.company_info = "公司今年业绩非常好, 给大家发奖金"
+	print(s1.company_info)
+	notice.detach(s2)
+	notice.company_info = "今天公司放假"
+	print(s1.company_info)
+	print(s2.company_info)
+
+3 策略模式
+   内容:定义一系列的算法,把它们一个个封装起来,并且使它们可相互替换。本模式使得算法可独立于使用它的客户而变化
+   角色:
+		* 抽象策略(Strategy)
+		* 具体策略(ConcreteStrategy)
+		* 上下文(Context)
+	
+	优点：
+		* 定义了一系列可重用的算法和行为
+		* 消除了一些条件语句
+		* 可以提供相同行为的不同实现
+	缺点：
+		* 客户必须了解不同的策略
+		
+	from abc import ABCMeta, abstractmethod
+
+	class Strategy(metaclass=ABCMeta):
+		@abstractmethod
+		def execute(self, data):
+			pass
+
+
+	class FastStrategy(Strategy):
+		def execute(self, data):
+			print("用较快的策略处理%s" % data)
+
+
+	class SlowStrategy(Strategy):
+		def execute(self, data):
+			print("用较慢的策略处理%s" % data)
+
+
+	class Context:
+		def __init__(self, strategy, data):
+			self.data = data
+			self.strategy = strategy
+
+		def set_strategy(self, strategy):
+			self.strategy = strategy
+
+		def do_strategy(self):
+			self.strategy.execute(self.data)
+
+
+	# Client
+
+	data = "[....]"
+	s1 = FastStrategy()
+	s2 = SlowStrategy()
+	context = Context(s1, data)
+	context.do_strategy()
+
+4 模板方法模式
+   内容： 定义一个操作中的算法骨架,而将一些步骤延迟到子类中。模板方法使得子类可以不可改变一个算法的结构即可重新定义该算法的某些特定步骤
+   角色：
+		* 抽象类(AbstractClass):定义抽象的原子操作(钩子操作); 实现一个模板方法作为算法的骨架
+		* 具体类(ConcreteClass)：实现原子操作
+	适用场景：
+		* 一次性实现一个算法的不变的部分
+		* 各个子类中的公共行为应该提取出来并集中到一个公共父类中以避免代码重复
+		* 控制子类扩展
+		
+	import time
+	from abc import ABCMeta, abstractmethod
+
+
+	class Window(metaclass=ABCMeta):
+		@abstractmethod
+		def start(self):
+			pass
+
+		@abstractmethod
+		def repaint(self):
+			pass
+
+		@abstractmethod
+		def stop(self):
+			pass
+
+		def run(self):  # 模板方法
+			self.start()
+			while True:
+				try:
+					self.repaint()
+					time.sleep(1)
+				except KeyboardInterrupt:
+					break
+			self.stop()
+
+
+	# Client
+
+	class MyWindow(Window):
+		def __init__(self, msg):
+			self.msg = msg
+
+		def start(self):
+			print("窗口开始运行")
+
+		def stop(self):
+			print("窗口结束运行")
+
+		def repaint(self):
+			print(self.msg)
+
+	MyWindow("Hello World").run()

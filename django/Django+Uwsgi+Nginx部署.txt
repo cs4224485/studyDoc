@@ -1,0 +1,59 @@
+一 uwsgi介绍
+
+uWSGI是一个Web服务器,它实现了WSGI协议，uwsgi, http等协议。 Nginx中HttpUwsgiMoule的作用是与uWSGI服务器进行交换
+
+	1 WSGI是一种Web服务器网关接口。它是一个Web服务器（如nginx，uWSGI等服务器）与web应用（如用Flask框架写的程序）通信的一种规范。
+	2 uwsgi是一种线路协议而不是通信协议，在此常用于在uWSGI服务器与其他网络服务器的数据通信。
+	3 而uWSGI是实现了uwsgi和WSGI两种协议的Web服务器。
+	3 uwsgi协议是一个uWSGI服务器自有的协议，它用于定义传输信息的类型（type of information），每一个uwsgi packet前4byte为传输信息类型描述，它与WSGI相比是两样东西。
+
+uWSGI的主要特点如下：
+
+	超快的性能
+	低内存占用（实测为apache2的mod_wsgi的一半左右）
+	多app管理（终于不用冥思苦想下个app用哪个端口比较好了-.-）
+	详尽的日志功能（可以用来分析app性能和瓶颈）
+	高度可定制（内存大小限制，服务一定次数后重启等）
+	
+二 Uwsgi 安装使用
+	# Install the latest stable release:
+	pip install uwsgi
+	# ... or if you want to install the latest LTS (long term support) release,
+	pip install https://projects.unbit.it/downloads/uwsgi-lts.tar.gz
+	
+基本测试
+	Create a file called test.py:
+
+		# test.py
+		def application(env, start_response):
+			start_response('200 OK', [('Content-Type','text/html')])
+			return [b"Hello World"] # python3
+			#return ["Hello World"] # python2
+	
+	运行
+		uwsgi --http :8000 --wsgi-file test.py
+		
+		
+	用uwsgi 启动django
+
+		uwsgi --http :8000 --module [项目名称.wsgi]
+		
+	可以把参数写到配置文件里
+		root@:~/uwsgi-test$ more crazye-uwsgi.ini
+		[uwsgi]
+		http = :9000
+		#the local unix socket file than commnuincate to Nginx
+		socket = 127.0.0.1:8001
+		# the base directory (full path)
+		chdir = /home/alex/CrazyEye
+		# Django's wsgi file
+		wsgi-file = CrazyEye/wsgi.py
+		# maximum number of worker processes
+		processes = 4
+		#thread numbers startched in each worker process
+		threads = 2
+		 
+		#monitor uwsgi status
+		stats = 127.0.0.1:9191
+		# clear environment on exit
+		vacuum          = true

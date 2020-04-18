@@ -1,0 +1,147 @@
+一 什么是Maven
+	Maven是Apache旗下一款开源自动化的项目管理工具，它使用java语言编写，因此Maven是一款跨平台的项目管理工具。
+	Maven主要功能：
+		项目构建
+			在实际开发中，不仅仅是写完代码项目就算完成了，后面还有一些诸如：编译，打包，部署等工作要做，这些工作都可以使用maven来完成。
+		依赖管理
+			说的简单一点就是对jar包的管理，开发者不用再手动的下载所需要的jar包，而是将想要的jar包通过配置一个叫做pom.xml的文件中，之后maven会自动的下载相关的jar包。
+			
+
+二 Maven的安装
+	1.下载
+		你可以通过maven的官网下载：http://maven.apache.org/
+		也可以到网盘中下载：https://pan.baidu.com/s/1rajzsTI
+		注意：在安装前请确保机器上已经安装了jdk，并且jdk的版本最好是7以上的。
+	
+	2.解压
+		将maven解压，解压的目录中最好不要含有空格、中文或者其他特殊符号。
+		解压后目录如下：
+			bin：maven的命令
+			boot：含有一个类加载器，通常情况下不使用
+			conf：maven的配置文件
+			lib：maven的jar包，这里是maven运行时需要的jar包，并非用户在项目中的jar包
+			
+	3.配置maven环境变量
+		添加一个环境变量：
+			变量名：MAVEN_HOME
+			变量值：填写你的maven的解压目录，我本地的是：D:\apache-maven-3.5.2
+			之后在path中添加;%MAVEN_HOME%\bin
+			注意前面使用”;”与其他值隔开。
+	
+	4.验证是否配置成功
+		在cmd中输入mvn -v
+		如果显示出当前mvn的版本号，则说明maven的安装成功
+	
+	5. maven配置
+		在maven的安装目录的conf文件夹下有一个settings.xml文件，打开后，可以看到有一项：
+			<!-- localRepository
+			   | The path to the local repository maven will use to store artifacts.
+			   |
+			   | Default: ${user.home}/.m2/repository
+			  <localRepository>/path/to/local/repo</localRepository>
+			 -->
+		改配置是默认注释掉的，其意思是默认情况下，maven仓库的目录地址是在你的${user.home}/.m2/repository文件中，我的地址是：C:\Users\Administrator.m2\repository。${user.home}表示的是你本地电脑的用户名。
+		你可以在下面自己写一个localRepository标签来为其指定一个目录。
+		maven仓库目录，就是maven将你项目中所用到的jar包下载的目录地址。
+		
+三 Maven项目的结构
+	
+	要想使用Maven工具，需要遵循它的一些规范，如果要想创建一个Maven项目的话，它的目录结构是这样的：
+	Project
+	  |-src
+	  |   |-main
+	  |   |  |-java        ——存放项目的.java源文件
+	  |   |  |-resources   ——存放项目资源文件，如spring, mybatis配置文件
+	  |   |-test
+	  |      |-java        ——存放所有测试.java文件，如JUnit测试类
+	  |      |-resources   ——测试资源文件
+	  |-target             ——目标文件输出位置例如.class、.jar、.war文件
+	  |-pom.xml           ——maven项目核心配置文件
+	  
+	 
+四 pom文件简介
+	创建了一个maven的web项目，此时会生成一个pom.xml的文件，开发者可以通过这个文件的配置来使用maven自动下载第三方jar包，下面我们以fastjson为例，打开pom.xml文件，在dependencies标签中添加下面内容：
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+			<version>1.2.44</version>
+		</dependency>	
+		
+	点击保存，此时maven会自动下载fastjson的相关jar包，这样以后当我们想要更新fastjson的版本号的时候，就可以修改这个pom文件中相应的version即可。
+	你可以到你本地的maven仓库中查看，就是之前说过的在${user.home}/.m2/repository目录下的com\alibaba\fastjson\1.2.44目录中，可以看到fastjson-1.2.44.jar，这个就是maven自动下载的并且已经将其加入到项目依赖中。
+	
+	pom.xml文件
+		这里面maven是根据dependency中的坐标来搜索并自动下载相关jar包的：
+			groupId：当前组织机构的名称，通常使用域名倒写的方式
+			artifactId：实际项目名称
+			version：当前项目的当前版本
+			
+		这三个内容有时被称为gav。通过上面三个内容，就可以定位到具体的jar包，也就是说，开发者只需要配置以上三个内容，maven就能够自动下载你需要的jar包了。
+		那上面这些内容去哪里查找呢？
+		通常那些第三方库的官网都会写有这个dependency，我们直接拷贝到自己的pom.xml文件中即可。
+				
+	Maven仓库		
+		Maven仓库其实就是存放jar包的地方，可以理解为是jar包仓库。主要分为以下几个类别：
+			本地仓库
+				就是在开发者本地默认的/.m2/repository路径中，这个是本地仓库，maven会将下载的jar包存放到这个位置里面。
+				
+			远程仓库
+				中央仓库
+					中央仓库地址：http://repo1.maven.org/maven2
+					这些第三方jar包通常都会存放到这个中央仓库中，maven在下载jar包的时候默认会从这个中央仓库中进行下载，但是这个地址是在国外，在国内下载的时候，速度会比较慢。
+				私服
+					有些开发人员会在公司的内网中搭建一个maven私服，这样的话在内网下载jar包的时候会从这个私服中下载，速度也比较快。
+		
+		使用国内第三方的maven镜像下载
+			如果你从中央仓库中下载比较慢，并且也不想搭建私服的话，可以从国内的第三方Maven镜像进行下载。这里推荐阿里云提供的maven镜像。
+			打开你的maven地址中settings.xml文件，在mirrors标签中添加下面内容：
+				<mirror>  
+				  <id>alimaven</id>  
+				  <name>aliyun maven</name>  
+				  <url>http://maven.aliyun.com/nexus/content/groups/public/</url>  
+				  <mirrorOf>central</mirrorOf>          
+				</mirror> 
+			
+			之后保存，当你再次使用maven下载jar包的时候，可以在eclipse或IDEA的控制台中看到会从阿里云提供的这个地址进行下载。速度要比从中央仓库快。
+		
+五 maven的命令
+	Mvn compile
+	编译的命令
+
+	Mvn clean
+	清除命令，清除已经编译好的class文件，清除的是target目录中的文件
+
+	Mvn test
+	测试命令，该命令会将test目录中的源码进行编译
+
+	Mvn package
+	打包命令，会在target目录中生成打包的文件
+	
+	Mvn install
+	安装命令，会将打好的jar包，安装到本地仓库
+	
+	组合命令
+		Mvn clean compile
+		先清空再编译
+
+		mvn clean test命令
+		cmd 中录入 mvn clean test命令
+		组合指令，先执行clean，再执行test，通常应用于测试环节
+
+		mvn clean package命令
+		cmd 中录入 mvn clean package命令
+		组合指令，先执行clean，再执行package，将项目打包，通常应用于发布前
+		执行过程：
+			  清理————清空环境
+			  编译————编译源码
+			  测试————测试源码
+			  打包————将编译的非测试类打包
+		mvn clean install命令
+		cmd 中录入 mvn clean install 查看仓库，当前项目被发布到仓库中
+		组合指令，先执行clean，再执行install，将项目打包，通常应用于发布前
+		执行过程：
+			  清理————清空环境
+			  编译————编译源码
+			  测试————测试源码
+			  打包————将编译的非测试类打包
+			  部署————将打好的包发布到资源仓库中

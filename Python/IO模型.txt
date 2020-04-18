@@ -1,0 +1,119 @@
+一 I/O模型介绍
+	什么是I/O
+		1 计算机CPU只能处理内存中的数据，而要将数据持久化就要将数据存储到硬盘中，由于硬盘的速度要慢的多，当数据从硬盘加载到内存中过程就称为一次磁盘I/O
+		2 还有一种情况是在socket编程中服务端遇到网络I/O会将会进入阻塞状态，直到从内核中返回到数据。这种情况就称之为网络I/O
+		3 键盘，鼠标，显示器等输入输出设备
+	
+	I/O的类型
+		* blocking IO  
+		* nonblocking IO  
+		* IO multiplexing  
+		* signal driven IO  
+		* asynchronous IO  
+		由signal driven IO（信号驱动IO）在实际中并不常用，所以主要介绍其余四种IO Model。
+
+二 阻塞I/O
+	在linux中，默认情况下所有的socket都是blocking，一个典型的读操作流程大概是这样：
+		当用户进程调用了recvfrom这个系统调用，kernel就开始了IO的第一个阶段：准备数据。
+		对于network io来说，很多时候数据在一开始还没有到达（比如，还没有收到一个完整的UDP包），这个时候kernel就要等待足够的数据到来。
+		而在用户进程这边，整个进程会被阻塞。当kernel一直等到数据准备好了，它就会将数据从kernel中拷贝到用户内存，
+		然后kernel返回结果，用户进程才解除block的状态，重新运行起来。
+		所以，blocking IO的特点就是在IO执行的两个阶段（等待数据和拷贝数据两个阶段）都被block了。
+
+三 非阻塞I/O
+	Linux下，可以通过设置socket使其变为non-blocking。当对一个non-blocking socket执行读操作时，流程是这样的：
+		当用户进程发出read操作时，如果内核中的数据还没准备好那么用户进程并不会block，而是立刻返回一个error。
+		从用户进程上讲，它发起一个read操作后并不需要等待而是马上就到一个返回结果。
+		用户哦按吨结果是一个error时，它就知道数据还没有准备好，于是用户进程就会每隔一段时间去询问内核数据是否已经准备好并且在这期间也会同时干其他事。
+		一旦kernel中的数据准备好了并且又再次收到用户进程的system call，那么它马上就数据拷贝到用户内存(这一阶段仍然是阻塞的),然后返回
+	非阻塞I/O Socket
+		from socket import *
+		server = socket(AF_INET,SOCK_STREAM)
+		server.setsockopt(SOL_SOCKET,SO_REUSEADDR,1)
+		server.bind(('127.0.0.1',8080))
+		server.listen(5)
+		server.setblocking(False)
+		print('starting...')
+		rlist = []
+		while True:
+
+			try:
+				conn,add = server.accept()
+				rlist.append(conn)
+				print(rlist)
+			except BlockingIOError:
+				del_rlist =  []
+				for conn in rlist:
+					try:
+						data = conn.recv(1024)
+						conn.send(data.upper())
+					except BlockingIOError:
+						continue
+					except Exception:
+						conn.close()
+						del_rlist.append(conn)
+				for conn in del_rlist:
+					rlist.remove(conn)
+		server.close()
+	非阻塞I/O的缺点
+		1. 循环调用recv()将大幅度推高CPU占用率；这也是我们在代码中留一句time.sleep(2)的原因,否则在低配主机下极容易出现卡机情况
+		2. 任务完成的响应延迟增大了，因为每过一段时间才去轮询一次read操作，而任务可能在两次轮询之间的任意时间完成。
+		这会导致整体数据吞吐量的降低。
+		
+四 多路复用I/O
+	多路复用I/O又称之为事件驱动I/O，它可以通过select/epoll机制来向内核不断轮询所负责socke数据书否准备好，当某个socket数据到达，它就会通知用户进程。
+	随后用户进程再发起系统调用，内核将数据拷贝到用户内存。
+	
+	select
+		当用户进程调用了select，那么整个进程会被block，而同时，kernel会“监视”所有select负责的socket，
+		当任何一个socket中的数据准备好了，select就会返回。这个时候用户进程再调用read操作，将数据从kernel拷贝到用户进程。  
+		这个图和blocking IO的图其实并没有太大的不同，事实上还更差一些。因为这里需要使用两个系统调用\(select和recvfrom\)，
+		而blocking IO只调用了一个系统调用\(recvfrom\)。但是，用select的优势在于它可以同时处理多个connection。
+	
+	select实现socket通信
+		from socket import *
+		import select
+
+		server = socket(AF_INET,SOCK_STREAM)
+		server.setsockopt(SOL_SOCKET,SO_REUSEADDR,1)
+		server.bind(('127.0.0.1',8080))
+		server.listen(5)
+		server.setblocking(False)
+		print('starting')
+		rlist = [server]
+		wlist = [server]
+		wdata = {}
+		while True:
+		   rl,wl,xl= select.select(rlist,wlist,[],0.5)
+		   print('rl',rl)
+		   print('wl',wl)
+		   print('xl',xl)
+		   for sock in rl:
+			   if sock == server:
+				   conn,addr = sock.accept()
+				   rlist.append(conn)
+			   else:
+				   try:
+					   data = sock.recv(1024)
+					   if not data:
+						   sock.close()
+						   rlist.remove(sock)
+						   continue
+					   wlist.append(sock)
+					   wdata[sock] = data.upper()
+				   except Exception:
+					   sock.close()
+					   rlist.remove(sock)
+		   for sock in wl:
+			   print(123)
+			   data = wdata[sock]
+			   sock.send(data)
+			   wlist.remove(sock)
+			   wdata.pop(sock)
+		   print('end')
+		   
+五 异步I/O
+	用户进程发起read操作之后，立刻就可以开始去做其它的事。
+	而另一方面，从kernel的角度，当它受到一个asynchronous read之后，首先它会立刻返回，所以不会对用户进程产生任何block。
+	
+	然后，kernel会等待数据准备完成，然后将数据拷贝到用户内存，当这一切都完成之后，kernel会给用户进程发送一个signal，告诉它read操作完成了。

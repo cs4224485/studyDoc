@@ -1,0 +1,951 @@
+一 面向对象编程介绍
+
+OOP(Object Oriented Programing）编程是利用“类”和“对象”来创建各种模型来实现对真实世界的描述。面向对象可以使程序更加容易扩展和容易修改，
+使我们的开发效率变得更高。基于面向对象的程序可以使人更容易理解你的代码逻辑从而使团队开发变得更从容
+
+面向对象中的名词
+
+类：一个类即是对一类拥有相同属性的对象的抽象、蓝图、原型、模板。在类中定义了这些对象的都具备的属性（variables(data)）、共同的方法
+属性：人类包含很多特征，把这些特征用程序来描述的话，叫做属性，比如年龄、身高、性别、姓名等都叫做属性，一个类中，可以有多个属性
+方法：人类不止有身高、年龄、性别这些属性，还能做好多事情，比如说话、走路、吃饭等，相比较于属性是名词，说话、走路是动词，这些动词用程序来描述就叫做方法。
+实例(对象)：一个对象即是一个类的实例化后实例，一个类必须经过实例化后方可在程序中调用，一个类可以实例化多个对象，每个对象亦可以有不同的属性，就像人类是指所有人，每个人是指具体的对象，人与人之前有共性，亦有不同
+实例化：把一个类转变为一个对象的过程就叫实例化
+
+面向对象中的三大特性
+
+1 封装：在类中对数据的赋值、内部调用对外部用户是透明的，这使类变成了一个胶囊或容器，里面包含着类的数据和方法
+2 继承：一个类可以派生出子类，在这个父类里定义的属性、方法自动被子类继承
+3 多态：多态是面向对象的重要特性,简单点说:“一个接口，多种实现”，指一个基类中派生出了不同的子类，且每个子类在继承了同样的方法名的同时又对父类的方法做了不同的实现，这就是同一种事物表现出的多种形态。
+
+二 类与对象
+
+1 定义类
+所谓类就是将现实中有着相同特性的事务抽象成一个类，并赋予它相应的属性和方法
+
+# 定义一个动物类
+	Class Animal:
+		def __init__(self,name)
+			# 定义对象的一个属性
+			self.name = name
+		def eat(self):
+			print("%s is eat" %self.name)
+		def run(self):
+			print("%s is run" %self.name)
+			
+	# 实例化成为一个对象
+	dog = Animal('dog')
+	dog.eat()
+	dog.run()
+注意：
+	类中可以有任意python代码，这些代码在类定义阶段便会执行，因而会产生新的名称空间，用来存放类的变量名与函数名，可以通过Animal.__dict__查看
+	类中定义的名字，都是类的属性，点是访问属性的语法。
+	对于经典类来说我们可以通过该字典操作类名称空间的名字，但新式类有限制
+	
+2 类的使用
+	# 引用类的属性	
+	Animal.location 				# 查看类中的一个属性
+	Animal.location = 'beijing'		# 修改类中某一个属性
+	Animal.x  = 1 					# 增加
+	del Animal.x					# 删除
+	# 调用类或称为实例化
+	dog = Animal('dog')
+	cat = Animal('cat')
+	# 对象的使用
+	产生对象的名称空间可以使用dog.__dict__查看, 查看结果为{name:'dog'}
+	dog.name  			# 查，等同于s2.__dict__['name']
+	dog.name = 'sam' 	# 改，等同于dog.__dict__['name] = 'sam'
+	dog.age = 20 		# 增，等同于dog.__dict__['age'] = 20
+	del dog.age			# 删，等同于s2.__dict__.pop('course')
+	
+三 继承与派生
+	1 什么是继承
+		继承指的是类与类之间的关系，是一种什么“是”什么的关系，继承的功能之一就是用来解决代码重用问题
+		继承是一种创建新类的方式，在python中，新建的类可以继承一个或多个父类，父类又可以成为基类或超类，新建的类称为派生类或子类
+		
+		python中类的继承分为：单继承和多继承
+			class ParentClass1: #定义父类
+				pass
+
+			class ParentClass2: #定义父类
+				pass
+
+			class SubClass1(ParentClass1): 				#单继承，基类是ParentClass1，派生类是SubClass
+				pass
+
+			class SubClass2(ParentClass1,ParentClass2): #python支持多继承，用逗号分隔开多个继承的类
+				pass
+				
+		查看继承	
+			>>> SubClass1.__bases__ 					#__base__只查看从左到右继承的第一个子类，__bases__则是查看所有继承的父类
+				(<class '__main__.ParentClass1'>,)
+			>>> SubClass2.__bases__
+				(<class '__main__.ParentClass1'>, <class '__main__.ParentClass2'>)
+		提示：如果没有指定基类，python的类会默认继承object类，object是所有python类的基类，它提供了一些常见方法（如__str__）的实现。
+	
+	2 继承与抽象（先抽象再继承）
+		抽象即抽取类似或者说比较像的部分。
+
+		抽象分成两个层次：
+			1.将奥巴马和梅西这俩对象比较像的部分抽取成类；
+			2.将人，猪，狗这三个类比较像的部分抽取成父类。
+			抽象最主要的作用是划分类别（可以隔离关注点，降低复杂度
+	
+	3 继承与重用性
+		在开发程序的过程中，如果我们定义了一个类A，然后又想新建立另外一个类B，但是类B的大部分内容与类A的相同时
+		我们不可能从头开始写一个类B，这就用到了类的继承的概念。
+		通过继承的方式新建类B，让B继承A，B会‘遗传’A的所有属性(数据属性和函数属性)，实现代码重用
+		class Hero:
+			def __init__(self,nickname,aggressivity,life_value):
+				self.nickname=nickname
+				self.aggressivity=aggressivity
+				self.life_value=life_value
+
+			def move_forward(self):
+				print('%s move forward' %self.nickname)
+
+			def move_backward(self):
+				print('%s move backward' %self.nickname)
+
+			def move_left(self):
+				print('%s move forward' %self.nickname)
+
+			def move_right(self):
+				print('%s move forward' %self.nickname)
+
+			def attack(self,enemy):
+				enemy.life_value-=self.aggressivity
+		class Garen(Hero):
+			pass
+
+		class Riven(Hero):
+			pass
+
+		g1=Garen('草丛伦',100,300)
+		r1=Riven('锐雯雯',57,200)
+		print(g1.life_value) #结果:300
+		r1.attack(g1)
+		print(g1.life_value) #结果:243
+	
+		提示：像g1.life_value之类的属性引用，会先从实例中找life_value然后去类中找，然后再去父类中找...直到最顶级的父类
+	
+	4 派生
+		当然子类也可以添加自己新的属性或者在自己这里重新定义这些属性（不会影响到父类），需要注意的是，一旦重新定义了自己的属性且与父类重名，那么调用新增的属性时，就以自己为准了。
+		class Riven(Hero):
+			camp='Noxus'
+			def attack(self,enemy): #在自己这里定义新的attack,不再使用父类的attack,且不会影响父类
+				print('from riven')
+			def fly(self): #在自己这里定义新的
+				print('%s is flying' %self.nickname)
+		在子类中如果需要重用父类中的方法可以使用 super.func(子类名,self)或者FatherClass.func(self)来调用父类中的方法
+		方式一：指名道姓，即父类名.父类方法()
+			class Vehicle: #定义交通工具类
+				 Country='China'
+				 def __init__(self,name,speed,load,power):
+					 self.name=name
+					 self.speed=speed
+					 self.load=load
+					 self.power=power
+
+				 def run(self):
+					 print('开动啦...')
+
+			class Subway(Vehicle): #地铁
+				def __init__(self,name,speed,load,power,line):
+					Vehicle.__init__(self,name,speed,load,power)
+					self.line=line
+
+				def run(self):
+					print('地铁%s号线欢迎您' %self.line)
+					Vehicle.run(self)
+
+			line13=Subway('中国地铁','180m/s','1000人/箱','电',13)
+			line13.run()
+			
+		方式二：super()
+			class Vehicle: #定义交通工具类
+				 Country='China'
+				 def __init__(self,name,speed,load,power):
+					 self.name=name
+					 self.speed=speed
+					 self.load=load
+					 self.power=power
+
+				 def run(self):
+					 print('开动啦...')
+
+			class Subway(Vehicle): #地铁
+				def __init__(self,name,speed,load,power,line):
+					#super(Subway,self) 就相当于实例本身 在python3中super()等同于super(Subway,self)
+					super().__init__(name,speed,load,power)
+					self.line=line
+
+				def run(self):
+					print('地铁%s号线欢迎您' %self.line)
+					super(Subway,self).run()
+
+			class Mobike(Vehicle):#摩拜单车
+				pass
+
+			line13=Subway('中国地铁','180m/s','1000人/箱','电',13)
+			line13.run()
+	5 继承的实现原理
+		python到底是如何实现继承的，对于你定义的每一个类，python会计算出一个方法解析顺序(MRO)列表，这个MRO列表就是一个简单的所有基类的线性顺序列表，例如
+		>>> F.mro() #等同于F.__mro__
+			[<class '__main__.F'>, <class '__main__.D'>, <class '__main__.B'>, 
+			<class '__main__.E'>, <class '__main__.C'>, <class '__main__.A'>, <class 'object'>]
+			
+		为了实现继承,python会在MRO列表上从左到右开始查找基类,直到找到第一个匹配这个属性的类为止。而这个MRO列表的构造是通过一个C3线性化算法来实现的。我们不去深究这个算法的数学原理,它实际上就是合并所有父类的MRO列表并遵循如下三条准则:
+			子类会先于父类被检查
+			多个父类会根据它们在列表中的顺序被检查
+			如果对下一个类存在两个合法的选择,选择第一个父类
+		在Java和C#中子类只能继承一个父类，而Python中子类可以同时继承多个父类，如果继承了多个父类，那么属性的查找方式有两种，分别是：深度优先和广度优先
+		示例代码：
+			class A(object):
+				def test(self):
+					print('from A')
+
+			class B(A):
+				def test(self):
+					print('from B')
+
+			class C(A):
+				def test(self):
+					print('from C')
+
+			class D(B):
+				def test(self):
+					print('from D')
+
+			class E(C):
+				def test(self):
+					print('from E')
+
+			class F(D,E):
+				# def test(self):
+				#     print('from F')
+				pass
+			f1=F()
+			f1.test()
+			print(F.__mro__) #只有新式才有这个属性可以查看线性列表，经典类没有这个属性
+
+			#新式类继承顺序:F->D->B->E->C->A
+			#经典类继承顺序:F->D->B->A->E->C
+			#python3中统一都是新式类
+			#pyhon2中才分新式类与经典类
+
+四 组合与重用性
+软件重用的重要方式除了继承之外还有另外一种方式，即：组合
+组合指的是，在一个类中以另外一个类的对象作为数据属性，称为类的组合
+
+1 继承方式
+通过继承建立了派生类与基类之间的关系，它是一种'是'的关系，比如白马是马，人是动物。
+当类之间有很多相同的功能，提取这些共同的功能做成基类，用继承比较好，比如老师是人，学生是人
+2 组合的方式
+用组合的方式建立了类与组合的类之间的关系，它是一种‘有’的关系,比如老师有生日，老师教python和linux课程，老师有学生s1、s2、s3...
+示例：继承与组合
+	class People:
+		def __init__(self,name,age,sex):
+			self.name=name
+			self.age=age
+			self.sex=sex
+
+	class Course:
+		def __init__(self,name,period,price):
+			self.name=name
+			self.period=period
+			self.price=price
+		def tell_info(self):
+			print('<%s %s %s>' %(self.name,self.period,self.price))
+
+	class Teacher(People):
+		def __init__(self,name,age,sex,job_title):
+			People.__init__(self,name,age,sex)
+			self.job_title=job_title
+			self.course=[]
+			self.students=[]
+
+	class Student(People):
+		def __init__(self,name,age,sex):
+			People.__init__(self,name,age,sex)
+			self.course=[]
+
+
+	harry=Teacher('harry',24,'male','金牌讲师')
+	s1=Student('sam',18,'female')
+
+	python=Course('python','3mons',3000.0)
+	linux=Course('python','3mons',3000.0)
+
+	#为老师harry和学生s1添加课程
+	harry.course.append(python)
+	harry.course.append(linux)
+	s1.course.append(python)
+
+	#为老师harry添加学生s1
+	harry.students.append(s1)
+
+	#使用
+	for obj in egon.course:
+		obj.tell_info()
+		
+五 抽象类
+	1 什么是抽象类
+	抽象类是一个特殊的类，它的特殊之处在于只能被继承，不能被实例化
+	2 为什么要有抽象类
+	如果说类是从一堆对象中抽取相同的内容而来的，那么抽象类就是从一堆类中抽取相同的内容而来的，内容包括数据属性和函数属性。
+	3. 在python中实现抽象类
+		import abc #利用abc模块实现抽象类
+		class All_file(metaclass=abc.ABCMeta):
+			all_type='file'
+			@abc.abstractmethod #定义抽象方法，无需实现功能
+			def read(self):
+				'子类必须定义读功能'
+				pass
+
+			@abc.abstractmethod #定义抽象方法，无需实现功能
+			def write(self):
+				'子类必须定义写功能'
+				pass
+
+		# class Txt(All_file):
+		#     pass
+		#
+		# t1=Txt() #报错,子类没有定义抽象方法
+
+		class Txt(All_file): #子类继承抽象类，但是必须定义read和write方法
+			def read(self):
+				print('文本数据的读取方法')
+
+			def write(self):
+				print('文本数据的读取方法')
+
+		class Sata(All_file): #子类继承抽象类，但是必须定义read和write方法
+			def read(self):
+				print('硬盘数据的读取方法')
+
+			def write(self):
+				print('硬盘数据的读取方法')
+
+		class Process(All_file): #子类继承抽象类，但是必须定义read和write方法
+			def read(self):
+				print('进程数据的读取方法')
+
+			def write(self):
+				print('进程数据的读取方法')
+
+		wenbenwenjian=Txt()
+
+		yingpanwenjian=Sata()
+
+		jinchengwenjian=Process()
+
+		#这样大家都是被归一化了,也就是一切皆文件的思想
+		wenbenwenjian.read()
+		yingpanwenjian.write()
+		jinchengwenjian.read()
+
+		print(wenbenwenjian.all_type)
+		print(yingpanwenjian.all_type)
+		print(jinchengwenjian.all_type)
+		
+	4 抽象类与接口
+	抽象类的本质还是类，指的是一组类的相似性，包括数据属性（如all_type）和函数属性（如read、write），而接口只强调函数属性的相似性。
+	抽象类是一个介于类和接口直接的一个概念，同时具备类和接口的部分特性，可以用来实现归一化设计
+	
+六 多态与多态性
+	1 多态
+	多态指的是一类事物有多种形态，比如
+	动物有多种形态：人，狗，猪
+	
+	import abc
+	class Animal(metaclass=abc.ABCMeta): #同一类事物:动物
+		@abc.abstractmethod
+		def talk(self):
+			pass
+
+	class People(Animal): #动物的形态之一:人
+		def talk(self):
+			print('say hello')
+
+	class Dog(Animal): #动物的形态之二:狗
+		def talk(self):
+			print('say wangwang')
+
+	class Pig(Animal): #动物的形态之三:猪
+		def talk(self):
+			print('say aoao')
+			
+	2 多态性
+		多态性是指在不考虑实例类型的情况下使用实例，多态性分为静态多态性和动态多态性
+		静态多态性：如任何类型都可以用运算符+进行运算
+		动态多态性：如下
+		dog=Dog()
+		pig=Pig()
+
+		#peo、dog、pig都是动物,只要是动物肯定有talk方法
+		#于是我们可以不用考虑它们三者的具体是什么类型,而直接使用
+		peo.talk()
+		dog.talk()
+		pig.talk()
+
+		#更进一步,我们可以定义一个统一的接口来使用
+		def func(obj):
+			obj.talk()
+	
+	3 鸭子类型
+	Python崇尚鸭子类型，即‘如果看起来像、叫声像而且走起路来像鸭子，那么它就是鸭子’
+    python程序员通常根据这种行为来编写程序。例如，如果想编写现有对象的自定义版本，可以继承该对象
+    也可以创建一个外观和行为像，但与它无任何关系的全新对象，后者通常用于保存程序组件的松耦合度。
+    例1：利用标准库中定义的各种‘与文件类似’的对象，尽管这些对象的工作方式像文件，但他们没有继承内置文件对象的方法
+		#二者都像鸭子,二者看起来都像文件,因而就可以当文件一样去用
+		class TxtFile:
+			def read(self):
+				pass
+
+			def write(self):
+				pass
+
+		class DiskFile:
+			def read(self):
+				pass
+			def write(self):
+				pass
+	例2：序列类型有多种形态：字符串，列表，元组，但他们直接没有直接的继承关系
+		#str,list,tuple都是序列类型
+		s=str('hello')
+		l=list([1,2,3])
+		t=tuple((4,5,6))
+
+		#我们可以在不考虑三者类型的前提下使用s,l,t
+		s.__len__()
+		l.__len__()
+		t.__len__()
+
+		len(s)
+		len(l)
+		len(t)
+
+七 封装
+	1 什么是封装
+		从封装本身的意思去理解，封装就好像是拿来一个麻袋，把小猫，小狗，一起装进麻袋，然后把麻袋封上口子。照这种逻辑看，封装=‘隐藏’，这种理解是相当片面的
+	2 隐藏方法	
+		在python中用双下划线开头的方式将属性隐藏起来（设置成私有的）
+		#其实这仅仅这是一种变形操作
+		#类中所有双下划线开头的名称如__x都会自动变形成：_类名__x的形式：
+
+		class A:
+			__N=0 #类的数据属性就应该是共享的,但是语法上是可以把类的数据属性设置成私有的如__N,会变形为_A__N
+			def __init__(self):
+				self.__X=10 #变形为self._A__X
+			def __foo(self): #变形为_A__foo
+				print('from A')
+			def bar(self):
+				self.__foo() #只有在类内部才可以通过__foo的形式访问到.
+
+		#A._A__N是可以访问到的，即这种操作并不是严格意义上的限制外部访问，仅仅只是一种语法意义上的变形
+	3 封装数据
+		将数据隐藏起来这不是目的。隐藏起来然后对外提供操作该数据的接口，然后我们可以在接口附加上对该数据操作的限制，以此完成对数据属性操作的严格控制。
+		class Teacher:
+			def __init__(self,name,age):
+				self.__name=name
+				self.__age=age
+
+			def tell_info(self):
+				print('姓名:%s,年龄:%s' %(self.__name,self.__age))
+			def set_info(self,name,age):
+				if not isinstance(name,str):
+					raise TypeError('姓名必须是字符串类型')
+				if not isinstance(age,int):
+					raise TypeError('年龄必须是整型')
+				self.__name=name
+				self.__age=age
+
+		t=Teacher('harry',18)
+		t.tell_info()
+
+		t.set_info('harry',19)
+		t.tell_info()
+	使用隐藏封装来提高安全性
+		#取款是功能,而这个功能有很多功能组成:插卡、密码认证、输入金额、打印账单、取钱
+		#对使用者来说,只需要知道取款这个功能即可,其余功能我们都可以隐藏起来,很明显这么做
+		#隔离了复杂度,同时也提升了安全性
+
+		class ATM:
+			def __card(self):
+				print('插卡')
+			def __auth(self):
+				print('用户认证')
+			def __input(self):
+				print('输入取款金额')
+			def __print_bill(self):
+				print('打印账单')
+			def __take_money(self):
+				print('取款')
+
+			def withdraw(self):
+				self.__card()
+				self.__auth()
+				self.__input()
+				self.__print_bill()
+				self.__take_money()
+
+		a=ATM()
+		a.withdraw()
+	4 特性（property）
+	property是一种特殊的属性，访问它时会执行一段功能（函数）然后返回值
+	例一：BMI指数（bmi是计算而来的，但很明显它听起来像是一个属性而非方法，如果我们将其做成一个属性，更便于理解）
+	成人的BMI数值：
+	过轻：低于18.5
+	正常：18.5-23.9
+	过重：24-27
+	肥胖：28-32
+	非常肥胖, 高于32
+	体质指数（BMI）=体重（kg）÷身高^2（m）
+	EX：70kg÷（1.75×1.75）=22.86
+		class People:
+		def __init__(self,name,weight,height):
+			self.name=name
+			self.weight=weight
+			self.height=height
+			
+		@property
+		def bmi(self):
+			return self.weight / (self.height**2)
+		p1=People('egon',75,1.85)
+		print(p1.bmi)
+	
+	例二：圆的周长和面积
+		import math
+		class Circle:
+			def __init__(self,radius): #圆的半径radius
+				self.radius=radius
+
+			@property
+			def area(self):
+				return math.pi * self.radius**2 #计算面积
+
+			@property
+			def perimeter(self):
+				return 2*math.pi*self.radius #计算周长
+
+		c=Circle(10)
+		print(c.radius)
+		print(c.area) #可以向访问数据属性一样去访问area,会触发一个函数的执行,动态计算出一个值
+		print(c.perimeter) #同上
+		输出结果:
+		314.1592653589793
+		62.83185307179586
+		'''
+		62.83185307179586
+		'''
+
+八 绑定方法与非绑定方法
+	1 绑定到类的方法：用classmethod装饰器装饰的方法。 （绑定给谁，谁来调用就自动将它本身当作第一个参数传入）：
+		 为类量身定制
+		 类.boud_method(),自动将类当作第一个参数传入
+	   （其实对象也可调用，但仍将类当作第一个参数传入）
+			#settings.py
+			HOST='127.0.0.1'
+			PORT=3306
+			DB_PATH=r'C:\Users\Administrator\PycharmProjects\test\面向对象编程\test1\db'
+
+			#test.py
+			import settings
+			class MySQL:
+				def __init__(self,host,port):
+					self.host=host
+					self.port=port
+
+				@classmethod
+				def from_conf(cls):
+					print(cls)
+					return cls(settings.HOST,settings.PORT)
+
+			print(MySQL.from_conf) #<bound method MySQL.from_conf of <class '__main__.MySQL'>>
+			conn=MySQL.from_conf()
+
+			conn.from_conf() #对象也可以调用，但是默认传的第一个参数仍然是类
+			
+	2 绑定到对象的方法：没有被任何装饰器装饰的方法。
+		为对象量身定制
+		对象.boud_method(),自动将对象当作第一个参数传入
+	   （属于类的函数，类可以调用，但是必须按照函数的规则来，没有自动传值那么一说） 
+			import hashlib
+			import time
+			class MySQL:
+				def __init__(self,host,port):
+					self.id=self.create_id()
+					self.host=host
+					self.port=port
+				@staticmethod
+				def create_id(): #就是一个普通工具
+					m=hashlib.md5(str(time.time()).encode('utf-8'))
+					return m.hexdigest()
+
+
+			print(MySQL.create_id) #<function MySQL.create_id at 0x0000000001E6B9D8> #查看结果为普通函数
+			conn=MySQL('127.0.0.1',3306)
+			print(conn.create_id) #<function MySQL.create_id at 0x00000000026FB9D8> #查看结果为普通函数
+	
+	3 非绑定方法：用staticmethod装饰器装饰的方法
+		不与类或对象绑定，类和对象都可以调用，但是没有自动传值那么一说。就是一个普通工具而已
+		
+
+九 反射
+	1 什么是反射
+		反射的概念是由Smith在1982年首次提出的，主要是指程序可以访问、检测和修改它本身状态或行为的一种能力（自省）。这一概念的提出很快引发了计算机科学领域关于应用反射性的研究。它首先被程序语言的设计领域所采用,并在Lisp和面向对象方面取得了成绩。
+	2 Python面向对象中的反射
+		过字符串的形式操作对象相关的属性。python中的一切事物都是对象（都可以使用反射）
+		# hasattr(object,name)
+		判断object中有没有一个name字符串对应的方法或属性
+		# getattr(object, name, default=None)
+		# def getattr(object, name, default=None): # known special case of getattr
+			"""
+			getattr(object, name[, default]) -> value
+
+			Get a named attribute from an object; getattr(x, 'y') is equivalent to x.y.
+			When a default argument is given, it is returned when the attribute doesn't
+			exist; without it, an exception is raised in that case.
+			"""
+			pass
+		
+		# setarrt(x,y,v)
+		def setattr(x, y, v): # real signature unknown; restored from __doc__
+			"""
+			Sets the named attribute on the given object to the specified value.
+
+			setattr(x, 'y', v) is equivalent to ``x.y = v''
+			"""
+			pass
+			
+		# delattr(x, y)
+		def delattr(x, y): # real signature unknown; restored from __doc__
+		"""
+		Deletes the named attribute from the given object.
+
+		delattr(x, 'y') is equivalent to ``del x.y''
+		"""
+		pass
+		
+	3 四个方法的使用演示
+		class BlackMedium:
+			feature='Ugly'
+			def __init__(self,name,addr):
+				self.name=name
+				self.addr=addr
+
+			def sell_house(self):
+				print('%s 黑中介卖房子啦,傻逼才买呢,但是谁能证明自己不傻逼' %self.name)
+			def rent_house(self):
+				print('%s 黑中介租房子啦,傻逼才租呢' %self.name)
+
+		b1=BlackMedium('万成置地','回龙观天露园')
+
+		#检测是否含有某属性
+		print(hasattr(b1,'name'))
+		print(hasattr(b1,'sell_house'))
+
+		#获取属性
+		n=getattr(b1,'name')
+		print(n)
+		func=getattr(b1,'rent_house')
+		func()
+
+		# getattr(b1,'aaaaaaaa') #报错
+		print(getattr(b1,'aaaaaaaa','不存在啊'))
+
+		#设置属性
+		setattr(b1,'sb',True)
+		setattr(b1,'show_name',lambda self:self.name+'sb')
+		print(b1.__dict__)
+		print(b1.show_name(b1))
+
+		#删除属性
+		delattr(b1,'addr')
+		delattr(b1,'show_name')
+		delattr(b1,'show_name111')#不存在,则报错
+
+		print(b1.__dict__)
+		
+	4 类也是对象
+		class Foo(object):
+			staticField = "old boy"
+
+			def __init__(self):
+				self.name = 'wupeiqi'
+
+			def func(self):
+				return 'func'
+
+			@staticmethod
+			def bar():
+				return 'bar'
+
+		print getattr(Foo, 'staticField')
+		print getattr(Foo, 'func')
+		print getattr(Foo, 'bar')
+	
+	5 反射当前模块成员
+		#!/usr/bin/env python
+		# -*- coding:utf-8 -*-
+		import sys
+		def s1():
+			print 's1'
+
+		def s2():
+			print 's2'
+
+		this_module = sys.modules[__name__]
+
+		hasattr(this_module, 's1')
+		getattr(this_module, 's2')
+	
+	6 导入其他模块，利用反射查找该模块是否存在某个方法
+		#!/usr/bin/env python
+		# -*- coding:utf-8 -*-
+
+		"""
+		程序目录：
+			module_test.py
+			index.py
+
+		当前文件：
+			index.py
+		"""
+		import module_test as obj
+
+		#obj.test()
+		print(hasattr(obj,'test'))
+		getattr(obj,'test')()
+
+十 元类
+	1 什么是元类
+		元类是类的类，是类的模板
+		类是用来控制如何创建类的，正如类是创建对象的模板一样，而元类的主要目的是为了控制类的创建行为
+		元类的实例化的结果为我们用class定义的类，正如类的实例为对象(f1对象是Foo类的一个实例，Foo类是 type 类的一个实例)
+		type是python的一个内建元类，用来直接控制生成类，python中任何class定义的类其实都是type类实例化的对象
+	2 创建类的两种方式
+		方式一:使用class关键字
+			class Chinese(object):
+				country='China'
+				def __init__(self,name,age):
+					self.name=name
+					self.age=age
+				def talk(self):
+					print('%s is talking' %self.name)
+		
+		方式二：就是手动模拟class创建类的过程）：将创建类的步骤拆分开，手动去创建
+			#准备工作：
+
+			#创建类主要分为三部分
+
+			　　1 类名
+
+			　　2 类的父类
+
+			　　3 类体
+
+			#类名
+			class_name='Chinese'
+			#类的父类
+			class_bases=(object,)
+			#类体
+			class_body="""
+			country='China'
+			def __init__(self,name,age):
+				self.name=name
+				self.age=age
+			def talk(self):
+				print('%s is talking' %self.name)
+			"""
+			步骤一（先处理类体->名称空间）：类体定义的名字都会存放于类的名称空间中（一个局部的名称空间），我们可以事先定义一个空字典，然后用exec去执行类体的代码（exec产生名称空间的过程与真正的class过程类似，只是后者会将__开头的属性变形），生成类的局部名称空间，即填充字典
+			lass_dic={}
+			exec(class_body,globals(),class_dic)
+
+
+			print(class_dic)
+			#{'country': 'China', 'talk': <function talk at 0x101a560c8>, '__init__': <function __init__ at 0x101a56668>}
+			
+			步骤二：调用元类type（也可以自定义）来产生类Chinense
+			Foo=type(class_name,class_bases,class_dic) #实例化type得到对象Foo，即我们用class定义的类Foo
+
+			print(Foo)
+			print(type(Foo))
+			print(isinstance(Foo,type))
+			'''
+			<class '__main__.Chinese'>
+			<class 'type'>
+			True
+			'''
+			
+			我们看到，type 接收三个参数：
+			第 1 个参数是字符串 ‘Foo’，表示类名
+			第 2 个参数是元组 (object, )，表示所有的父类
+			第 3 个参数是字典，这里是一个空字典，表示没有定义属性和方法
+			补充：若Foo类有继承，即class Foo(Bar):.... 则等同于type('Foo',(Bar,),{})
+			
+	3 自定义元类控制类的行为
+		#知识储备：
+		#产生的新对象 = object.__new__(继承object类的子类)
+
+		#步骤一：如果说People=type(类名,类的父类们,类的名称空间)，那么我们定义元类如下，来控制类的创建
+		
+		class Mymeta(type):  # 继承默认元类的一堆属性
+			def __init__(self, class_name, class_bases, class_dic):
+				if '__doc__' not in class_dic or not class_dic.get('__doc__').strip():
+					raise TypeError('必须为类指定文档注释')
+
+				if not class_name.istitle():
+					raise TypeError('类名首字母必须大写')
+
+				super(Mymeta, self).__init__(class_name, class_bases, class_dic)
+
+
+		class People(object, metaclass=Mymeta):
+			country = 'China'
+
+			def __init__(self, name, age):
+				self.name = name
+				self.age = age
+
+			def talk(self):
+				print('%s is talking' % self.name)
+
+		#步骤二：如果我们想控制类实例化的行为，那么需要先储备知识__call__方法的使用
+		
+		class People(object,metaclass=type):
+			def __init__(self,name,age):
+				self.name=name
+				self.age=age
+
+			def __call__(self, *args, **kwargs):
+				print(self,args,kwargs)
+
+
+		# 调用类People，并不会出发__call__
+		obj=People('egon',18)
+
+		# 调用对象obj(1,2,3,a=1,b=2,c=3)，才会出发对象的绑定方法obj.__call__(1,2,3,a=1,b=2,c=3)
+		obj(1,2,3,a=1,b=2,c=3) #打印：<__main__.People object at 0x10076dd30> (1, 2, 3) {'a': 1, 'b': 2, 'c': 3}
+
+		#总结：如果说类People是元类type的实例，那么在元类type内肯定也有一个__call__，会在调用People('egon',18)时触发执行，然后返回一个初始化好了的对象obj
+
+		#步骤三：自定义元类，控制类的调用（即实例化）的过程
+		class Mymeta(type): #继承默认元类的一堆属性
+			def __init__(self,class_name,class_bases,class_dic):
+				if not class_name.istitle():
+					raise TypeError('类名首字母必须大写')
+
+				super(Mymeta,self).__init__(class_name,class_bases,class_dic)
+
+			def __call__(self, *args, **kwargs):
+				#self=People
+				print(self,args,kwargs) #<class '__main__.People'> ('egon', 18) {}
+
+				#1、实例化People，产生空对象obj
+				obj=object.__new__(self)
+
+
+				#2、调用People下的函数__init__，初始化obj
+				self.__init__(obj,*args,**kwargs)
+
+
+				#3、返回初始化好了的obj
+				return obj
+
+		class People(object,metaclass=Mymeta):
+			country='China'
+
+			def __init__(self,name,age):
+				self.name=name
+				self.age=age
+
+			def talk(self):
+				print('%s is talking' %self.name)
+
+		obj=People('egon',18)
+		print(obj.__dict__) #{'name': 'egon', 'age': 18}
+
+		#步骤四：
+		class Mymeta(type): #继承默认元类的一堆属性
+			def __init__(self,class_name,class_bases,class_dic):
+				if not class_name.istitle():
+					raise TypeError('类名首字母必须大写')
+
+				super(Mymeta,self).__init__(class_name,class_bases,class_dic)
+
+			def __call__(self, *args, **kwargs):
+				#self=People
+				print(self,args,kwargs) #<class '__main__.People'> ('egon', 18) {}
+
+				#1、调用self，即People下的函数__new__，在该函数内完成：1、产生空对象obj 2、初始化 3、返回obj
+				obj=self.__new__(self,*args,**kwargs)
+
+				#2、一定记得返回obj，因为实例化People(...)取得就是__call__的返回值
+				return obj
+
+		class People(object,metaclass=Mymeta):
+			country='China'
+
+			def __init__(self,name,age):
+				self.name=name
+				self.age=age
+
+			def talk(self):
+				print('%s is talking' %self.name)
+
+			def __new__(cls, *args, **kwargs):
+				obj=object.__new__(cls)
+				cls.__init__(obj,*args,**kwargs)
+				return obj
+
+		obj=People('egon',18)
+		print(obj.__dict__) #{'name': 'egon', 'age': 18}
+
+		#步骤五：基于元类实现单例模式,比如数据库对象,实例化时参数都一样,就没必要重复产生对象,浪费内存
+		class Mysql:
+			__instance=None
+			def __init__(self,host='127.0.0.1',port='3306'):
+				self.host=host
+				self.port=port
+
+			@classmethod
+			def singleton(cls,*args,**kwargs):
+				if not cls.__instance:
+					cls.__instance=cls(*args,**kwargs)
+				return cls.__instance
+
+
+		obj1=Mysql()
+		obj2=Mysql()
+		print(obj1 is obj2) #False
+
+		obj3=Mysql.singleton()
+		obj4=Mysql.singleton()
+		print(obj3 is obj4) #True
+
+		#应用：定制元类实现单例模式
+		class Mymeta(type):
+			def __init__(self,name,bases,dic): #定义类Mysql时就触发
+				self.__instance=None
+				super().__init__(name,bases,dic)
+
+			def __call__(self, *args, **kwargs): #Mysql(...)时触发
+
+				if not self.__instance:
+					self.__instance=object.__new__(self) #产生对象
+					self.__init__(self.__instance,*args,**kwargs) #初始化对象
+					#上述两步可以合成下面一步
+					# self.__instance=super().__call__(*args,**kwargs)
+
+				return self.__instance
+		class Mysql(metaclass=Mymeta):
+			def __init__(self,host='127.0.0.1',port='3306'):
+				self.host=host
+				self.port=port
+
+
+		obj1=Mysql()
+		obj2=Mysql()
+
+		print(obj1 is obj2)

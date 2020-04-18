@@ -1,0 +1,132 @@
+一 什么是formset
+	Form组件或ModelForm用于做一个表单验证而formset是用于做多个表单的验证组件，用于做批量操作
+
+二 formset的使用方法
+	1 设置form信息
+		class MultiAddPermissionForm(forms.Form):
+			title = forms.CharField(
+				widget=forms.TextInput(attrs={'class': "form-control"})
+			)
+			url = forms.CharField(
+				widget=forms.TextInput(attrs={'class': "form-control"})
+			)
+			name = forms.CharField(
+				widget=forms.TextInput(attrs={'class': "form-control"})
+			)
+			menu_id = forms.ChoiceField(
+				choices=[(None, '-----')],
+				widget=forms.Select(attrs={'class': "form-control"}),
+				required=False,
+
+			)
+
+			pid_id = forms.ChoiceField(
+				choices=[(None, '-----')],
+				widget=forms.Select(attrs={'class': "form-control"}),
+				required=False,
+			)
+
+			def __init__(self, *args, **kwargs):
+				super().__init__(*args, **kwargs)
+				self.fields['menu_id'].choices += models.Menu.objects.values_list('id', 'title')
+				self.fields['pid_id'].choices += models.Permission.objects.filter(pid__isnull=True).exclude(
+					menu__isnull=True).values_list('id', 'title')
+	2 视图中实例化formset_actory并传入之前定义好Form信息
+		form django.form import formset_factory
+		def mult_add(requeest):
+			formset_class = formset_factory(MultiPermissionForm, extra=2) # extra 表示展示几行form
+			if request.method == "GET":
+				formset = formset_class()
+				return render(requeest, 'multi_add.html', {'formset':formset}
+			formset = formset_class(data=request.POST) 
+			
+			if formset.is_valid():
+				print(formset.cleaned_data)
+				flag = True
+				post_row_list = formset.cleaned_data # 如果formset中没有错误信息， 则将用户提交的数据获取到
+				for i in range(0, formset.total_form_count()):
+					row = post_row_list[i]
+					if not row：
+						continue
+					# 保存方式一(不推荐)
+					# modes.Permission.objects.create(**row)
+					# 保存方式二
+					try：
+						obj = models.Permission(**row)
+						obj.validate_unique() # 检查当前对象在数据库是否存在唯一的异常
+						obj.save()
+					except Exception as e:
+						formset.errors[i].update(e)
+						flag = False
+				if flag:	
+					return HttpResponse('提交成功')
+				else:
+					return render(request, 'multi_add.html', {'formset':formset}
+			return render(request, 'multi_add.html', {'formset':formset}
+
+三 使用formset批量编辑
+	
+	class MultiEditPermissionForm(forms.Form):
+		id = forms.IntegerField(
+			widget=forms.HiddenInput()
+		)
+
+		title = forms.CharField(
+			widget=forms.TextInput(attrs={'class': "form-control"})
+		)
+		url = forms.CharField(
+			widget=forms.TextInput(attrs={'class': "form-control"})
+		)
+		name = forms.CharField(
+			widget=forms.TextInput(attrs={'class': "form-control"})
+		)
+		menu_id = forms.ChoiceField(
+			choices=[(None, '-----')],
+			widget=forms.Select(attrs={'class': "form-control"}),
+			required=False,
+
+		)
+
+		pid_id = forms.ChoiceField(
+			choices=[(None, '-----')],
+			widget=forms.Select(attrs={'class': "form-control"}),
+			required=False,
+		)
+
+		def __init__(self, *args, **kwargs):
+			super().__init__(*args, **kwargs)
+			self.fields['menu_id'].choices += models.Menu.objects.values_list('id', 'title')
+			self.fields['pid_id'].choices += models.Permission.objects.filter(pid__isnull=True).exclude(
+				menu__isnull=True).values_list('id', 'title')
+
+	
+	def multi_edit(request):
+		formset_class = formset_factory(MultiEditPermissionForm, extra=0)
+		if requet.method == 'GET':
+			formset = formset_class(initial=models.Permission.objects.all().values('id','title','url', 'name', 'menu_id','pid_id'))
+			return render(requeest, 'multi_edit.html', {'formset':formset}
+		formset = formset_class(data=request.POST) 
+		if formset.is_valid():
+			print(formset.cleaned_data)
+			flag = True
+			post_row_list = formset.cleaned_data # 如果formset中没有错误信息， 则将用户提交的数据获取到
+			
+			for i in range(0, formset.total_form_count()):
+				row = post_row_list[i]
+				if not row:
+					continue
+				permission_id = row.pop('id')
+				try：
+					permission_object = models.Permission.objects.fitler(id=permission_id).first()
+					for key,value in row.items():
+						setattr(permission_object,key,value)
+					permission_object.validate_unique()
+					permission_object.save()
+				except Exception as e:
+					formset.errors[i].update(e)
+					flag = False
+			if flag:	
+					return HttpResponse('提交成功')
+			else:
+					return render(request, 'multi_add.html', {'formset':formset}
+		return render(request, 'multi_add.html', {'formset':formset}

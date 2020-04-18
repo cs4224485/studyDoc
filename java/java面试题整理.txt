@@ -1,0 +1,915 @@
+一 java基础部分
+
+1. 字符型常量和字符串常量的区别
+
+	形式上: 字符常量是单引号引起的一个字符 字符串常量是双引号引起的若干个字符
+	含义上: 字符常量相当于一个整形值( ASCII 值),可以参加表达式运算 字符串常量代表一个地址值(该字符串在内存中存放位置)
+	占内存大小 字符常量只占 2 个字节 字符串常量占若干个字节(至少一个字符结束标志) (注意： char 在 Java 中占两个字节)
+2. 重载和重写的区别
+	
+	重载：多个方法可以定义相同的方法名，但是可以用来接收不同的参数
+	重写：发生在父子类中，方法名、参数列表必须相同，返回值范围小于等于父类，抛出的异常范围小于等于父类，访问修饰符范围大于等于父类；如果父类方法访问修饰符为 private 则子类就不能重写该方法
+	
+3. Java 面向对象编程三大特性: 封装 继承 多态
+	封装：封装就是多个属性封装到类中， 同时提供一些可以被外界访问的属性方法。
+	继承：继承是使用已存在的类的定义作为基础建立新类的技术，新类的定义可以增加新的数据或新的功能，也可以用父类的功能，但不能选择性地继承父类。通过使用继承我们能够非常方便地复用以前的代码。
+		关于继承如下 3 点请记住：
+			子类拥有父类非 private 的属性和方法。
+			子类可以拥有自己属性和方法，即子类可以对父类进行扩展。
+			子类可以用自己的方式实现父类的方法。
+	多态：所谓多态就是指程序中定义的引用变量所指向的具体类型和通过该引用变量发出的方法调用在编程时并不确定，而是在程序运行期间才确定，即一个引用变量倒底会指向哪个类的实例对象，该引用变量发出的方法调用到底是哪个类中实现的方法，必须在由程序运行期间才能决定。
+		把子类的对象赋值给父类的变量 -> 向上转型
+			缺点：屏蔽掉子类中特有的方法
+		把父类的变量转化回子类的变量 -> 向下转型 
+			向下转型有可能有风险, java要求必须要写强制类型转换
+			(转换之后的数据类型)变量
+4. String StringBuffer 和 StringBuilder 的区别是什么？ String 为什么是不可变的	
+	简单的来说：String 类中使用 final 关键字字符数组保存字符串，privatefinal char value[]，所以 String 对象是不可变的。
+				而 StringBuilder 与StringBuffer 都继承自 AbstractStringBuilder 类，在 AbstractStringBuilder 中也是使用字符数组保存字符串 char[]value 但是没有用 final 关键字修饰，所以这两种对象都是可变的
+		
+	线程安全性：String 中的对象是不可变的，也就可以理解为常量，线程安全
+			AbstractStringBuilder 是 StringBuilder 与 StringBuffer 的公共父类，定义了一些字符串的基本操作，如 expandCapacity、append、insert、indexOf 等公共方法。
+			StringBuffer 对方法加了同步锁或者对调用的方法加了同步锁，所以是线程安全的。StringBuilder 并没有对方法进行加同步锁，所以是非线程安全的
+			
+	性能：每次对 String类型进行改变的时候，都会生成一个新的 String 对象，然后将指针指向新的 String 对象
+		  StringBuffer 每次都会对 StringBuffer 对象本身进行操作，而不是生成新的对象并改变对象引用。
+		  StringBuilder 相比使用 StringBuffer 仅能获得 10%~15% 左右的性能提升，但却要冒多线程不安全的风险
+		  
+
+5. 自动装箱与拆箱
+	装箱：将基本类型用它们对应的引用类型包装起来；
+	拆箱：将包装类型转换为基本数据类型；
+
+6. 在 Java 中定义一个不做事且没有参数的构造方法的作用
+	Java 程序在执行子类的构造方法之前，如果没有用 super() 来调用父类特定的构造方法，则会调用父类中“没有参数的构造方法”。
+	因此，如果父类中只定义了有参数的构造方法，而在子类的构造方法中又没有用 super() 来调用父类中特定的构造方法，则编译时将发生错误，因为 Java 程序在父类中找不到没有参数的构造方法可供执行。
+	解决办法是在父类里加上一个不做事且没有参数的构造方法
+
+7. 接口和抽象类的区别是什么
+	接口的方法默认是 public，所有方法在接口中不能有实现(Java 8 开始接口方法可以有默认实现），抽象类可以有非抽象的方法
+	接口中的实例变量默认是 final 类型的，而抽象类中则不一定
+	一个类可以实现多个接口，但最多只能继承一个抽象类
+	一个类实现接口的话要实现接口的所有方法，而抽象类不一定
+	接口不能用 new 实例化，但可以声明，但是必须引用一个实现该接口的对象 从设计层面来说，抽象是对类的抽象，是一种模板设计，接口是行为的抽象，是一种行为的规范。
+	
+8. 成员变量与局部变量的区别有那些
+	从语法形式上，看成员变量是属于类的，而局部变量是在方法中定义的变量或是方法的参数；成员变量可以被 public,private,static 等修饰符所修饰，而局部变量不能被访问控制修饰符及 static 所修饰；但是，成员变量和局部变量都能被 final 所修饰；
+	从变量在内存中的存储方式来看，成员变量是对象的一部分，而对象存在于堆内存，局部变量存在于栈内存
+	从变量在内存中的生存时间上看，成员变量是对象的一部分，它随着对象的创建而存在，而局部变量随着方法的调用而自动消失。
+	
+9. 创建一个对象用什么运算符?对象实体与对象引用有何不同?
+	new 运算符，new 创建对象实例（对象实例在堆内存中），对象引用指向对象实例（对象引用存放在栈内存中）。
+	一个对象引用可以指向 0 个或 1 个对象（一根绳子可以不系气球，也可以系一个气球）;一个对象可以有 n 个引用指向它（可以用 n 条绳子系住一个气球）。
+	
+10. 构造方法有哪些特性
+	名字与类名相同
+	没有返回值，但不能用void声明构造函数
+	生成类的对象时自动执行，无需调用
+	
+11. 静态方法和实例方法有何不同
+	在外部调用静态方法时，可以使用"类名.方法名"的方式，也可以使用"对象名.方法名"的方式。而实例方法只有后面这种方式。也就是说，调用静态方法可以无需创建对象。
+	静态方法在访问本类的成员时，只允许访问静态成员（即静态成员变量和静态方法），而不允许访问实例成员变量和实例方法；实例方法则无此限制
+	
+12. == 与 equals(重要)
+	== : 它的作用是判断两个对象的地址是不是相等。即，判断两个对象是不是同一个对象。(基本数据类型==比较的是值，引用数据类型==比较的是内存地址)
+	equals() : 它的作用也是判断两个对象是否相等。但它一般有两种使用情况：
+		情况 1：类没有覆盖 equals() 方法。则通过 equals() 比较该类的两个对象时，等价于通过“==”比较这两个对象。
+		情况 2：类覆盖了 equals() 方法。一般，我们都覆盖 equals() 方法来两个对象的内容相等；若它们的内容相等，则返回 true (即，认为这两个对象相等)。
+		String 中的 equals 方法是被重写过的，因为 object 的 equals 方法是比较的对象的内存地址，而 String 的 equals 方法比较的是对象的值。
+		当创建 String 类型的对象时，虚拟机会在常量池中查找有没有已经存在的值和要创建的值相同的对象，如果有就把它赋给当前引用。如果没有就在常量池中重新创建一个 String 对象。
+
+13. hashCode 与 equals（重要）
+	面试官可能会问你：“你重写过 hashcode 和 equals 么，为什么重写 equals时必须重写 hashCode 方法？”
+	hashCode() 的作用是获取哈希码，也称为散列码；它实际上是返回一个 int 整数。这个哈希码的作用是确定该对象在哈希表中的索引位置。hashCode() 定义在 JDK 的 Object.java 中，这就意味着 Java 中的任何类都包含有 hashCode() 函数。
+		散列表存储的是键值对(key-value)，它的特点是：能根据“键”快速的检索出对应的“值”。这其中就利用到了散列码！（可以快速找到所需要的对象）
+		
+	为什么要有 hashCode
+		我们以“HashSet 如何检查重复”为例子来说明为什么要有 hashCode：
+			当你把对象加入 HashSet 时，HashSet 会先计算对象的 hashcode 值来判断对象加入的位置，同时也会与其他已经加入的对象的 hashcode 值作比较，
+			如果没有相符的 hashcode，HashSet 会假设对象没有重复出现。但是如果发现有相同 hashcode 值的对象，这时会调用 equals（）方法来检查 hashcode 相等的对象是否真的相同。
+			如果两者相同，HashSet 就不会让其加入操作成功。如果不同的话，就会重新散列到其他位置。（摘自我的 Java 启蒙书《Headfirst java》第二版）。这样我们就大大减少了 equals 的次数，相应就大大提高了执行速度
+			
+	hashCode（）与 equals（）的相关规定
+		如果两个对象相等，则 hashcode 一定也是相同的
+		两个对象相等,对两个对象分别调用 equals 方法都返回 true
+		两个对象有相同的 hashcode 值，它们也不一定是相等的
+		因此，equals 方法被覆盖过，则 hashCode 方法也必须被覆盖
+		hashCode() 的默认行为是对堆上的对象产生独特值。如果没有重写hashCode()，则该 class 的两个对象无论如何都不会相等（即使这两个对象指向相同的数据）
+		
+
+14. 简述线程，程序、进程的基本概念。以及他们之间关系是什么
+	线程：线程是CPU调用的最小单元，一个进程在执行中可以产生多个线程，与进程不同的是同类的多个线程共享一块内存空间和一组系统资源，所以系统产生一个线程或是在各个线程之间切换工作时负担要比进程小很多。
+	程序：程序是含有指令和数据的文件，被存储在磁盘或其他的数据存储设备中，也就是说程序是静态的代码。
+	进程：进程是程序的一次执行，系统运行程序的基本单位，因此进程是动态的。系统运行一个程序即是一个进程从创建，运行到消亡的过程。
+	
+15. 关于 final 关键字的一些总结
+	final 关键字主要用在三个地方：变量、方法、类。
+		对于一个 final 变量，如果是基本数据类型的变量，则其数值一旦在初始化之后便不能更改；如果是引用类型的变量，则在对其初始化之后便不能再让其指向另一个对象。
+		当用 final 修饰一个类时，表明这个类不能被继承。final 类中的所有成员方法都会被隐式地指定为 final 方法。
+		使用 final 方法的原因有两个。第一个原因是把方法锁定，以防任何继承类修改它的含义；第二个原因是效率
+
+16. Java 中的异常处理
+	在 Java 中，所有的异常都有一个共同的祖先 java.lang 包中的 Throwable类。Throwable： 有两个重要的子类：Exception（异常） 和 Error（错误） ，二者都是 Java 异常处理的重要子类，各自都包含大量子类。
+	
+	Error（错误）:是程序无法处理的错误，表示运行应用程序中较严重问题。大多数错误与代码编写者执行的操作无关，而表示代码运行时 JVM（Java 虚拟机）出现的问题。例如，Java 虚拟机运行错误（Virtual MachineError），当JVM 不再有继续执行操作所需的内存资源时，将出现 OutOfMemoryError。这些异常发生时，Java 虚拟机（JVM）一般会选择线程终止。
+	
+	Exception（异常）:是程序本身可以处理的异常。Exception 类有一个重要的子类 RuntimeException。RuntimeException 异常由 Java 虚拟机抛出。
+		NullPointerException（要访问的变量没有引用任何对象时，抛出该异常）、
+		ArithmeticException（算术运算异常，一个整数除以 0 时，抛出该异常）和
+		ArrayIndexOutOfBoundsException （下标越界异常）。
+		ClassNotFoundException 指定类不存在
+		NumberFormatException 字符串转换为数字异常
+		IndexOutOfBoundsException 数组下标越界异常
+		ClassCastException 数据类型转换异常
+		FileNotFoundException 文件未找到异常
+		NoSuchMethodException 方法不存在异常
+		IOException IO 异常
+				
+		
+	Throwable 类常用方法:
+		public string getMessage():返回异常发生时的详细信息
+		public string toString():返回异常发生时的简要描述
+		public string getLocalizedMessage():返回异常对象的本地化信息。使用 Throwable 的子类覆盖这个方法，可以声称本地化信息。如果子类没有覆盖该方法，则该方法返回的信息与 getMessage（）返回的结果相同
+	    public void printStackTrace():在控制台上打印 Throwable 对象封装的异常信息
+
+17. Java 序列化中如果有些字段不想进行序列化 怎么办
+	对于不想进行序列化的变量，使用 transient 关键字修饰。
+	transient 关键字的作用是：阻止实例中那些用此关键字修饰的的变量序列化；当对象被反序列化时，被 transient 修饰的变量值不会被持久化和恢复。
+	transient 只能修饰变量，不能修饰类和方法
+	
+18. String 属于基础的数据类型吗？
+	String 不属于基础类型，基础类型有 8 种：byte、boolean、char、short、int、float、long、double，而 String 属于对象。
+
+19. String str="i"与 String str=new String(“i”)一样吗？
+	不一样，因为内存的分配方式不一样。String str="i"的方式，Java 虚拟机会将其分配到常量池中；而 String str=new String(“i”) 则会被分到堆内存中。
+	
+20. 如何将字符串反转
+	使用 StringBuilder 或者 stringBuffer 的 reverse() 方法。
+	示例代码：
+	// StringBuffer reverse
+	StringBuffer stringBuffer = new StringBuffer();
+	stringBuffer. append(“abcdefg”);
+	System. out. println(stringBuffer. reverse()); // gfedcba
+	// StringBuilder reverse
+	StringBuilder stringBuilder = new StringBuilder();
+	stringBuilder. append(“abcdefg”);
+	System. out. println(stringBuilder. reverse()); // gfedcba
+	
+
+21. ArrayList 和 LinkList 的区别
+	ArrayList（数组结构）：优点：get 和 set 调用花费常数时间，也就是查询的速度快；
+						   缺点：新项的插入和现有项的删除代价昂贵，也就是添加删除的速度慢
+						   
+	LinkedList（链表结构）：优点：新项的插入和和现有项的删除开销很小，即添加和删除的速度快
+							缺点：对 get 和 set 的调用花费昂贵，不适合做查询
+							
+	面试中经常问到一些深入的东西，比如：
+		是否保证线程安全： ArrayList 和 LinkedList 都是不同步的，也就是不保证线程安全
+		底层数据结构： Arraylist 底层使用的是 Object 数组；LinkedList 底层使用的是双向循环链表数据 结构；
+		插入和删除是否受元素位置的影响： ① ArrayList 采用数组存储，所以插入和删除元素的时间复 杂度受元素位置的影响。 
+										比如：执行 add(E e)方法的时候， ArrayList 会默认在将指定的元素追加到此 列表的末尾，这种情况时间复杂度就是 O(1)。
+										但是如果要在指定位置 i 插入和删除元素的话（add(int index, E element)）时间复杂度就为 O(n-i)。因为在进行上述操作的时候集合中第 i 和第 i 个元素之后的(n-i) 个元素都要执行向后位/向前移一位的操作。 
+										② LinkedList 采用链表存储，所以插入，删除元素时间复杂 度不受元素位置的影响，都是近似 O（1）而数组为近似 O（n）。
+										
+		内存空间占用： ArrayList 的空 间浪费主要体现在在 list 列表的结尾会预留一定的容量空间，而 LinkedList 的空间花费则体现在它的每一个元素都需要消耗比 ArrayList 更多的空间（因为要存放直接后继 和直接前驱以及数据）
+		
+22. Comparable 和 Comparator 区别？
+	让元素自身具备比较性，需要元素对象实现 Comparable 接口，覆盖 compareTo 方法
+	让集合自身具备比较性，需要定义一个实现了 Comparator 接口的比较器，并覆盖 compare 方法
+	
+23. map 集合的两种取出方式？
+	/第一种：普遍使用，二次取值
+	System.out.println("通过 Map.keySet 遍历 key 和 value："); 
+	for (String key : map.keySet()) {
+		 System.out.println("key= "+ key + " and value= " + map.get(key));
+		}
+		
+	//第二种：推荐，尤其是容量大时
+		System.out.println("通过 Map.entrySet 遍历 key 和 value");
+		for (Map.Entry<String, String> entry : map.entrySet()){ 
+			System.out.println("key= " + entry.getKey() + " and value= " + entry.getValue()); 
+		}
+		
+24. HashMap 和 Hashtable 的区别？
+	存储：HashMap 运行 key 和 value 为 null，而 Hashtable 不允许。
+	线程安全：Hashtable 是线程安全的，而 HashMap 是非线程安全的。
+	推荐使用：在 Hashtable 的类注释可以看到，Hashtable 是保留类不建议使用，推荐在单线程环境下使用 HashMap 替代，如果需要多线程使用则用 ConcurrentHashMap 替代。
+	
+25. Collection 和 Collections 的区别？
+	Collection 是集合类的上级接口,继承与他的接口主要有 Set 和 List. Collections 是工具类
+	
+26. 数组
+	数据类型[] 数组名= new 数据类型[数组长度]; 数组类型 数组名[] = new 数组类型[数组长度];
+	由于定义数组时,内存分配的是连续空间,所以数组元素在数组里顺序排列编号,该编号即元素下标,它标明了 元素在数组中的位置
+	语法:
+		数据类型[] 数组名 ={值 1,值 2,值 3.....值 n}; 
+		数组类型[] 数组名 = new 数据类型[]{值 1,值 2,值 3,......,值 n}
+		
+27 如何决定使用 HashMap 还是 TreeMap
+	对于在 Map 中插入、删除、定位一个元素这类操作，HashMap 是最好的选择，因为相对而言 HashMap 的插入会更快，但如果你要对一个 key 集合进行有序的遍历，那 TreeMap 是更好的选择。
+
+28. 说一下 HashMap 的实现原理
+	HashMap 基于 Hash 算法实现的，我们通过 put(key,value)存储，get(key)来获取。当传入 key 时，HashMap 会根据 key. hashCode() 计算出 hash 值，根据 hash 值将 value 保存在 bucket 里。当计算出的 hash 值相同时，我们称之为 hash 冲突，HashMap 的做法是用链表和红黑树存储相同 hash 值的value。当 hash 冲突的个数比较少时，使用链表否则使用红黑树。
+	
+	HashMap 根据键的 hashCode 值存储数据，大多数情况下可以直接定位到它的值，因而具有很快的访问速度，但遍历顺序却是不确定的。 HashMap 最多只允许一条记录的键为 null，允许多条记录的值为 null。
+	HashMap 非线程安全，即任一时刻可以有多个线程同时写 HashMap，可能会导致数据的不一致。如果需要满足线程安全，可以用 Collections 的 synchronizedMap 方法使HashMap或者使用 ConcurrentHashMap
+
+	
+29. 如何实现数组和 List 之间的转换？
+	数组转 List：使用 Arrays. asList(array) 进行转换。
+	List 转数组：使用 List 自带的 toArray() 方法。
+	
+30. Array 和 ArrayList 有何区别？
+	Array 可以存储基本数据类型和对象，ArrayList 只能存储对象。
+	Array 是指定固定大小的，而 ArrayList 大小是自动扩展的。
+	Array 内置方法没有 ArrayList 多，比如 addAll、removeAll、iteration 等方法只有 ArrayList 有。
+
+31. 简述treeset
+	TreeSet()是使用二叉树的原理对新 add()的对象按照指定的顺序排序（升序、降序），每增加一个对象都会进行排序，将对象插入的二叉树指定的位置。
+	Integer 和 String 对象都可以进行默认的 TreeSet 排序，而自定义类的对象是不可以的，自己定义的类必须实现 Comparable 接口，并且覆写相应的 compareTo()函数，才可以正常使用。
+	在覆写 compare()函数时，要返回相应的值才能使 TreeSet 按照一定的规则来排序
+	比较此对象与指定对象的顺序。如果该对象小于、等于或大于指定对象，则分别返回负整数、零或正整数。
+
+32 简述treeMap
+	TreeMap 实现 SortedMap 接口，能够把它保存的记录根据键排序，默认是按键值的升序排序，也可以指定排序的比较器，当用 Iterator 遍历 TreeMap 时，得到的记录是排过序的。
+	如果使用排序的映射，建议使用 TreeMap。
+	在使用 TreeMap 时，key 必须实现 Comparable 接口或者在构造 TreeMap 传入自定义的Comparator，否则会在运行时抛出 java.lang.ClassCastException 类型的异常
+
+33. Files的常用方法都有哪些？
+	Files. exists()：检测文件路径是否存在。
+	Files. createFile()：创建文件。
+	Files. createDirectory()：创建文件夹。
+	Files. delete()：删除一个文件或目录。
+	Files. copy()：复制文件。
+	Files. move()：移动文件。
+	Files. size()：查看文件个数。
+	Files. read()：读取文件。
+	Files. write()：写入文件。
+	
+34. Iterator 怎么使用？有什么特点？
+	Iterator 使用代码如下：
+	List list = new ArrayList<>();
+	Iterator it = list. iterator();
+	while(it. hasNext()){
+		String obj = it. next();
+		System. out. println(obj);
+	}
+	Iterator 的特点是更加安全，因为它可以确保，在当前遍历的集合元素被更改的时候，就会抛出 ConcurrentModificationException 异常。
+
+35. 怎么确保一个集合不能被修改
+	可以使用 Collections. unmodifiableCollection(Collection c) 方法来创建一个只读集合，这样改变集合的任何操作都会抛出 Java. lang. UnsupportedOperationException 异常。
+	
+	List list = new ArrayList<>();
+	list. add(“x”);
+	Collection clist = Collections. unmodifiableCollection(list);
+	clist. add(“y”); // 运行时此行报错
+	System. out. println(list. size());
+	
+36. 守护线程是什么
+	守护线程是运行在后台的一种特殊进程。它独立于控制终端并且周期性地执行某种任务或等待处理某些发生的事件。在 Java 中垃圾回收线程就是特殊的守护线程。
+37. 创建线程有哪几种方式？
+	继承 Thread 重新 run 方法；
+		MyThread：
+			public class MyThread extends Thread {
+				@Override
+				public void run() {
+					// 要把子线程执行的内容写在run里
+					for (int i=0; i<1000; i++){
+						System.out.println("我是子线程"+i);
+					}
+				}
+			}
+			
+		Test：
+			public class Test1 {
+				public static void main(String[] args) {
+					// 1 创建线程对象
+					MyThread mt = new MyThread();
+					// 2 调用start()方法启动一个线程
+					mt.start(); // 基础自Thread类, 启动一个子线程-> 子线程> 自动执行()方法
+
+				}
+				}
+	实现 Runnable 接口；
+		MyRunable：
+			public class MyRunable implements Runnable {
+
+				@Override
+				public void run(){
+					for (int i=0; i<1000; i++){
+						System.out.println("我是子线程"+i);
+					}
+				}
+			}
+			
+		Test2：
+			public class Test2 {
+				public static void main(String[] args) {
+					// 1 先创建Runnable对象
+					Runnable r = new MyRunable();
+					// 2 创建线程对象 必须执行自己写的Runnable
+					Thread t = new Thread(r);
+					t.start();
+					for (int i = 0; i <1000 ; i++) {
+						System.out.println(">>>>>>>>>我是主线程"+i);
+
+					}
+				}
+			}
+			
+	实现 Callable 接口。
+		通过实现callable接口
+		(1) 自定义一个类实现java.util.concurrent包下的Callable接口
+		(2) 重写call方法
+		(3) 将要在线程中执行的代码编写在call方法中
+		(4) 创建ExecutorService线程池
+		(5) 将自定义类的对象放入线程池里面
+		(6) 获取线程的返回结果
+		(7) 关闭线程池,不在接收新的线程,未执行的线程不会被关闭
+		
+		import java.util.concurrent.Callable;
+
+		public class ThreadTest3 implements Callable<Integer> {
+			private int count;
+
+			public ThreadTest3(int count) {
+				this.count = count;
+			}
+
+			@Override
+			public Integer call() throws Exception {
+				int sum = 1;
+				if (count != 0) {
+					for (int i = 1; i <= count; i++) {
+						sum *= i;
+					}
+				} else {
+					sum = 0;
+				}
+				return sum;
+			}
+		}
+		
+		import java.util.concurrent.ExecutionException;
+		import java.util.concurrent.ExecutorService;
+		import java.util.concurrent.Executors;
+		import java.util.concurrent.Future;
+
+		public class Test3 {
+			public static void main(String[] args) throws ExecutionException, InterruptedException {
+				ThreadTest3 t3 = new ThreadTest3(15);
+				ThreadTest3 t4 = new ThreadTest3(5);
+				// 创建ExecutorService线程池
+				ExecutorService es = Executors.newFixedThreadPool(3);
+
+				// 将自定义类的对象放入线程池
+				Future<Integer> f1 = es.submit(t3);
+				Future<Integer> f2 = es.submit(t4);
+
+				// 获取线程的返回结果
+				System.out.println(f1.get());
+				System.out.println(f2.get());
+
+				// 判断线程中的任务是否执行完毕
+				if(f1.isDone()){
+					System.out.println(f1.get());
+				}else {
+					System.out.println("线程中的任务还未执行完毕");
+				}
+
+				// 关闭线程池,不再接收新的线程
+				es.shutdown();
+			}
+		}
+38. 说一下 runnable 和 callable 有什么区别？
+	runnable 没有返回值，callable 可以拿到有返回值，callable 可以看作是 runnable 的补充。
+
+39. 线程有哪些状态
+	NEW 尚未启动
+	RUNNABLE 正在执行中
+	BLOCKED 阻塞的（被同步锁或者IO锁阻塞）
+	WAITING 永久等待状态
+	TIMED_WAITING 等待指定的时间重新被唤醒的状态
+	TERMINATED 执行完成
+	
+40.  sleep() 和 wait() 有什么区别？
+	对于 sleep()方法，我们首先要知道该方法是属于 Thread 类中的。而 wait()方法，则是属于Object 类中的
+	sleep()方法导致了程序暂停执行指定的时间，让出 cpu 该其他线程，但是他的监控状态依然保持者，当指定的时间到了又会自动恢复运行状态。
+	在调用 sleep()方法的过程中，线程不会释放对象锁
+	而当调用 wait()方法的时候，线程会放弃对象锁，进入等待此对象的等待锁定池，只有针对此对象调用 notify()方法后本线程才进入对象锁定池准备获取对象锁进入运行状态。
+	
+41. notify()和 notifyAll()有什么区别？
+	notifyAll()会唤醒所有的线程，notify()只会唤醒一个线程。notifyAll() 调用后，会将全部线程由等待池移到锁池，然后参与锁的竞争，竞争成功则继续执行，如果不成功则留在锁池等待锁被释放后再次参与竞争。而 notify()只会唤醒一个线程，具体唤醒哪一个线程由虚拟机控制。
+
+42. 线程的 run() 和 start() 有什么区别
+	tart() 方法用于启动线程，run() 方法用于执行线程的运行时代码。run() 可以重复调用，而 start() 只能调用一次。
+	
+43. 创建线程池有哪几种方式？
+	
+	newSingleThreadExecutor()：它的特点在于工作线程数目被限制为 1，操作一个无界的工作队列，所以它保证了所有任务的都是被顺序执行，最多会有一个任务处于活动状态，并且不允许使用者改动线程池实例，因此可以避免其改变线程数目；
+	newCachedThreadPool()：它是一种用来处理大量短时间工作任务的线程池，具有几个鲜明特点：它会试图缓存线程并重用，当无缓存线程可用时，就会创建新的工作线程；如果线程闲置的时间超过 60 秒，则被终止并移出缓存；长时间闲置时，这种线程池，不会消耗什么资源。其内部使用 SynchronousQueue 作为工作队列；
+	newFixedThreadPool(int nThreads)：重用指定数目（nThreads）的线程，其背后使用的是无界的工作队列，任何时候最多有 nThreads 个工作线程是活动的。这意味着，如果任务数量超过了活动队列数目，将在工作队列中等待空闲线程出现；如果有工作线程退出，将会有新的工作线程被创建，以补足指定的数目 nThreads；
+	newSingleThreadScheduledExecutor()：创建单线程池，返回 ScheduledExecutorService，可以进行定时或周期性的工作调度；
+	newScheduledThreadPool(int corePoolSize)：和newSingleThreadScheduledExecutor()类似，创建的是个 ScheduledExecutorService，可以进行定时或周期性的工作调度，区别在于单一工作线程还是多个工作线程；
+	newWorkStealingPool(int parallelism)：这是一个经常被人忽略的线程池，Java 8 才加入这个创建方法，其内部会构建ForkJoinPool，利用Work-Stealing算法，并行地处理任务，不保证处理顺序；
+	ThreadPoolExecutor()：是最原始的线程池创建，上面1-3创建方式都是对ThreadPoolExecutor的封装。
+	
+44. 线程池都有哪些状态？
+	RUNNING：这是最正常的状态，接受新的任务，处理等待队列中的任务。
+	SHUTDOWN：不接受新的任务提交，但是会继续处理等待队列中的任务。
+	STOP：不接受新的任务提交，不再处理等待队列中的任务，中断正在执行任务的线程。
+	TIDYING：所有的任务都销毁了，workCount 为 0，线程池的状态在转换为 TIDYING 状态时，会执行钩子方法 terminated()。
+	TERMINATED：terminated()方法结束后，线程池的状态就会变成这个。
+
+45 .线程池中 submit() 和 execute() 方法有什么区别？
+	execute()：只能执行 Runnable 类型的任务。
+	submit()：可以执行 Runnable 和 Callable 类型的任务。
+	Callable 类型的任务可以获取执行的返回值，而 Runnable 执行无返回值。
+	
+46. 在 Java 程序中怎么保证多线程的运行安全？
+	使用安全类，比如 Java. util. concurrent 下的类。
+	方法二：使用自动锁 synchronized。
+		public class Account {
+			private  double balance;
+			public Account(double balance){
+				this.balance = balance;
+			}
+			public synchronized void getMoney(){ // 一旦进入到该方法, 瞬间锁定acc
+				if (this.balance <=0 ){
+					System.out.println("没钱了");
+					return;
+				}
+				System.out.println("我要取钱了, 目前还剩下:"+ this.balance);
+				this.balance -= 1000;
+				System.out.println("取完了, 还剩:"+ this.balance);
+			}
+		}
+	方法三：使用手动锁 Lock。
+	手动锁 Java 示例代码如下：
+	Lock lock = new ReentrantLock();
+	lock. lock();
+	try {
+	System. out. println(“获得锁”);
+	} catch (Exception e) {
+	// TODO: handle exception
+	} finally {
+	System. out. println(“释放锁”);
+	lock. unlock();
+	}
+47. 什么是死锁？
+	当线程 A 持有独占锁a，并尝试去获取独占锁 b 的同时，线程 B 持有独占锁 b，并尝试获取独占锁 a 的情况下，就会发生 AB 两个线程由于互相持有对方需要的锁，而发生的阻塞现象，我们称为死锁。
+	
+48. 怎么防止死锁？
+	设置超时时间，超时可以退出防止死锁。
+	尽量使用 Java. util. concurrent 并发类代替自己手写锁。
+	尽量降低锁的使用粒度，尽量不要几个功能用同一把锁。
+	尽量减少同步的代码块。
+	
+49. ThreadLocal 是什么？有哪些使用场景？
+	ThreadLocal 为每个使用该变量的线程提供独立的变量副本，所以每一个线程都可以独立地改变自己的副本，而不会影响其它线程所对应的副本。
+	ThreadLocal 的经典使用场景是数据库连接和 session 管理等。
+
+50. synchronized 和 volatile 的区别是什么
+	volatile 是变量修饰符；synchronized 是修饰类、方法、代码段。
+	volatile 仅能实现变量的修改可见性，不能保证原子性；而 synchronized 则可以保证变量的修改可见性和原子性。
+	volatile 不会造成线程的阻塞；synchronized 可能会造成线程的阻塞。
+
+51. synchronized 和 Lock 有什么区别？
+	可以给类、方法、代码块加锁；而 lock 只能给代码块加锁。
+	synchronized 不需要手动获取锁和释放锁，使用简单，发生异常会自动释放锁，不会造成死锁；而 lock 需要自己加锁和释放锁，如果使用不当没有 unLock()去释放锁就会造成死锁。
+	通过 Lock 可以知道有没有成功获取锁，而 synchronized 却无法办到。
+
+52. 乐观锁
+	乐观锁是一种乐观思想，即认为读多写少，遇到并发写的可能性低，每次去拿数据的时候都认为别人不会修改，所以不会上锁，但是在更新的时候会判断一下在此期间别人有没有去更新这个数据，采取在写时先读出当前版本号，然后加锁操作（比较跟上一次的版本号，如果一样则更新），如果失败则要重复读-比较-写的操作。
+
+53.JDK1.7和1.8的hashmap有什么不同
+	1.7 大方向上，HashMap 里面是一个数组，然后数组中每个元素是一个单向链表。
+	java8 对 HashMap 进行了一些修改，最大的不同就是利用了红黑树，所以其由 数组+链表+红黑树 组成。
+	根据 Java7 HashMap 的介绍，我们知道，查找的时候，根据 hash 值我们能够快速定位到数组的具体下标，但是之后的话，需要顺着链表一个个比较下去才能找到我们需要的，时间复杂度取决于链表的长度，为 O(n)。
+	为了降低这部分的开销，在 Java8 中，当链表中的元素超过了 8 个以后，会将链表转换为红黑树，在这些位置进行查找的时候可以降低时间复杂度为 O(logN)。
+	
+54. 线程池是如何工作的, 顶层代码和原理
+	线程池做的工作主要是控制运行的线程的数量，处理过程中将任务放入队列，然后在线程创建后启动这些任务，如果线程数量超过了最大数量超出数量的线程排队等候，等其它线程执行完毕，再从队列中取出任务来执行。
+	他的主要特点为：线程复用；控制最大并发数；管理线程。
+	
+	线程池刚创建时，里面没有一个线程。任务队列是作为参数传进来的。不过，就算队列里面有任务，线程池也不会马上执行它们。
+	当调用 execute() 方法添加一个任务时，线程池会做如下判断：
+		a) 如果正在运行的线程数量小于 corePoolSize，那么马上创建线程运行这个任务；
+		b) 如果正在运行的线程数量大于或等于 corePoolSize，那么将这个任务放入队列；
+		c) 如果这时候队列满了，而且正在运行的线程数量小于 maximumPoolSize，那么还是要创建非核心线程立刻运行这个任务；
+		d) 如果队列满了，而且正在运行的线程数量大于或等于 maximumPoolSize，那么线程池会抛出异常 RejectExecutionException。
+	当一个线程完成任务时，它会从队列中取下一个任务来执行。
+	当一个线程无事可做，超过一定的时间（keepAliveTime）时，线程池会判断，如果当前运行的线程数大于 corePoolSize，那么这个线程就被停掉。所以线程池的所有任务完成后，它最终会收缩到 corePoolSize 的大小。
+	
+55. 什么是反射
+	反射是在运行状态中，对于任意一个类，都能够知道这个类的所有属性和方法；对于任意一个对象，都能够调用它的任意一个方法和属性；这种动态获取的信息以及动态调用对象的方法的功能称为 Java 语言的反射机制。
+56 TreadLocal的原理
+	ThreadLocal，很多地方叫做线程本地变量，也有些地方叫做线程本地存储，ThreadLocal 的作用是提供线程内的局部变量，这种变量在线程的生命周期内起作用，减少同一个线程内多个函数或者组件之间一些公共变量的传递的复杂度。
+	每个线程中都有一个自己的 ThreadLocalMap 类对象，可以将线程自己的对象保持到其中，各管各的，线程可以正确的访问到自己的对象。
+	将一个共用的 ThreadLocal 静态实例作为 key，将不同对象的引用保存到不同线程的ThreadLocalMap 中，然后在线程执行的各处通过这个静态 ThreadLocal 实例的 get()方法取得自己线程保存的那个对象，避免了将这个对象作为参数传递的麻烦。
+	ThreadLocalMap 其实就是线程里面的一个属性，它在 Thread 类中定义ThreadLocal.ThreadLocalMap threadLocals = null;
+	
+57 代码分析
+	/***
+	 * 运行结果：
+	 * i=4
+	 * j=1
+	 * k=11
+	 * 总结： 
+	 *     赋值=，最后计算
+	 *     =右边的从左到右加载值一次压入操作数栈
+	 *     实际先算哪个，看运算符优先级
+	 *     自增、自减操作都是直接修改变量的值、不经过操作数栈
+	 *     最后的赋值之前，临时结果也是存储在操作数栈中
+	 */
+	public class codeResult {
+		public static void main(String[] args) {
+			int i = 1;
+			i = i++;
+			int j = i++;
+			int k = i + ++i * i++;
+			System.out.println("i=" + i);
+			System.out.println("j=" + j);
+			System.out.println("k=" + k);
+		}
+	}
+
+58 写一个单例模式
+	要点：一 是某个类只能有一个对象实例;
+		  二 是它必须自行创建这个实例; 含有一个该类的静态变量来保存这个唯一的实例
+		  三 它必须自行向真个系统这个实例
+	几种常见形式：
+		饿汉式：直接创建对象，不存在线程安全问题
+			* 直接实例化饿汉式(简洁直观)
+			* 枚举式(最简洁)
+			* 静态代码块饿汉式(适合复杂实例化)
+		懒汉式：延迟创建对象
+			* 线程不安全(适用于单线程)
+			* 线程安全(适用于多线程)
+			* 静态内部类形式(适用于多线程)
+	
+	饿汉式写法：
+		(1) 直接暴露写法
+			/**
+			 * 饿汉式：直接创建示例对象，不管你是否需要这个对象
+			 * (1) 构造器私有化
+			 * (2) 自行创建，并且静态变量保存
+			 * (3) 向外提供这个实例
+			 * (4) 强调这是一个单例，可以用final修改
+			 */
+
+			public class Singleton1 {
+				public static final Singleton1 INSTANCE = new Singleton1();
+				public Singleton1 getInstance(){
+					return INSTANCE;
+				}
+			}
+		
+		(2) 枚举写法
+			public enum Singleton2 {
+				INSTANCE
+			}
+
+		
+		(3) 静态代码
+			// 从配置文件读取配置
+			public class Singleton3 {
+				public static final Singleton3  INSTANCE;
+				private String info;
+				static {
+					Properties properties = new Properties();
+					try {
+						properties.load(Singleton3.class.getClassLoader().getResourceAsStream("single.properties"));
+
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					INSTANCE = new Singleton3(properties.getProperty("info"));
+
+				}
+				public Singleton3(String info){
+					System.out.println(info);
+					this.info = info;
+				}
+			}
+	
+	懒汉式写法：
+		(1) 非线程安全的写法
+			/**
+			 * 懒汉式:
+			 *  延迟创建这个实例化对象
+			 * (1) 构造器私有化
+			 * (2) 用一个静态变量保存这个唯一的实例
+			 * (3) 提供一个静态方法, 获取这个实例对象
+			 */
+			public class Singleton4 {
+				private static Singleton4 instance;
+				private Singleton4(){
+
+				}
+				public static Singleton4 getInstance(){
+					if(instance == null){
+						instance = new Singleton4();
+					}
+					return instance;
+				}
+			}
+		
+		(2) 保证线程安全写法
+			public class Singleton5 {
+				private static Singleton5 instance;
+
+				private static Singleton5 getInstance() {
+					if (instance == null) {
+						synchronized (Singleton5.class) {
+							if (instance == null) {
+								try {
+									Thread.sleep(300);
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+								instance = new Singleton5();
+							}
+						}
+					}
+					return instance;
+				}
+			}
+			
+		(3) 静态内部类式写法
+			/*
+			在内部类被加载和初始化时才创建对象
+			静态内部类不会自动随着外部类的加载和初始化而初始化, 它是要单独去加载和初始化的。
+			因为是在内部类加载和初始化时，创建的，因此是线程安全的
+			 */
+			public class Singleton6 {
+
+				private Singleton6(){}
+				private static class Inner{
+					private static final Singleton6 INSTANCE = new Singleton6();
+				}
+				public static Singleton6 getInstance(){
+					return Inner.INSTANCE;
+				}
+			}
+
+59 类初始化和示例初始化
+	类初始化过程：
+		(1) 一个类要创建实例需要先加载初始化该类
+			main方法所在的类需要先加载和初始化
+		(2) 一个子类初始化需要初始化父类
+		(3) 一个类初始化就是执行<clinit>()方法
+			* <clinit>()方法由静态类变量显示赋值代码和静态代码块组成
+			* 类变量显示赋值代码和静态代码块代码从上到下顺序执行
+			* <clinit>()方法指执行一次
+	实例初始化过程
+		(1) 实例初始化就是执行<init>()方法
+			* <init>() 方法可能重载有多个， 有几个构造器就有几个<init>方法
+			* <init>() 方法由非静态实例变量显示赋值代码和非静态代码、对应构造器代码组成
+			* 非静态实例变量显示赋值代码和非静态代码块代码从上岛下顺序执行，而对应构造器的代码最后执行
+			* 每次创建实例对象，调用对应构造器，执行的就是对应的<init>方法
+			* <init>方法的首行是super()或super(实例参数), 即对应父类的<init>方法
+			
+60 有n步台阶， 一次只能上1步或2步，共有多少种走法
+	递归写法
+		public class TestStep {
+			// 实现f(n):求n步台阶，一共有几种走法
+			public int f(int n){
+				if (n<1){
+					throw new IllegalArgumentException(n + "不能小于1");
+				}
+				if(n==1 || n==2){
+					return n;
+				}
+				return f(n-2) + f(n-1);
+			}
+		}
+	循环写法：
+		public class TestStep2 {
+			public int loop(int n) {
+				if (n < 1) {
+					throw new IllegalArgumentException(n + "不能小于1");
+				}
+				if (n == 1 || n == 2) {
+					return n;
+				}
+				int one = 2; // 走到第二级台阶的走法
+				int two = 1; // 走到第一级台阶的走法
+				int sum = 0;
+				// 最后跨2步 + 最后跨1步的走法
+				for (int i = 3; i < n; i++) {
+					// 最后跨2步 + 最后跨一步的走法
+					sum = two + one;
+					two = one;
+					one = sum;
+
+				}
+				return sum;
+			}
+		}
+		
+61 JVM垃圾回收机制
+	GC(分代收集算法)：
+		次数上频繁收集Young区 Minor GC
+		次数上较少收集Old区	Full GC
+		基本不动Perm区
+	GC四大算法
+		1) 引用计数法
+			只要有对象被引用了就不进行垃圾回收(已淘汰)
+			缺点：
+				每次对对象赋值时均要维护引用计数器， 且计数器本身也有一定的消耗
+				较难处理循环引用
+			
+		2) 年轻代中使用Minor GC, 这种GC算法采用的是复制算法(Copying)
+			原理：从根集合(GC Root)开始, 通过Tracing从From中找到存活对象， 拷贝到To中;
+			From、To交换身份，下次内存分配从To开始
+			缺点：需要双倍空间, 耗费空间
+			
+		3) 标记清除
+			老年代一般是由标记清除或者是标记清除与标记整理的混合实现
+			标记：从根集合开始扫描,对存活的对象进行标记
+			清除：扫描整个内存空间，回收未被标记的悐，使用free-list记录可以区域
+			优点：不需要额外空间
+			缺点：两次扫描，耗时严重； 会产生内存碎片
+		
+			
+二 Java WEB
+   1. JSP和servlet的区别
+    JSP 是 servlet 技术的扩展，本质上就是 servlet 的简易方式。
+	servlet 和 JSP 最主要的不同点在于，servlet 的应用逻辑是在 Java 文件中，并且完全从表示层中的 html 里分离开来，而 JSP 的情况是 Java 和 html 可以组合成一个扩展名为 JSP 的文件。
+	JSP 侧重于视图，servlet 主要用于控制逻辑。
+   2. JSP 有哪些内置对象？作用分别是什么？
+	request：封装客户端的请求，其中包含来自 get 或 post 请求的参数；
+	response：封装服务器对客户端的响应；
+	pageContext：通过该对象可以获取其他对象；
+	session：封装用户会话的对象；
+	application：封装服务器运行环境的对象；
+	out：输出服务器响应的输出流对象；
+	config：Web 应用的配置对象；
+	page：JSP 页面本身（相当于 Java 程序中的 this）；
+	exception：封装页面抛出异常的对象。
+	
+三 SSM
+	1. IOC bean的作用域
+		Spring中，可以在<bean>元素的scope属性里设置bean的作用域，以决定这个bean是单例函数多实例
+		默认情况下,Spring只为每个IOC容器里声明的bean创建唯一一个实例，整个IOC容器范围内都能共享该实例:所有后续的getBean()调用和bean引用都将返回这个唯一的bean实例
+		
+		作用域类别：
+			* singleton 在SpringIOC容器中仅存在一个Bean实例， Bean以单例的方式存在
+			* Prototype 每次调用getBean()时都会返回一个新的实例
+			* request 	每次HTTP请求都会创建一个新的Bean, 该作用域仅适用于WebApplicationContxt环境
+			* session   同一个HTTP Session 共享一个Bean, 不同的HTTP Session使用不同的Bean。 该作用域仅适用于WebApplicationContext环境
+			
+	2. 简单描述Spring支持的常用数据库事务传播属性和事务隔离级别
+		事务的传播行为: 当事务方法被另一个事务方法调用时, 必须制定事务应该如何传播。 例如：方法可能继续在现有事务中运行，也可能开启一个新事务，并在自己的事务中运行
+		事务的属性：
+			1. propagation：用来设置事务的传播行为
+				事务传播行为： 一个方法运行在一个开启了事务的方法时，当前方法是使用原来的事务还是开启一个新的事务
+				-Propagation.REQUIRED 		默认值，使用原来的事务
+				-Propagation.REQUIRES_NEW 	将原来的事务挂起 开启一个新的事务
+				-Propagation.SUPPORTS		如果有事务在运行,当前的方法就在这个事务内运行。否则它可以不运行在事务中
+				-Propagation.NOT_SUPPORTE	当前的方法不应该运行在事务中，如果有运行的事务，将它挂起
+				-Propagation.MANDATORY		当前的方法必须运行在事务内部，如果没有正在运行的事务，就抛出异常
+				-Propagation.NNEVER		当前的方法不应该运行在事务中，如果有运行的事务，就抛出异常
+			2. isolation：用来设置事务的隔离级别
+				数据库事务并发的问题：
+				1) 脏读
+					* T1将某条记录的AGE从20修改为30。
+					* T2读取了T1更新后的值:30
+					* T1回滚，AGE值恢复到了20
+					* T2读取到的30就是一个无效的值
+				2) 不可重复读
+					* T1 读取了AGE值为20
+					* T2 将AGE值修改为30
+					* T1 再次读取AGE值为30， 第一次读取不一致
+				3) 幻读
+					* T1 读取了STUDENT表中的一部分数据
+					* T2 向STUDENT表中插入新的行
+				-Isolation.REPEATABLE_READ: 可重复读， MySQL默认的隔离级别
+				-Isolation.READ_COMMITTED:读已提交, Oracle默认的隔离级别，开发是通常使用的隔离级别
+	
+	3. Spring MVC解决中文乱码问题
+		(1) Post请求乱码
+			在上面的示例中，倘若你输入了中文，那很有可能出现乱码问题，我们可以使用spring MVC为开发者提供的CharacterEncodingFilter来解决乱码问题，这个其实就是一个过滤器。我们需要在web.xml文件中进行配置，最好将其设置在其他过滤器之前，因为过滤器是按照web.xml中的顺序执行的：
+			<!--字符编码过滤器-->
+			<filter>
+				<filter-name>characterEncodingFilter</filter-name>
+				<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+
+				<!--指定字符编码-->
+				<init-param>
+					<param-name>encoding</param-name>
+					<param-value>utf-8</param-value>
+				</init-param>
+
+				<!--强制指定字符编码，即如果在request中指定了字符编码，那么也会为其强制指定当前设置的字符编码-->
+				<init-param>
+					<param-name>forceEncoding</param-name>
+					<param-value>true</param-value>
+				</init-param>
+
+			</filter>
+			<filter-mapping>
+				<filter-name>characterEncodingFilter</filter-name>
+				<url-pattern>/*</url-pattern>
+			</filter-mapping>
+			
+		(2) GET请求
+			可以通过修改 Tomcat 默认字符编码的方式来解决 GET 提交方式中携带中文的乱码问题。在 Tomcat 安装目录的 conf/server.xml 中，找到端口号为 8080 的标签，在其中添加 URIEncoding=”UTF-8″的设置，即可将 Tomcat 默认字符编码修改为 UTF-8。
+			<Connector connectionTimeout="20000" port="8080" protocol="HTTP/1.1" redirectPort="8443" URIEncoding="UTF-8"/>
+	
+	4. SpringMVC的工作流程
+		1）客户端发送请求到 DispatcherServlet
+		2）DispatcherServlet 查询 handlerMapping 找到处理请求的 Controller
+		3）Controller 调用业务逻辑后，返回 ModelAndView
+		4）DispatcherServlet 查询 ModelAndView，找到指定视图
+		5）视图将结果返回到客户端
+		
+	5. SpringMVC流程
+		1）用户发送请求至前端控制器 DispatcherServlet。 
+		2）DispatcherServlet 收到请求调用 HandlerMapping 处理器映射器。
+		3）处理器映射器找到具体的处理器(可以根据 xml 配置、注解进行查找)，生成处理器对象及处理器拦截器(如果有则生成)一并返回给 DispatcherServlet。
+		4）DispatcherServlet 调用 HandlerAdapter 处理器适配器。
+		5）HandlerAdapter 经过适配调用具体的处理器(Controller，也叫后端控制器)。
+		6）Controller 执行完成返回 ModelAndView。
+		7）HandlerAdapter 将 controller 执行结果 ModelAndView 返回给 DispatcherServlet。
+		8）DispatcherServlet 将 ModelAndView 传给 ViewReslover 视图解析器。
+		9）ViewReslover 解析后返回具体 View。
+		10）DispatcherServlet 根据 View 进行渲染视图（即将模型数据填充至视图中）。
+		11）DispatcherServlet 响应用户
+	
+	6. MyBatis当中实体类的属性名和表中的字段名不一样怎么办
+		解决方案：
+			(1) 写sql语句时起别名
+				<select id="getEmployeeById" resultMap="myMap">
+					select id,last_name lastName,email, salary, dept_id deptId from employee 
+				</select>
+			(2) 在MyBatis全局配置文件中开启驼峰命名规则
+			(3) 在Mapper映射文件中使用resultMap来自定义映射
+				<resultMap type="com.atguigu.mybatis.entited.Employee" id="myMap">
+					<!-- 映射主键 -->
+					<id> column="id" property="id"/>
+					<!-- 映射其他列 -->
+					<result column="last_name" property="LastName"
+					<result column="email" property="email"
+					<result column="salary" property="salary"
+					<result column="dept_id" property="deptId"
+				</resultMap>
+			
+				<select id="getEmployeeById" resultType="com.atguigu.mybatis.entited.Employee">
+					select id,last_name lastName,email, salary, dept_id deptId from employee 
+				</select>
+				
+	7. Redis持久化有哪几种
+		(1) RDB：在指定时间间隔内将内存中的数据集快照写入磁盘，也就是行话将的Snapshot快照， 它恢复时是将快照文件直接读到内存里 
+			优点： 节省磁盘空间， 恢复速度快
+			缺点： 虽然Redis在fork时使用写时拷贝技术，但是如果数据庞大时还是比较消耗性能
+				   在备份周期在一定时间间隔做一次备份，所以如果redis意外down掉的话，就会丢失最后一次快照后的所有修改
+				   
+		(2) AOD: 一日志的形式来记录每个写操作，将Redis执行过的所有写指令记录下来(读操作不记录), 只许追加文件但不可以改写文件， Redis启动之初会读取该文件重新构建数据，换言之，redis重启的话就根据日志文件的内容将写指令从前倒后执行一次已完成数据恢复工作
+			优点: 备份机制更文件，丢失数据概率更低
+				  可读的日志文本，通过操作AOF稳健， 可以处理误操作
+			
+			缺点： 比RDB占用更多磁盘空间
+				   恢复备份速度慢
+				   每次读写都同步的有一定性能压力
+				   存在个别Bug 造成不能恢复
+
+四 数据库
+	Mysql 什么情况创建索引
+		(1) 创建索引的情况
+			* 主键自动建立唯一索引
+			* 频繁作为查询条件的字段应该创建索引
+			* 查询中与其它关联的字段，外键关系建立索引
+			* 单键/组合索引
+			
+		(2) 不适合创建索引
+			* 表记录太少
+			* 经常增删改的表或字段
+			* where条件里用不到的字段不创建索引
+			* 过滤性不好的不适合创建索引
+			
+五 缓存
+
+	1. Redis在项目中的场景
+		数据类型     	 			使用场景
+		 String 		   比如说，我想什么时候封锁一个IP地址。 incrby命令
+		 Hash			   存储用户信息[ID, NAME, AGE] Hset(key,field, value) Hset(key,field, value) Hset(userKey, name, admin)  
+		 List			   实现最新消息的排行，还可以利用List的push命令将任务存在list集合中，同时使用另一个命令将任务从集合中取出[pop]。 redis-list数据类型来模拟消息队列。【电商中的秒杀就可以采用这种方式来完成一个秒杀】
+		 Set			   特殊之处：可以自动排重。比如说微博中将每个人的好友存在集合(set)中, 这样求两个人的共通好友操作，我们只需要求交集即可。
+		 Zset			   以某一个条件为权重进行排序。 
+		 
+	2 Elasticssearch和solr的区别
+		背景：它们都是基于Lucene搜索服务器基础上开发，一款优秀的，高性能的企业级搜索【是因为他们都是基于分词技术构建的倒排索引的方式进行查询】
+		区别：1) 当实时建立索引的时候，solr会产生io阻塞， 而es则不会， es查询性能要高于solr。
+			  2) 在不断动态添加数据的时候, solr的检索销毁会变的低下, 而es则没有什么变化。
+			  3) solr利用zookeeper进行分布式管理，而es自身带有分布式系统管理。 Solr一般都要部署到web服务器上， 比如tomcat。 启动tomcat的时候要配置tomcat与solr的关联。【solr的本质是一个动态web项目】
+			  4) solr支持更多的格式数据[xml,json,csv等]，而es仅支持json文件格式。
+			  5) solr是传统搜索应用的有力解决方案，但是es更适用于新兴的实时搜索应该。
+			  6) Solr官网提供的更能更多, 而es本身更注重与核心功能，高级功能多有第三方插件。
+			  
+	3 消息队列在项目中的使用
+		背景：在分布式系统中是如何处理高并发的。
+			由于在高并发的环境下，来不及同步处理用户发送的请求，则会导致请求发生阻塞。比如说，大量的insert，update之类的请求同时到达数据库MYSQL，直接导致无数的行锁表锁，甚至会导致请求推挤很多。从而触发too many connections错误
+			使用消息队列的异步通信可以解决
+			

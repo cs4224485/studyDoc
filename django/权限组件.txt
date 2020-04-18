@@ -1,0 +1,194 @@
+一 构建表结构
+
+class User(models.Model):
+    name = models.CharField(max_length=32)
+    pwd = models.CharField(max_length=32)
+    roles = models.ManyToManyField(to="Role")
+    def __str__(self):
+        return self.name
+
+class Role(models.Model):
+    title = models.CharField(max_length=32)
+    permissions = models.ManyToManyField(to='Permission')
+    def __str__(self):
+        return self.title
+
+class Permission(models.Model):
+    title = models.CharField(max_length=32)
+    url = models.CharField(max_length=32)
+    def __str__(self):
+        return self.title
+		
+class PermissionGroup(models.Model):
+    title = models.CharField(max_length=32)
+
+    def __str__(self):
+        return  self.title
+		
+		
+二 将用户拥有的权限保存至session中
+
+def login(request):
+    if request.method == 'POST':
+        user = request.POST.get('username')
+        pwd = request.POST.get('password')
+        user_obj = User.objects.filter(name=user, pwd=pwd).first()
+        if user_obj:
+            # 在session中注册用户ID
+            request.session['user_id'] = user_obj.pk
+
+            # 查询当前登录用户的所有角色
+            user_obj.roles.all()
+
+            # 查询当前登录用户的所有权限
+            permission = user_obj.roles.all().values("permissions__url")
+
+            #将权限信息保存到session
+            permission_list = []
+            for item in permission:
+                permission_list.append(item['permissions__url'])
+            request.session['permission'] = permission_list
+            return HttpResponse('登录成功')
+    return render(request,'login.html')
+
+三 验证用户权限
+	1 视图函数验证
+		def add_user(request):
+			flag = False
+			permission_list = request.session.get('permission')
+			current_path = request.path_info
+
+			for permission in permission_list:
+				permission = "^%s$" %permission
+				ret = re.match(permission,current_path)
+				if ret:
+					flag =True
+					break
+			if not flag:
+				return HttpResponse('没有访问权限')
+			return HttpResponse('ok')
+	
+
+	2 中间件验证
+		from django.utils.deprecation import MiddlewareMixin
+		from django.shortcuts import HttpResponse, redirect
+		import re
+
+
+		class ValidPermission(MiddlewareMixin):
+
+			def process_request(self, request):
+				#当前访问路径
+				current_path = request.path_info
+
+				# 检查是否属于白名单
+				valid_url_list = ["/login/", "/reg/", "/admin/.*"]
+				for valid in valid_url_list:
+					ret = re.match(valid, current_path)
+					if ret:
+						return None
+				flag = False
+				permission_list = request.session.get('permission',[])
+				current_path = request.path_info
+
+				user_id = request.session.get('user_id')
+				if not user_id:
+					return redirect("/login/")
+		
+
+				for permission in permission_list:
+					permission = "^%s$" % permission
+					ret = re.match(permission, current_path)
+					if ret:
+						flag = True
+						break
+				if not flag:
+					return HttpResponse('没有访问权限')
+
+四 权限按钮控制
+	1 再添加一张表并给Permission表添加字段
+		class PermissionGroup(models.Model):
+			title = models.CharField(max_length32)
+		
+		class Permission(models.Model):
+			title = models.CharField(max_length=32)
+			url = models.CharField(max_length=32)
+			group = models.Foreignkey("PermissionGroup", defafult=1)
+			action = models.CharField(max_length=32, defafult="")
+			def __str__(self):
+				return self.title
+	2 将权限信息保存到session
+		def initial_session(user,request)
+			permissions = user.roles.all().values("permission__url","permission__group_id","permission__action").distinct()
+	
+    3 重建数据结构
+		{
+			1：{
+				"urls":['/users/','users/add/','/users/delete/(\d+)']
+				"action":['list','add','delete','edit']
+				},
+			2:{
+				"urls":['/roles/']
+				"action":['list']
+			}
+		}
+		
+		permission_dict = {}
+		for item in permissions:
+			gid = item['permission__group_id']
+			if  gid not in permission_dict:
+				permissions__url[gid] = {
+					 'urls':[item['permission__url'],],
+					 "actions":[item['permission__action'],]
+				}
+			else:
+				permission_dict[gid]['urls'].append(item['permission__url'])
+				permission_dict[gid]['urls'].append(item['permission__action'])
+				
+	4 进行校验
+		permission = request.session.get['permission_dict']
+		for item in permission.values():
+			urls = item['urls']
+			for reg in  urls:
+				reg = "^%s$" %reg
+				ret = re.match(reg,current_path)
+				if ret :
+					# 把对表能操作的权限赋值给request对象
+					request.action = item['actions']
+					return None
+		return HttpResponse("没有访问权限"）
+	
+	5 设置权限按钮
+		{% if "add" in request.actions %}
+		<a href="/uers/add/">添加用户</a>
+		{% end if %}
+	
+	6 封装成一个类
+		class Permission:
+			def __init__(self,actions):
+				self.actions = actions
+			def add(self)
+				return "add" in self.actions
+			def delete(self):
+				return "delete" in self.actions
+			def edit(self):
+				return "edit" in self.actions
+			def list(self):
+				return "list" in self.actions
+				
+	7 菜单权限
+		permissions = user.roles.all().values("permission__url", "permission__action", "permission__title").all().distinct()
+		menu = []
+		for itme in permissions:
+			if item["permission__action"] == "list"：
+				menu.append((item["permission__url"], item["permission__title"]))
+		
+		request.session['menu'] = menu
+		
+		<div class=menu>
+			{%for item in menu_permission_list %}
+				<p class="menu_btn"><a href="{{ item.0 }}">{{ item.1 }}</a></p>
+			{% endfor %}
+		</div>
+	
+	

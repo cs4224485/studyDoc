@@ -1,0 +1,1308 @@
+一 JAVA简介
+	1 JAVA介绍
+		Java 是由Sun Microsystems公司于1995年5月推出的高级程序设计语言。
+		Java可运行于多个平台，如Windows, Mac OS，及其他多种UNIX版本的系统。
+		本教程通过简单的实例将让大家更好的了解JAVA编程语言。
+		Java分为三个体系：
+			JavaSE（J2SE）（Java2 Platform Standard Edition，java平台标准版）
+			JavaEE(J2EE)(Java 2 Platform,Enterprise Edition，java平台企业版)
+			JavaME(J2ME)(Java 2 Platform Micro Edition，java平台微型版)。
+
+	2 JAVA相关概念
+		java是先编译后解释执行
+		java程序能够跨平台完全是依赖于java虚拟机(JVM)
+		程序向运行光有JVM还不够, 还需要一些其他的java的内内容
+			* JRE(JAVE Runtime Environment)java的运行时环境, jvm+java的类库
+			* JDK(JAVA Development Kit)java的开发包 JRE+java需要的工具
+
+	3 第一个java程序
+		public class Hello{
+			public static void main(String[] args){
+				System.out.println("Hello world");
+			}
+		}
+		
+		编译 javac Hello.java
+		运行 java Hello
+		
+		# 注意事项
+			1. java程序严格区分大小写
+			2. 所有的标点符号必须是英文状态的标点符号
+			3. javac 文件名.java
+			4. java 类名
+			
+	4 IDE
+		使用idea软件
+		有自动代码补功能
+		psvm --> 回车 --> main
+		sout --> 回车 --> 打印语句
+		
+二 JAVA基础代码
+	1 声明变量
+		数据类型  变量=值;
+		# 字符串
+		String name = "harry";
+		# 整数
+		int number = 123456;
+		public class var1 {
+			public static void main(String[] args) {
+				// 声明一个变量
+				int a = 10;
+				int b = 20;
+				System.out.println(a+b);
+				System.out.println(a-b);
+				System.out.println(a*b);
+				System.out.println(a/b); // 如果运算两端都是int, 结果就是int, 整除10/20=0
+				System.out.println(a%b);
+
+			}
+		}
+		# double小数
+		double money = 5.3；
+		# boolean 布尔值
+		boolean IsNull = true
+	
+	2 用户输入
+		先创建扫描器 -> 记得导包 alt+enter
+			import java.util.Scanner;
+			public class TestScnner {
+				public static void main(String[] args) {
+					// 创建一个扫描器
+					Scanner sc = new Scanner(System.in);
+					// 获取扫描器获取到用户输入的内容
+					int a = sc.nextInt(); // 获取到整数
+					System.out.println(a +1);
+					double d = sc.nextDouble(); // 获取小数
+					String s = sc.nextLine(); // 获取字符串
+					System.out.println(s);
+
+				}
+			}
+
+	3 逻辑语句
+		if语句
+			import java.util.Scanner;
+			public class TestIf {
+				public static void main(String[] args) {
+					System.out.println("请告诉我你兜里的钱：");
+					Scanner sc = new Scanner(System.in);
+					// 获取到的钱
+					double money = sc.nextDouble();
+					if(money > 10000){
+						System.out.println("钱够了");
+					}else {
+						System.out.println("钱不够");
+					}
+				}
+			}
+		
+		wherer语句
+			while(条件){
+				xxxx(循环体)
+			}
+			
+			public class TestWhile {
+				public static void main(String[] args) {
+					System.out.println("登录");
+					int i = 1;
+					while (i <= 10) {
+						System.out.println("MD");
+						i = i + 1;
+					}
+				}
+			}
+		
+		猜数字的小练习
+			import java.util.Random;
+			import java.util.Scanner;
+
+			public class Guess {
+				public static void main(String[] args) {
+					Random rd = new Random();
+					int n = rd.nextInt(100); // n是一个随机数范围是0 99
+					Scanner sc = new Scanner(System.in);
+
+					// 判断
+					int GuessCout = 0;
+					while (true) {
+						System.out.println("请输入一个数字a:");
+						int a = sc.nextInt();
+						if (a > n) {
+							System.out.println("猜大了");
+						} else if (a < n) {
+							System.out.println("猜小了");
+						} else {
+							System.out.println("猜对了");
+							break;
+						}
+						GuessCout = GuessCout + 1;
+					}
+					System.out.println("猜的次数" + GuessCout);
+					
+				}
+			}
+
+	4 基础数据类型
+		整数
+			int 	整数 32bit  -21亿 - 21亿之间
+			byte 	java程序中最小的数据单元 8bit， -128-127之间
+			short   端整数 16bit  -32768-32767  2bytes
+			long	长整数	64bit  8byte
+		
+		小数
+			double  64bit  8bytes   最多保留小数点后17位
+			float	32bit  4bytes   最多保留小数点后8位
+			
+		字符
+			char	16bit	unicode标准 只能存入单个字符串
+			
+		布尔
+			booklean  true,false	8bit 1byte
+	
+	5 数据类型转换
+		顺序：数据量大小
+			byte —> short,char->int>long->float->double
+			小数据类型->大数据类型：安全的，直接转化
+			大数据类型->小数据类型：不一定安全,可能会出现问题，必须要强转
+			(转换之后的数据类型)变量
+			public class Convert {
+				public static void main(String[] args) {
+					int a = 10;
+					long b = a;  // 安全的
+					System.out.println(b);
+					long c = 100000000000L;
+					int d = (int) c; // 如果程序产生了溢出,程序就不可控了
+					System.out.println(d);
+				}
+			}
+	6 基本数据类型之间的运算
+		(1) 相同数据类型直接
+			相同数据类型之间计算,得到的一定是这个数据类型
+			int + int = int
+		(2) 不同数据之间
+			int + long = long
+			首先把小的数据类型自动转换成大的数据类型，然后再进行计算,得到的结果一定是大的数据类型
+		
+		(3) 特殊的byte, short, char
+			在计算的时候首先会转化为int类型然后再进行计算, 这样是安全的
+			byte + byte = int
+			short s1 = 1;
+			// short s2 = s1 + 1;  	// 程序会报错
+			short s2 = (short)(s1 + 1);
+			System.out.println(s2)
+	
+	7 switch语句
+		switch也是条件分支语句
+			switc(变量){
+				case 值1：
+					xxxx
+					break;
+				case 值2：
+					xxxx
+					break;
+				.....
+				
+				default:
+					xxxx
+			}
+		import java.util.Scanner;
+
+		public class TestSwitch {
+			public static void main(String[] args) {
+				Scanner sc = new Scanner(System.in);
+				int n = sc.nextInt();
+				switch (n){
+					case 1:
+						System.out.println("星期一");
+						break;
+					case 2:
+						System.out.println("星期二");
+						break;
+					case 3:
+						System.out.println("星期三");
+						break;
+					default:
+						System.out.println("放假");
+				}
+			}
+		}	
+	
+	8 for循环语句
+		for(语句1；语句2； 语句3){
+			循环体
+		}
+		首先执行语句1, 然后判断语句2执行之后的结果是真还是假,如果是真,执行循环体,然后执行语句3.然后再次判断语句2
+		语句1：用来初始化循环变量
+		语句2：判断是否继续执行循环
+		语句3：改变循环变量 i++
+	
+	9 do...while把while反着写
+		do{
+			循环体
+		}while(条件)；
+		
+		do...while不论如何都会执行一次循环体
+		
+	10 数组
+		数组是具有相同数据类型的集合
+		java中数组的声明
+			* 类型[] 数组名 = new 类型[大小];
+			* 类型[] 数组名 = {数据, 数据, 数据....};
+			* 类型[] 数组名 = new 类型[]{数据, 数据, 数据};
+		数组的使用方式
+			数组必须配合数组的下标使用
+			数组的下标从0开始
+			
+		查看数组中的所有的数据
+			数组的遍历
+			int[] arr4 = {18, 27, 19, 3, 5, 76};
+			for (int i = 0; i < arr4.length; i++) {
+				System.out.println(arr4[i]);
+			}
+		
+			
+		创建二维数组
+			type array[][];
+			type[][] array;
+			其中，type 表示二维数组的类型，array 表示数组名称，第一个中括号表示行，第二个中括号表示列。
+			array=new type[][]{值 1,值 2,值 3,…,值 n};
+			array=new type[][]{new 构造方法(参数列),…};
+			type[][] array={{第1行第1列的值,第1行第2列的值,…},{第2行第1列的值,第2行第2列的值,…},…};
+			
+			public static void main(String[] args)
+				{
+					double[][] class_score={{10.0,99,99},{100,98,97},{100,100,99.5},{99.5,99,98.5}};
+					System.out.println("第二行第二列元素的值："+class_score[1][1]);
+					System.out.println("第四行第一列元素的值："+class_score[3][0]);
+				}
+				
+		数组扩容
+			public static void main(Stringp[] args){
+				int[] a = {1,2,3,4,5,6};
+				int[] b = {7,9,10,11,12,13,14,15,16,17};
+				System.arraycopy(a, 2, b, 0, 4)
+			}
+			
+		Arrays工具类：
+			java下定义的一些数据工具方法
+		
+		冒泡排序算法
+			public class BubbleSort {
+				public static void main(String[] args) {
+					int[] li = {10, 45, 1, 4, 6, 3, 67};
+					for (int i = 0; i < (li.length - 1); i++) {
+						for (int j = 0; j < (li.length - i - 1); j++) {
+							if (li[j] > li[j + 1]) {
+								int temp = li[j];
+								li[j] = li[j + 1];
+								li[j+1] = temp;
+							}
+						}
+					}
+					for (int i = 0; i <li.length ; i++) {
+						System.out.print(li[i]+" ");
+					}
+				}
+			}
+
+		选择排序算法
+			public class SelectSort {
+				public static void main(String[] args) {
+					int[] li = {10, 45, 1, 4, 6, 3, 67};
+					for (int i = 0; i < li.length; i++) {
+						int minLoc = i;
+						for (int j = i + 1; j < li.length; j++) {
+							if (li[j] < li[minLoc]) {
+								minLoc = j;
+							}
+						}
+						if(minLoc != i){
+							int temp = li[i];
+							li[i] = li[minLoc];
+							li[minLoc] = temp;
+						}
+
+					}
+					for (int i = 0; i < li.length; i++) {
+						System.out.print(li[i] + " ");
+					}
+				}
+			}
+
+		二分查找法：
+			import java.lang.reflect.Array;
+
+			public class BinarySearch {
+				public static void search(int[] li, int target) {
+					int left = 0;
+					int right = li.length - 1;
+
+					while (left <= right) {
+						int mid = (right + left) / 2;
+						System.out.println(mid);
+						if (li[mid] == target) {
+							System.out.println("找到了目标" + li[mid]);
+							return;
+						} else if (li[mid] > target) {
+							System.out.println("大于目标向左查找");
+							right = mid - 1;
+						} else {
+							System.out.println("小于目标向右查找");
+							left = mid + 1;
+						}
+					}
+					System.out.println("没有找到");
+				}
+
+				public static void main(String[] args) {
+					int[] li = {1, 2, 3, 4, 5, 6, 7, 8, 10, 23, 45, 78, 100, 111};
+					search(li, 100);
+				}
+			}
+
+		
+	11 位运算
+		位运算符有哪些？
+			& 位与
+			| 位或
+			^ 位异或
+			~ 取反
+			>> 向右移
+			>>> 无符号右移
+			<< 向左移
+			
+		用法
+			&,|,^,~ 的用法
+			&:有0则0
+			|:有1则1
+			^:相同则0，不同则1
+			~:按位取反
+			
+		
+	
+	12 小练习
+		让用户输入脚的数量,然后用程序去分析出可能会有多少只鸡多少只兔子
+			import java.util.Scanner;
+			public class YaTU {
+				public static void main(String[] args) {
+					Scanner sc = new Scanner(System.in);
+					System.out.println("请输入腿数量:");
+					int legs = sc.nextInt();
+					for (int duck = 1; duck <= legs / 2; duck++) {
+						int duckLeg = duck * 2;   // 鸭子的交数量
+						int leftLeg = legs - duckLeg; // 剩余的就是兔子脚数量
+						if (leftLeg % 4 == 0) {      // 如果能整除4那么可以算出有几只兔子
+							int rabbit = leftLeg / 4;
+							System.out.println("鸭子" + duck + "只" + "兔子" + rabbit + "只");
+
+						}
+					}
+				}
+			}
+		
+		水仙花数量是指一个3位数, 它的每个位上的数字的3次幂之和等于他本身(例如：1^3 + 5^3 + 3^3 = 153)
+		让用户随意输入一个数,判断该数是否是水仙花数
+			public class ShuiXianHua {
+
+				public static void main(String[] args) {
+					Scanner sc = new Scanner(System.in);
+					System.out.println("请输入三位数：");
+					int number = sc.nextInt();
+					if(number >999 || number <100){
+						System.out.println("请输入三位数字");
+						return;
+					}
+					int bai =number/10/10%10;
+					int shi =number/10%10;
+					int ge =number%10;
+					int result = (bai * bai *bai) + (shi*shi*shi) + (ge*ge*ge);
+					if(number == result){
+						System.out.println("水仙花数");
+					}else {
+						System.out.println("不是水仙花数");
+					}
+				}
+			}
+
+			
+三 方法
+	1 方法的概述
+		对功能或者动作的封装，在需要的时候拿出来调用
+	2 方法的语法
+		public static void 方法名(){
+			方法体
+		}
+		
+		public class TestMethod1 {
+			/**
+			 * 自定义一个方法
+			 */
+			public static  void appiontment(){
+				System.out.println("会议预约");
+			}
+
+			// 主方然 主函数 程序入口
+			public static void main(String[] args) {
+				// 调用方法
+				appiontment(); 
+			}
+		}
+	
+	3 方法的返回值
+		返回值： 在执行方法之后得到的返回值
+		public static 返回值类型 方法名(){
+			方法体
+		}
+		
+		public class TestMethod2 {
+			public static String buy(){
+				// 需要使用return进行返回
+				return "中华烟"; // 返回值类型和返回值必须匹配
+			}
+
+			public static void main(String[] args) {
+				buy(); // 没有接收返回值
+				// 返回值返回给调用方
+				String yan = buy(); // 接收返回值
+				System.out.println("得到的返回值是"+yan);
+			}
+		}
+		
+		注意：
+			* 返回值类型和返回值必须匹配
+			* 如果写了返回类型,必须要有返回值
+			* 如果写了返回值，必须要写返回值类型
+			* 没有返回值, 返回值类型要写void， 方法体就可以不写return, 或者return后面不跟返回值
+	
+	4 方法的参数
+		参数：在方法执行的时候 给方法传递的信息
+		public stati 返回值类型 方法名(形参){
+			方法体
+		}
+		
+		方法(实参)
+		形参: 接收数据
+		实参：传递信息
+		
+		public class TestMethod2 {
+			public static String buy(String things){
+				// 需要使用return进行返回
+				return things; // 返回值类型和返回值必须匹配
+			}
+
+			public static void main(String[] args) {
+				// 返回值返回给调用方
+				String yan = buy("中华烟"); // 接收返回值
+				String jiu = buy("茅台酒"); // 接收返回值
+				System.out.println("得到的返回值是"+yan+"-"+jiu);
+			}
+		}
+
+	5 方法的练习
+		写方法传递两个整数a,b 返回a和b中比较大的那个数,
+			public class TestMethod3 {
+				/**
+				 * 用来比较两个数据大小
+				 *
+				 * @param a 第一个数
+				 * @param b 第二个数
+				 * @return 比较大的数
+				 */
+				public static int compare(int a, int b) {
+			//        if (a > b) {
+			//            return a;
+			//        }else {
+			//            return b;
+			//        }
+					// 三元表达式 x？y:z
+					int m = (a > b) ? a : b;
+					return m;
+
+				}
+
+				public static void main(String[] args) {
+					int result = compare(30, 20);
+					System.out.println(result);
+				}
+			}
+
+		写方法把传入的数组反转并返回
+			public class TestMethod4 {
+				/**
+				 * 接收一个数组,把数组中的数据翻转, 返回
+				 *
+				 * @param arr 接收数组
+				 * @return 翻转之后的数组
+				 */
+				public static int[] reverse(int[] arr) {
+					// 返回一个数组
+					int[] ret = new int[arr.length];
+					int index = 0; // ret数组的下标
+					for (int i = arr.length - 1; i >= 0; i--) {
+						ret[index] = arr[i];
+						index++;
+					}
+					return ret;
+				}
+
+				public static void main(String[] args) {
+					int[] a = {1, 5, 6, 3, 2};
+					int[] b = reverse(a);
+					for (int i = 0; i < b.length; i++) {
+						System.out.println(b[i]);
+					}
+				}
+				
+	6 方法的重载
+		方法的名字相同, 参数的个数或者类型不同叫做重载
+		和返回值没有关系
+		在执行的时候，程序会自动根据你给的参数去找对应的方法
+		方法的重载可以让我们省去起名字的烦恼
+		
+		public class TestMthod7 {
+			// 吃
+			public static void chi(String fan){
+				System.out.println("吃"+fan);
+			}
+			public static void chi(String mi, String he){
+				System.out.println("吃"+mi);
+				System.out.println("吃"+he);
+			}
+			public static void main(String[] args) {
+				chi("肉");
+				chi("米", "粥");
+			}
+		}
+	
+	7 递归
+		递归就是方法自己调用自己,又有一个结束条件否则会出现StackOverflowError
+		
+		//计算1-n的和
+		public class Recursor {
+
+			public static int sum(int n){
+				if(n==1){
+					return 1;
+				}else {
+					return n + sum(n-1);
+				}
+			}
+
+			public static void main(String[] args) {
+				int result = sum(5);
+				System.out.println(result);
+			}
+		}
+		
+		// 计算N的阶乘
+		public class Recursion3 {
+			public static void main(String[] args) {
+			   long result =  multply(5);
+				System.out.println(result);
+			}
+			public static long multply(long n){
+				if(n==1){
+					return n;
+				}else {
+					return n * multply(n-1);
+				}
+
+			}
+		}
+
+
+四 面向对象
+	
+	1 类和对象
+		类分为属性和动作
+			属性:这一类事物拥有的共同属性
+			动作:这一类事物共同执行的功能
+		对象: 使用类创建的具体某一个东西
+		
+		代码语法：
+			类要使用class来定义
+			属性:成员变量来描述,直接写在类中的变量
+			动作:成员方法, 不写static就是成员方法
+			
+		
+		public class Car {
+			// 成员变量
+			String color; // 颜色
+			int speed;  // 速度
+			int seat = 5;   // 座位
+
+			// 成员方法
+			public void run() {
+				System.out.println("车能跑");
+			}
+
+			public static void main(String[] args) {
+				int a = 10; // 写在方法里的变量,局部变量
+				// 在面向对象中, 变量是没有市场的,这种变量被称为引用
+				Car c =new Car(); // 创建对象 =
+				// 调用对象中的成员方法
+				c.run();
+				c.color = "绿色";
+				c.speed = 120;
+				// c.pailiang = 1.5 // 类中没有定义的内容不可以使用
+				Car c2 = new Car();
+				c2.color = "红色";
+				c2.speed = 180;
+				System.out.println(c.seat);
+				System.out.println(c2.seat);
+			}
+		}
+
+	2 this关键字
+		当前类的对象
+		this可以在方法内部获取到对象中的属性信息
+		this还可以区分局部变量和成员变量
+		
+		public class Car {
+			// 成员变量
+			String color; // 颜色
+			int speed;  // 速度
+			int seat = 5;   // 座位
+
+			// 成员方法
+			public void run() {
+				// 默认会有一个this:当前正在执行这个方法的对象
+				System.out.println(this.seat);
+				System.out.println("车能跑");
+			}
+
+			public static void main(String[] args) {
+				Car c =new Car(); // 创建对象
+				c.run(); // 在调用方法的时候,java会自动的把对象传递给方法， 方法由this来接收对象
+				c.color = "绿色";
+				c.speed = 120;
+				// this可以帮助我们区分成员变量和局部变量
+			}
+		}
+
+	3 构造方法	
+		在创建对象的时候,自动调用的方法
+		public 类名(传参){
+			
+		}
+		
+		注意：
+			1 没有返回值
+			2 在我们执行new的时候，会自动调用构造方法
+			
+		作用：在创建对象的时候给对象设置属性信息
+		
+		public class Car {
+			// 成员变量
+			String color; // 颜色
+			int speed;  // 速度
+			int seat = 5;   // 座位
+
+			// 构造方法 在创建对象的时候, 自动调用的方法
+			public Car(String color, int speed) {
+				System.out.println("我是构造方法");
+				// 设置属性信息
+				this.color = color;
+				this.speed = speed;
+			}
+
+			// 成员方法
+			public void run() {
+				System.out.println("车能跑");
+			}
+
+			public static void main(String[] args) {
+				Car c1 = new Car("绿色", 120);
+				Car c2 = new Car("红色",180);
+
+			}
+		}	
+	
+	4 构造方法的重载
+		构造方法也是方法, 也可以进行重载
+		作用:可以有更多的方法去创建对象
+		使用this可以访问当前类的其他构造方法
+		
+		public class DaXia {
+			String name;
+			String nickname;
+			int age;
+			String bangpai;
+
+			public DaXia(String name, int age, String bangpai){
+				this.name = name;
+				this.age = age;
+				this.bangpai = bangpai;
+			}
+			// 我们需要两个构造方法
+			// 可以让我们有更多的方式去创建对象
+			public DaXia(String name, int age, String bangpai, String nickname){
+				this(name, age, bangpai); // this还可以调用当前类中其他构造方法
+				this.nickname = nickname;
+			}
+			
+			public static void main(String[] args) {
+				// 没昵称
+				DaXia dx = new DaXia("岳不群", 18, "华山");
+				// 有名称
+				DaXia dx2 = new DaXia("武松", 20, "梁山", "行者");
+			}
+		}
+	
+	5 static静态变量(类变量)
+		static变量会共享给所有类的对象
+		属性类而不属于对象
+		优先于对象产生的
+		
+		创建对象的过程(简单)：
+			1. 静态构造器
+			2. 通用构造器
+			3. 构造方法->创建对象
+		由于创建对象的过程是在静态内容加载完之后, 在静态方法和静态块里不能使用this
+		写法推荐使用类名去访问静态的内容
+		
+		public class Person {
+			String name;
+			static String country = "大清";
+			String address;
+
+			public Person(String name, String address){
+				this.name = name;
+
+				this.address = address;
+			}
+
+			public static void main(String[] args) {
+				Person p1 = new Person("狗蛋", "八大胡同");
+				Person p2 = new Person("小花", "朝阳");
+				// 大清亡了
+				Person.country = "民国";
+				System.out.println(p1.country);
+
+			}
+		}
+	
+	6 包和导包
+		包：其实本质上就是文件夹, 在代码需要写package 包名
+		导包：
+			import 包+类名
+		
+		不需要导包的情况：
+			* 在自己的包里
+			* java.lang包下的所有内容都不需要导包
+			
+	7 访问权限
+		* public 	公共的 		所有人都可以访问
+		* default   包访问权限	在自己包内可以随意访问
+		* private	私有的	    
+		我们用的最多的是private和public
+		
+		com.xyq.entity.Person:
+			package com.xyq.entity; // 包声明,表示当前类,从属与entity这个包下
+
+			public class Person {
+				public String pub = "public"; // 公共的
+				private String pri = "private"; // 私有的
+				String def = "default"; // 包内的
+
+				public static void main(String[] args) {
+					Person p = new Person();
+					// 在自己的类里面均可访问
+					System.out.println(p.pub);
+					System.out.println(p.pri);
+					System.out.println(p.def);
+				}
+			}
+		
+		com.xyq.entity.TestPerson1
+			package com.xyq.entity;
+
+			public class TesetPerson1 {
+				public static void main(String[] args) {
+					Person p = new Person();
+					// 在自己的类里面均可访问
+					System.out.println(p.pub);
+					// System.out.println(p.pri); // 无法访问
+					System.out.println(p.def);
+				}
+			}
+			
+			
+		com.xyq.dao.TestPerson
+			package com.xyq.dao;
+			// 把entity包下的Person类导入到当前文件
+			import com.xyq.entity.Person;
+
+			public class TestPerson {
+				public static void main(String[] args) {
+					Person p = new Person();
+					// 在自己的类里面均可访问
+					System.out.println(p.pub); // 公共的可以访问
+				   // System.out.println(p.pri); // 私有的无法访问
+					// System.out.println(p.def); // 包访问无法访问
+				}
+			}
+
+
+	8 getter和setter
+		成员变量一般使用private来声明 保护成员变量不被胡乱的赋值
+		
+		Setter：主要是给成员变量赋值，做一定的保护
+		Getter: 从成员变量中获取数据
+		快速生成: 空白位置>右键>generate>getter and setter -> 全选	
+		Person:
+			public class Person {
+			// 成员变量是私有的
+			private String name;
+			private int age;
+
+			public void setName(String name) {
+				this.name = name;
+			}
+
+			// 有效的保护成员变量不被胡乱赋值
+			public void setAge(int age) {
+				if (age < 0) {
+					this.age = 0;
+				} else {
+					this.age = age;
+				}
+			}
+
+			public String getName(){
+				return this.name;
+			}
+
+			public int getAge() {
+				return age;
+			}
+
+			public void eat() {
+				System.out.println("吃");
+			}
+
+			public static void main(String[] args) {
+				Person p = new Person();
+				// 在自己的类里面均可访问
+
+			}
+		}
+	
+		TesetPerson:
+			public class TesetPerson1 {
+			public static void main(String[] args) {
+				Person p = new Person();
+				p.setName("cs");
+				p.setAge(-1);
+				System.out.println(p.getName());
+				System.out.println(p.getAge());
+				}
+			}
+	9 继承
+		当出现x是一种y的时候 x就可以继承y
+		public class 类 extends 父类{
+		}
+		
+		作用：简化代码的开发
+		子类对父类进行扩展
+		
+		super：表示父类的内容
+		this: 表示自己类的内容
+		用super和this来区分子类和父类中重名的内容
+		
+		创建对象的过程: 先创建父类的对象，再创建子类的对象
+		
+		Hero:
+			package com.xyq.jicheng;
+
+			public class Hero {
+				String name = "英雄";
+
+				public Hero(String name) {
+					this.name = name;
+					System.out.println("父类构造方法");
+				}
+
+			}
+			
+		SunWuKong:
+			package com.xyq.jicheng;
+			public class SunWukong extends Hero {
+				String name = "孙大圣";
+
+				public SunWukong() {
+					super("二郎神");  // 还原程序, 在子类构造方法的第一行,默认调用父类的构造方法
+					System.out.println("子类构造方法");
+				}
+
+				public void chi() {
+					// 调用父类的name
+					System.out.println(super.name);
+					// 先找自己类然后找父类
+					System.out.println(this.name + "在吃桃子");
+				}
+
+				public static void main(String[] args) {
+					SunWukong s = new SunWukong();
+					s.chi();
+				}
+			}
+		
+		方法的重写：
+			重写：子类对父类中提供的方法进行重新定义
+			语法: 子类和父类中的方法的声明完全一致
+	
+	10 多态
+		多态：同一个对象拥有多种形态
+		作用：把不同的数据类型进行统一， 让程序具有超强的可扩展性
+		
+		知识点：
+			1 把子类的对象赋值给父类的变量 -> 向上转型
+				缺点：屏蔽掉子类中特有的方法
+			2 把父类的变量转化回子类的变量 -> 向下转型 
+				向下转型有可能有风险, java要求必须要写强制类型转换
+				(转换之后的数据类型)变量
+		
+		Animal:
+			public class Animal {
+				public void eat(){
+
+				}
+			}
+		
+		Dog:
+			public class Dog extends Animal{
+				public void eat(){
+					System.out.println("狗吃骨头");
+				}
+			}
+			
+		Cat:
+			// 猫是一种动物 -> 继承关系
+			// 可以把猫当成动物来看
+			public class Cat extends Animal{
+				public void eat(){
+					System.out.println("猫吃鱼肉");
+				}
+			}
+			
+		Person:
+			public class Person {
+				public void feed(Animal ani){
+					ani.eat();
+				}
+			}
+
+		Client:
+			public class Client {
+				public static void main(String[] args) {
+					Person p = new Person();
+					Animal ani1 = new Cat(); // 可以把猫当成动物来看, 把子类的对象赋值给父类的引用(变量)称为向上转型
+					Animal ani2 = new Dog();
+					p.feed(ani1);
+				}
+			}
+			
+	11 final关键字
+		被final修饰的变量不可以被改变又被称为常量
+		被fianl修饰的方法不可以被重写
+		被final修饰的类不可以被继承
+		
+		final总结就是不可变
+		
+	12 抽象
+		抽象概念: 现实中不存在的东西
+		在java中的抽象: 只声明不实现
+		抽象方法: 使用abstract来修饰, 不可以有方法体, 直接用分号结束即可
+		抽象类: 如果一个类中有抽象方法,这个类必须是一个抽象类
+		
+		特点：
+			* 抽象类不可以创建对象
+			* 抽象类的子类必须重写父类的抽象方法, 否则这个子类也必须是抽象类
+			* 抽象类中可以有正常的方法
+		
+		通过抽象类可以强制子类有某些方法
+		
+		Animal:
+			// 类中如果有抽象方法, 那么这个类也必须是个抽象类
+			public abstract class Animal {
+				// abstract修饰方法, 这个方法就是一个抽象方法， 抽象方法没有方法体
+				public abstract void eat();
+			}
+		
+		Cat:
+			public class Cat extends Animal {
+				public void eat(){
+					System.out.println("猫吃鱼肉");
+				}
+			}
+	
+	13 接口
+		接口实际上是一种特殊的抽象类
+		接口中所有的方法都是抽象方法
+		
+		使用接口是因为java中类只能单继承, 接口支持多实现
+		接口同样具有多态性
+		接口可以把很多不相关的内容进行整合
+		
+		接口的特定：
+			* 接口中所有的方法都是抽象方法, 都是公开的
+			* 接口所有的变量都是全价静态常量
+		
+		注意:如果是抽象类要实现接口，可以实现部分或者一个都不实现就行，要是具体类就必须实现所有的方法
+		
+		Valuable：
+			// 接口使用interface来声明, 已经不再是类了。 能继承接口的只能是接口
+			// 接口和类只能是实现关系 implements
+			public interface Valuable {
+				// 接口中所有的方法都是抽象方法, 可以省略掉abstract
+				// 接口中所有的内容都是公开, 公共的
+				 void getMoney(); // 接口中所有的方法都是抽象方法, 不可以有正常的方法
+			}
+		
+		Protectable：
+			public interface Protectable {
+				public void cang();
+			}
+
+		
+		Animal:
+
+			public class Animal {
+				public void eat(){
+					System.out.println("动物会吃");
+				}
+			}
+
+		Gold:
+
+			public class Gold implements Valuable {
+				// 必须要实现接口里的抽象方法
+				public void getMoney(){
+					System.out.println("黄金可以换钱");
+				}
+			}
+			
+		panda:
+
+			// 类可以继承一个类, 实现多个接口
+			public class panda extends Animal implements Valuable,Protectable {
+				@Override // 表示方法是被重写的
+				public void eat() {
+					System.out.println("熊猫吃竹子");;
+				}
+
+				@Override
+				public void cang() {
+					System.out.println("熊猫藏在山里");
+				}
+
+				@Override
+				public void getMoney() {
+					System.out.println("熊猫可以换钱");
+				}
+			}
+		
+		Test:
+			public class Test {
+				public static void main(String[] args) {
+
+					panda p = new panda();
+					Animal ani = new panda(); // 向上转型
+					Valuable v = new panda(); // 向上转型
+					Protectable pro = new panda(); // 向上转型
+					p.eat();
+					p.cang();
+					p.getMoney();
+
+				}
+			}
+	
+	14 成员变量的初始值
+		java中所有的变量必须先声明后赋值才能使用
+		java中的成员变量,在创建对象的时候,都会执行一次初始化操作，都会给一个默认值
+		基本数据类型默认值都是0 包括boolean -> false
+		引用数据类型都是null
+		null表示空, 什么都没有， 占位
+		
+	15 equals和==
+		== 判断左右两端的数据是否一致
+		equals:object类提供的一个方法, 用来判断两个对象是否相等
+		equals可以重写
+		
+		字符串的判断一定要用equals来判断
+		
+			public class Cat {
+				String name;
+				String color;
+
+				public Cat(String name, String color) {
+					this.color = color;
+					this.name = name;
+				}
+
+				public boolean equals(Cat c) {
+					if (this.color == c.color) { // 单纯的自己去写判断的逻辑
+						return true;
+					} else {
+						return false;
+					}
+				}
+
+				public static void main(String[] args) {
+					Cat c1 = new Cat("小花", "橘色");
+					Cat c2 = new Cat("小花", "橘色");
+
+					System.out.println(c1 == c2); // false 默认判断两个对象的内存地址是否一致, 一般用在基本数据类型上
+					System.out.println(c1.equals(c2)); // 默认调用的是Object提供的equals方法 true
+
+				}
+			}
+		
+		重写equals：
+			public Class Star{
+				String name;
+				int id;
+				public boolean equals(Object obj){
+					if(this == obj){
+						return true;
+					}
+					if(obj instanceof Star){
+						Star s = (Star) obj;
+						if(this.id == s.id $$ this.name.equals(s.name)){
+							return true;
+						}
+					}
+					return false;
+				}
+			}
+
+
+	16 内存分析
+		(1) 堆  	主要存放对象 new的东西都放在这里
+		(2) 栈  	局部变量, 以及基本数据类型的变量
+		(3) 代码区  类和方法
+		(4) 数据区	常量池和静态变量
+		
+		参数传递问题：
+			值传递：把变量的值作为参数进行传递
+			引用传递：把变量作为参数进行传递
+			
+			java使用的是值传递
+			
+五 异常处理
+	异常就是错误对象
+		编译时异常
+		运行时异常
+		
+	异常的分类：
+		* RuntimeException  运行时异常, 一般不手动处理,出问题了处理
+		* 其他Exception: 必须要经过手动处理
+		* Error: 一般指的是系统级错误
+		
+	异常处理try...catch
+		try {
+			尝试执行的代码
+		}catch(Exception e){
+			处理异常的代码
+		}finally{
+			最终的 一般做收尾工作
+		}
+		
+		
+		public class Test {
+			public static void main(String[] args) {
+				try{
+					System.out.println(1/0); // 0不能做除数，会出现异常
+				}catch (Exception e){
+					e.printStackTrace(); // 打印错误信息
+					System.out.println("系统出错了");
+				}
+				
+				// 1. 异常是错误，运行时异常
+				// 2. 抛出异常, 创建一个错误对象, 把错误对象丢出来
+				// 3. 捕获异常, 默认由JVM来把错误信息进行捕获,打印出来, JVM会终止程序的执行
+			}
+		}
+		
+	异常处理throws和throw
+		产生的错误尽可能自己处理 少向外抛出异常
+		throw表示抛出异常
+		throws表示方法准备要抛出一个异常
+		
+		
+		public class Test {
+			public static void read() throws Exception { // 表示当前这个方法会扔出来Exception这样的错误
+				InputStream is = new FileInputStream(new File("哈哈哈"));
+			}
+
+			public static void chu(int a, int b) throws Exception{ // 告诉外面向外扔出一个异常
+				if (b==0){
+					throw new Exception("你不可以给我一个0");
+				}else {
+					System.out.println(a/b);
+				}
+			}
+			public static void main(String[] args) {
+				try {
+					read();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				try {
+					chu(1,2);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+
+		}
+		
+		
+	自定义异常
+		自己定义的异常必须继承Exception或者RuntimeException
+		GenderEception:
+			public class GenderEception extends Exception{ //自己定义的异常必须继承Exception或者RuntimeException
+				public GenderEception(String msg){
+					super(msg); // 调用父类的构造方法
+				}
+			}
+
+		Person:
+			public class Person {
+				String name;
+				String gender;
+
+				public Person(String name, String gender) {
+					this.name = name;
+					this.gender = gender;
+				}
+				
+			}
+			
+		ZaoTang:
+			public class ZaoTang {
+				public void nan(Person p) throws GenderEception {
+					if (p.gender.equals("男")) {
+						System.out.println("欢迎光临");
+					} else {
+						// 需要抛出一个异常
+						throw new GenderEception("性别不对,这里是男澡堂");
+					}
+				}
+			}
+		
+		Test:	
+			public class Test {
+				public static void main(String[] args) {
+					Person p1 = new Person("张三","男");
+					Person p2 = new Person("李四", "女");
+					ZaoTang zt = new ZaoTang();
+					try {
+						zt.nan(p2);
+					} catch (GenderEception genderEception) {
+						genderEception.printStackTrace();
+					}
+
+				}
+			}

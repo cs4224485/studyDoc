@@ -1,0 +1,433 @@
+一 什么是数据库连接池
+	当系统使用JDBC技术访问数据库时会创建一个connection对象，而该对象的创建过程是非常消耗资源的，并且创建对象的时间也比较长，假设系统一天有1万次的访问量，那么一天就会创建1万connection对象，这极大的浪费数据库的资源，而且可能造成数据库服务器内存溢出、宕机。
+	为了解决上面的问题，就引入了数据库连接池（Connection pooling），它主要用来分配、管理、释放数据库的连接。数据库连接池首先会创建若干（该数量可以配置）个connection对象并将这些对象放入到池中，当系统需要使用connection对象时，数据库连接池会从池中分配一个事先创建好的connection对象给系统，当系统使用完毕或超时后，数据库连接池会将该connection对象重新放入到池中。这样就减少了创建connection对象所耗费的资源和时间，可以提高对数据库操作的性能。
+
+
+二 模拟编写一个数据库连接池
+
+	因为要用到数据库，所以需要将之前编写的JDBC相关的代码和jar包拷贝过来，创建一个SimpleConnectionPool类，里面需要实现下面三个功能：
+
+		初始化一个数据库连接池并向里面添加10个数据库连接
+		从连接池中获取连接
+		当程序用完连接后，需要将该连接重新放入到连接池中
+		
+		package com.harry.pool;
+
+		import com.harry.util.DButil;
+
+		import java.sql.Connection;
+		import java.sql.SQLException;
+		import java.util.Collections;
+		import java.util.LinkedList;
+
+		/**
+		 * 模拟编写一个数据库连接池
+		 */
+
+		public class SimpleConnectionPool {
+
+			// 创建一个存放连接的池子, 需要保证线程安全
+			// 因为会频繁的对数据库连接池进行取出和放回的操作，所以使用LinkedList作为连接池
+			private static LinkedList<Connection> pool = (LinkedList<Connection>)Collections.synchronizedList(new LinkedList<Connection>());
+			// 在类加载后就向数据库连接池中添加10个数据库连接对象
+			static {
+				for (int i=0; i<10; i++){
+					try {
+						Connection connection = DButil.getConnection();
+						// 将创建好的数据库连接放入到池子中
+						pool.add(connection);
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			// 从连接池获取一个数据库连接
+			public static Connection getConnectionFromPool(){
+				Connection conn = null;
+				// 判断数据库连接池中是否还有数据库连接对象
+				if(pool.size() > 0){
+					conn = pool.removeFirst();
+				}else {
+					// 此时说明数据库连接池中没有可用的数据库连接了
+					throw new RuntimeException("服务器忙，请稍后再试");
+				}
+				return conn;
+			}
+
+			// 当程序用完连接之后，将链接重新放入到连接池
+			public static void release(Connection conn){
+				pool.addLast(conn);
+			}
+		}
+三 数据库连接池规范
+
+	对于不同的开发者可能会编写出五花八门的数据库连接池，这对于代码后期的维护和使用会有非常多的问题，为了能够统一数据库连接池的编写规范，让开发者编写出统一标准的数据库连接池，sun公司提供了一个规范，该规范其实就是一个位于javax.sql包下的DataSource的接口，也叫作数据源，如果要想自己编写数据库连接池，那么需要去实现该接口，有了这个标准之后，我们只要是看到了一个类实现了该接口，那就说明这个类是一个数据库连接池
+	该接口提供了两个重载的getConnection方法：
+		Connection getConnection() throws SQLException;
+		Connection getConnection(String username, String password) throws SQLException;
+	
+	创建MyPool类去实现DataSource接口，这样就创建好了一个符合规范的数据库连接池
+		package com.harry.pool;
+
+		import com.harry.util.DButil;
+
+		import javax.sql.DataSource;
+		import java.io.PrintWriter;
+		import java.sql.Connection;
+		import java.sql.SQLException;
+		import java.sql.SQLFeatureNotSupportedException;
+		import java.util.Collections;
+		import java.util.LinkedList;
+		import java.util.logging.Logger;
+
+		/**
+		 * 遵循数据库连接池的规范， 实现DataSource接口
+		 */
+
+		public class MyPool implements DataSource {
+
+			private static LinkedList<Connection> pool = (LinkedList<Connection>) Collections.synchronizedList(new LinkedList<Connection>());
+			// 在类加载后就向数据库连接池中添加10个数据库连接对象
+			static {
+				for (int i=0; i<10; i++){
+					try {
+						Connection connection = DButil.getConnection();
+						// 将创建好的数据库连接放入到池子中
+						pool.add(connection);
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			@Override
+			public Connection getConnection() throws SQLException {
+				Connection conn = null;
+				// 判断数据库连接池中是否还有数据库连接对象
+				if(pool.size() > 0){
+					conn = pool.removeFirst();
+				}else {
+					// 此时说明数据库连接池中没有可用的数据库连接了
+					throw new RuntimeException("服务器忙，请稍后再试");
+				}
+				return conn;
+			}
+
+			@Override
+			public Connection getConnection(String username, String password) throws SQLException {
+				return null;
+			}
+			........... 后面实现的代码
+		}
+		
+	编写数据库连接池测试类伪代码：
+		package com.harry.test;
+
+		import com.harry.pool.MyClosePool;
+		import com.harry.pool.MyPool;
+
+		import javax.sql.DataSource;
+		import java.sql.Connection;
+		import java.sql.PreparedStatement;
+		import java.sql.SQLException;
+
+		public class PoolTest  {
+			public static void main(String[] args) {
+				MyClosePool ds = new MyClosePool();
+				Connection conn = null;
+				PreparedStatement ps = null;
+				try {
+					conn = ds.getConnectionFromPool();
+					ps =  conn.prepareStatement("....");
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}finally {
+					try {
+						// 这里会调用我们自定的MyConnection类中的close方法将连接放回到数据库连接池中
+						conn.close();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+
+			}
+		}
+		
+	创建MyConnection类实现Connection接口，在重写close方法时，将连接重新放回到池中：
+		package com.harry.connection;
+
+		import java.sql.*;
+		import java.util.LinkedList;
+		import java.util.Map;
+		import java.util.Properties;
+		import java.util.concurrent.Executor;
+
+		/**
+		 * 使用装饰者设计模式装饰（扩展） connection
+		 * 1、编写一个类，实现与被装饰类相同的接口
+		 * 2、定义一个被包装类类型的变量
+		 * 3、定义构造方法，把被包装类的对象注入，给被包装类变量赋值
+		 * 4、对于不需要的方法，调用其原来的方法
+		 * 5、对于需要改写的方法，写上自己实现的代码
+		 */
+
+		public class MyConnection implements Connection {
+			private Connection oldConnection;
+			private LinkedList<Connection>  pool; // 连接池对象
+
+			public MyConnection(Connection oldConnection, LinkedList<Connection>  pool) {
+				this.oldConnection = oldConnection;
+				this.pool = pool;
+			}
+
+			// 将Connection重新放回到连接池中，不进行关闭操作
+			@Override
+			public void close() throws SQLException {
+				pool.addLast(oldConnection);
+			}
+			//后面代码省略
+			....
+			....
+		 
+		}
+	新创建一个数据库连接池，在获取连接时即调用getConnection方法的时候，将原有的Connection修改为我们包装好的MyConnection类：
+		package com.harry.pool;
+
+		import com.harry.connection.MyConnection;
+		import com.harry.util.DButil;
+
+		import javax.sql.DataSource;
+		import java.io.PrintWriter;
+		import java.sql.Connection;
+		import java.sql.SQLException;
+		import java.sql.SQLFeatureNotSupportedException;
+		import java.util.Collections;
+		import java.util.LinkedList;
+		import java.util.logging.Logger;
+
+		/**
+		 * 模拟编写一个数据库连接池
+		 */
+
+		public class MyClosePool implements DataSource {
+
+			// 创建一个存放连接的池子, 需要保证线程安全
+			// 因为会频繁的对数据库连接池进行取出和放回的操作，所以使用LinkedList作为连接池
+			private static LinkedList<Connection> pool = (LinkedList<Connection>)Collections.synchronizedList(new LinkedList<Connection>());
+			// 在类加载后就向数据库连接池中添加10个数据库连接对象
+			static {
+				for (int i=0; i<10; i++){
+					try {
+						Connection connection = DButil.getConnection();
+						// 将创建好的数据库连接放入到池子中
+						pool.add(connection);
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			// 从连接池获取一个数据库连接
+			public static Connection getConnectionFromPool(){
+				Connection conn = null;
+				// 判断数据库连接池中是否还有数据库连接对象
+				if(pool.size() > 0){
+					conn = pool.removeFirst();
+					MyConnection myConn = new MyConnection(conn, pool);
+					return myConn;
+				}else {
+					// 此时说明数据库连接池中没有可用的数据库连接了
+					throw new RuntimeException("服务器忙，请稍后再试");
+				}
+
+			}
+
+			//后面代码省略
+			....
+			....
+			
+		}
+	
+	使用适配器模式修改代码
+		上面的代码还是有一些问题，就是在包装的时候不需要将所有的方法都重写，上面代码有些乱，这里可以使用适配器模式来完善。
+
+四 数据库连接池
+	
+	1 c3p0
+		第一步：
+			下载相关jar包：
+			百度网盘：https://pan.baidu.com/s/1nwhU553
+			下载后将项目两个jar包拷贝到项目中
+
+			c3p0-0.9.5.2.jar
+			mchange-commons-java-0.2.11.jar
+			
+		第二步：
+			在项目的src目录下创建c3p0-config.xml文件，当然你也可以创建一个c3p0.properties文件，这两个都支持。在xml文件编写下面内容：
+			<?xml version="1.0" encoding="UTF-8"?>
+			<c3p0-config>
+				<default-config>
+					<property name="driverClass">com.mysql.jdbc.Driver</property>
+					<property name="jdbcUrl">jdbc:mysql://192.168.0.108:3306/test_pool</property>
+					<property name="user">harry.cai</property>
+					<property name="password">123456</property>
+					<!-- 初始化连接的数量 -->
+					<property name="initialPoolSize">10</property>
+					<!-- 最大空闲时间，单位是秒 -->
+					<property name="maxIdleTime">30</property>
+					<!-- 池中最大连接的数量 -->
+					<property name="maxPoolSize">100</property>
+					<!-- 池中最小连接的数量 -->
+					<property name="minPoolSize">10</property>
+				</default-config>
+			</c3p0-config>
+		第三步：
+			创建一个数据库test-pool,里面创建一个测试表t_user,建表语句如下：
+				CREATE TABLE `t_user` (
+				  `id` varchar(10) NOT NULL,
+				  `name` varchar(45) DEFAULT NULL,
+				  PRIMARY KEY (`id`)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+				
+		第四步：
+			创建一个C3P0Util的工具类，内容如下：
+			package com.harry.util;
+
+			import com.mchange.v2.c3p0.ComboPooledDataSource;
+
+			import java.sql.Connection;
+			import java.sql.SQLException;
+
+			/**
+			 * C3P0
+			 *
+			 */
+
+			public class C3P0Util {
+				// 获取C3P0的数据源
+				private static ComboPooledDataSource dataSource = new ComboPooledDataSource();
+				// 从数据源中获取一个连接对象
+				// 获取一个Connection对象, 该Connection是经过c3p0装饰之后的Connection
+				public static Connection getConnection(){
+					try {
+						return dataSource.getConnection();
+					} catch (SQLException e) {
+						e.printStackTrace();
+						throw new RuntimeException("服务器错误");
+					}
+				}
+				// 查看连接池的状态
+				public static void poolStatus(){
+					try {
+						System.out.println("清闲的："+ dataSource.getNumIdleConnections());
+						System.out.println("忙碌的："+ dataSource.getNumBusyConnections());
+						System.out.println("所有的链接："+ dataSource.getNumConnections());
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		创建一个测试类C3P0Test：
+			package com.harry.test;
+
+			import com.harry.util.C3P0Util;
+
+			import java.sql.Connection;
+			import java.sql.PreparedStatement;
+			import java.sql.SQLException;
+
+			/**
+			 * 测试C3P0
+			 */
+
+			public class C3P0Test {
+				public static void main(String[] args) throws InterruptedException {
+					insert();
+					Thread.sleep(1000);
+					C3P0Util.poolStatus();
+				}
+
+				public static void insert(){
+					String sql = "insert into t_user(id,name) values(1002, 'jack')";
+					Connection conn = C3P0Util.getConnection();
+					PreparedStatement ps = null;
+					try {
+						ps = conn.prepareStatement(sql);
+						// 查看连接池的状态
+						C3P0Util.poolStatus();
+						ps.executeUpdate();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}finally {
+						try {
+							conn.close();
+							ps.close();
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+
+					}
+				}
+			}
+	2 druid
+		第一步：
+			下载相关jar包：druid-1.1.8.jar
+			百度网盘：https://pan.baidu.com/s/1pMGwxZX
+			
+		第二步：
+			创建dbconfig.properties配置文件，在文件中编写下面内容，druid可以根据url自动识别driverclass，所以在配置文件中可以省略：
+			url=jdbc:mysql://192.168.0.108:3306/test_pool
+			username=harry.cai
+			password=123456
+			#初始化的连接个数
+			initialSize=10
+			#最大连接个数
+			maxActive=20
+			#最小连接个数
+			minIdle=10
+		第三步：
+			创建数据库，内容同上面的c3p0的第三步一样
+			
+		第四步：
+			编写DruidUtil工具类：
+				package com.harry.util;
+
+				import com.alibaba.druid.pool.DruidDataSource;
+				import com.alibaba.druid.pool.DruidDataSourceFactory;
+
+				import javax.sql.DataSource;
+				import java.io.FileInputStream;
+				import java.io.IOException;
+				import java.sql.Connection;
+				import java.sql.SQLException;
+				import java.util.Properties;
+
+				/**
+				 * Druid工具类
+				 */
+
+				public class DruidUtil {
+					private static DruidDataSource dataSource = null;
+					static {
+						Properties properties = new Properties();
+						try {
+							// 加载配置文件
+						   // properties.load(new FileInputStream("dbconfig.properties")); 不方便
+							properties.load(DruidUtil.class.getClassLoader().getResourceAsStream("dbconfig.properties"));
+							// 得到一个数据源
+						   dataSource = (DruidDataSource)DruidDataSourceFactory.createDataSource(properties);
+						} catch (IOException e) {
+							e.printStackTrace();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+
+					}
+					// 从数据源中获取一个链接对象
+					public static Connection getCoonection(){
+						try {
+							return dataSource.getConnection();
+						} catch (SQLException e) {
+							e.printStackTrace();
+							throw new RuntimeException("数据库连接异常");
+						}
+					}
+				}

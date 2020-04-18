@@ -1,0 +1,1025 @@
+
+一 ESMAScript6的基础语法
+
+ 1 声明变量 let和conset
+	我们在使用var声明变量时 在js中属于全局作用域,而使用let则属于局部作用域
+ 
+	let声明的变量有两种现象：
+		第一种 属于局部作用域
+		第二种 没有覆盖现象
+		
+	const 声明的是常量并且也是局部作用域，也就是无法修改变量中的值
+	
+ 2 模板字符串
+	table键上面的反引号
+	如果说要拼接一串字符串, 那么不需要再使用+去拼接, 使用反引号来拼接,拼接的变量使用${变量名}
+	    //es5的语法
+        /*
+        let name = 'harry';
+        let age = 24;
+        var desc = name+"是XXX,今年"+age+'了';
+        console.log(desc);
+        */
+		
+		// es6模板字符串
+			let name = 'harry';
+			let age = 24;
+			var desc2 = `${name}是XXXX, 今年${age}了,sdf`;
+			console.log(desc2)
+ 
+ 3 函数的书写
+	es6箭头函数的使用:
+		funcation(){} ======= () =>{}
+		
+	箭头函数使用带来的问题：
+		1 使用箭头函数this的指向发生了改变
+		2 使用箭头函数arguments不能使用
+	// 之前写的方法
+    /*
+    var person = {
+        name:'harry',
+        age:24,
+        fav:function () {
+            // this 指的是当前的对象
+            console.log('玩PS4');
+            console.log(this.age)
+        }
+    }
+    */
+    var person = {
+        name: 'harry',
+        age: 24,
+        fav: () => {
+             // this的指向发生了改变，指向了定义person的父级对象 window
+             console.log('玩PS4')
+             console.log(this)
+        }
+    };
+		
+ 4 对象的创建
+	
+	fav(){}等价于
+		function fav(){}
+	等价于
+		var fav funcation(){}
+		
+5 es6中创建对象的方式 使用class
+	class Person{
+		constructor(name, age){
+			this.name = name;
+			this.age = age;
+		}
+		showName(){
+			console.log(this.name)
+		}
+		
+		
+	}
+	
+	var p2 = new Person('张三', 20);
+	p2.showNaem();
+	
+二 VUE的介绍与语法
+		vue是一个渐进式的javaScript框架
+	1 前端框架和库的区别
+		功能上的不同：
+			jquery库：包含DOM(操作DOM)+请求，就是一块功能。
+			art-template库：模板引擎渲染，高性能的渲染DOM
+			框架：大而全的概念，简易的DOM体验+请求处理+模板引擎
+			在KFC的世界里，库就是一个小套餐，框架就是全家桶。
+		代码上的不同：
+			一般使用库的代码，是调用某个函数或者直接使用抛出来的对象，我们自己处理库中的代码。
+		    一般使用框架，其框架本身提供的好的成套的工具帮我们运行我们编写好的代码。
+		框架的使用：
+			1. 初始化自身的一些行为
+			2.执行你所编写的代码
+			
+	3.nodejs
+		(1)去官网https://nodejs.org/en/download/ 下载 安装(傻瓜式安装)
+
+		(2)打开终端 cmd  :  node -v       就跟python一样
+
+		(3)下载完node 自带包管理器 npm        pip3包管理器  pip3 install xxx
+        
+		(4) 使用npm  第一步 要初始化npm的项目 : 
+
+			npm init  --yes 自动生成一个package.json文件
+				 {
+				  "name": "vue_lesson",
+				  "version": "1.0.0",
+				  "description": "这是我的vue的第一个项目",
+				  "main": "index.js",
+				  "scripts": {
+					"test": "echo \"Error: no test specified\" && exit 1"
+				  },
+				  "author": "mjj",
+				  "license": "ISC",
+				  "dependencies": {
+					"vue": "^2.5.16"
+				  }
+				}
+				
+		(5) npm install vue --save
+				npm install jquery --save		
+	
+	4 vue的起步
+		- 引包：   <script type="text/javascript" src="./node_modules/vue/dist/vue.js"></script>
+		- 创建实例化对象
+			// 创建VUE实例对象
+			var app = new Vue({
+				el:'#app', //目的地
+				data:{
+					// 数据属性
+					msg:'hello vue'
+				}
+			});
+		
+		- 模板语法插入值
+			 <! -- 模板语法 主要的作用是插值{{}} angualr{{}} react{} -->
+			<h3>{{ msg }}</h3>
+			<h3>{{ msg + 'harry' }} </h3>
+			<h3>{{ 1<1? '真的':'假的' }} </h3>
+	
+	5 vue指令系统
+		v-text 等价于 {{}} 实现原理：innerHTML
+		v-html 实现原理： innerHTML
+		表单控件value
+		<h2 v-text="msg2"></h2>
+        <h3 v-html="msg2"></h3>
+		
+	  v-if和v-show
+        v-if 是“真正”的条件渲染，因为它会确保在切换过程中条件块内的事件监听器和子组件适当地被销毁和重建。
+        v-if 也是惰性的：如果在初始渲染时条件为假，则什么也不做——直到条件第一次变为真时，才会开始渲染条件块。
+        相比之下，v-show 就简单得多——不管初始条件是什么，元素总是会被渲染，并且只是简单地基于 CSS 进行切换。
+		  <div class="box" v-if="isShow"></div>
+          <div class="box" v-show="isShow"></div>
+          <div v-if="Math.random() > 0.5">
+               大于0.5
+          </div>
+          <div v-else="Math.random() < 0.5">
+               小于0.5
+          </div>
+		
+	 v-for	
+		item 中指的是数组中的每项元素
+		   <ul>
+               <li v-for="(item,index) in menuList">
+                    <h3>书名：{{item.name}}</h3>
+                    <h3>价格：{{item.price}}</h3>
+                </li>
+            </ul>
+	
+	v-bind
+		进行属性的绑定 所有的属性都可以进行绑定，注意只要使用了v-bind 后面的字符串一定是数据属性中的值
+		<div class="wrap" v-bind:class='{active:isGreen} || [] || 变量名 || 常量'></div> 对页面中的标签进行绑定
+		<a v-bind:href="href">路飞</a>
+	
+	v-on
+		vue中使用v-on:click对当前DOM绑定click事件, 所有的原生js的事件使用v-on都可以绑定
+		
+		示例 利用v-if和v-on来实现页面中dom的创建和销毁：
+			<div id="app">
+				<h3>{{ msg }}</h3>
+				<div class="box"  v-if="isShow">{{ count }}</div>
+				<button v-on:click="showHandler()">{{ btnText }}</button>
+			</div>
+			<script type="text/javascript" src="./node_modules/vue/dist/vue.js"></script>
+			<script type="text/javascript">
+				new Vue({
+					el: "#app",
+					template: ``,
+					// data在Vue实例化中可以是一个对象,也可以是一个函数但是在组件中，data必须是一个函数 函数内容一定return一个对象
+					data: function () {
+						return {
+							msg: '事件处理',
+							count: 0,
+							isShow: true,
+							btnText:'隐藏'
+						}
+					},
+					// 在vue中所有的事件都声明在methods中
+					methods: {
+						showHandler() {
+						   if(this.isShow){
+							   this.isShow = false;
+							   this.btnText = '显示'
+						   }else {
+							   this.isShow = true;
+							   this.btnText = '隐藏'
+						   }
+						}
+					}
+				});
+		
+		示例 使用vue实现一个轮播图的效果：
+			 <div id="slider">
+				<img v-bind:src="currentImgSrc">
+				<ul>
+					<li v-for="(item,index) in imgArr" v-bind:class="
+					{active:currentIndex==index}" v-on:click="clickHandler(index)">
+						{{ index+1 }}
+					</li>
+				</ul>
+			</div>
+			<script type="text/javascript" src="./node_modules/vue/dist/vue.js"></script>
+			<script type="text/javascript">
+				var imgArr = [
+					{id:1, imgSrc:'./images/1.png'},
+					{id:2, imgSrc:'./images/2.png'},
+					{id:3, imgSrc:'./images/3.png'},
+					{id:4, imgSrc:'./images/4.png'}
+				]
+
+				new Vue({
+					el:"#slider",
+					template:``,
+					data(){
+						return{
+							imgArr:imgArr,
+							currentIndex:0,
+							currentImgSrc:'./images/1.png'
+						}
+					},
+					methods:{
+						clickHandler(index){
+							this.currentIndex = index;
+							this.currentImgSrc = this.imgArr[index].imgSrc
+						}
+					}
+				})
+			</script>
+	#  在vue中它可以简写: v-bind:  :class  :src  :id  === v-bind:class v-bind:src
+                          v-on:click   === @click = '方法名'
+
+三 VUE组件
+	步骤：
+		1 先声明入口组件
+		2 挂载子组件 key表示组件名 value表示组件对象
+		3 使用子组件
+ //头部组件
+    var Vheader = {
+        template: `
+            <header class='head'>
+                我是头部
+            </header>
+        `
+    };
+
+    // 侧边栏组件
+    var Vaside = {
+        template: `
+            <div class='aside'>
+             我是侧边栏
+            </div>
+        `
+    }
+
+    // 内容区域
+    var Vcontent = {
+        template: `
+            <div class='content'>
+             我是内容区域
+            </div>
+        `
+    }
+
+    // 1. 声明入口组件
+    // 局部组件
+    var Vmain = {
+        template: `
+            <div class="main">
+                <Vheader></Vheader>
+                <div class="wrap">
+                    <Vaside/>
+                    <Vcontent/>
+                </div>
+
+            </div>
+        `,
+        components: {
+            // 等价于Vheader:Vheader
+            Vheader,
+            Vaside,
+            Vcontent
+        }
+    };
+
+    new Vue({
+        el: "#app",
+        // 3. 使用子组件
+        template: '<Vmain></Vmain>',
+        data: {},
+        components: {
+            // 2.挂载子组件
+            Vmain: Vmain
+        }
+
+    })
+	
+	(1)父组件向子组件传递数据:通过Prop
+            Vheader
+       1.在子组件自定义特性。props:['自定义的属性1','自定义属性2']
+            当一个值传递给一个 prop 特性的时候，它就变成了那个组件实例的一个属性,那么我们就可以像访问data中的值一样
+        
+       2.要在父组件中导入的子组件内部 绑定自定义的属性 <Vheader :title = '父组件中data声明的数据属性'/>
+		
+
+        注意:一个组件默认可以拥有任意数量的 prop，任何值都可以传递给任何 prop。
+		
+		    //头部组件
+			var Vheader = {
+				template: `
+					<header class='head'>
+						{{title}}
+					</header>
+				`,
+				props:['title']
+			};
+
+			// 侧边栏组件
+			var Vaside = {
+				template: `
+					<div class='aside'>
+					 我是侧边栏
+					</div>
+				`
+			}
+
+			// 内容区域
+			var Vcontent = {
+				template: `
+					<div class='content'>
+						<ul>
+							<li v-for="post in posts" :key="post.id">
+								<h2>我的博客标题{{post.title}}</h2>
+								<h2>我的博客内容{{post.content}}</h2>
+							</li>
+						</ul>
+					</div>
+				`,
+				props:['posts']
+			}
+
+			// 1. 声明入口组件
+			// 局部组件
+			var Vmain = {
+				template: `
+					<div class="main">
+
+						<Vheader v-bind:title="title"></Vheader>
+						<div class="wrap">
+							<Vaside/>
+							<Vcontent v-bind:posts="appPosts"/>
+						</div>
+
+					</div>
+				`,
+				components: {
+					// 等价于Vheader:Vheader
+					Vheader,
+					Vaside,
+					Vcontent
+				},
+				props:['title', 'appPosts']
+			};
+
+			new Vue({
+				el: "#app",
+				// 3. 使用子组件
+				template: '<Vmain :title="text" :appPosts="posts"></Vmain>',
+				data: {
+					"text":'我是一个标题',
+					posts:[
+							{id:1,title:"组件中的传值",content:"通过Prop传递数据"},
+							{id:2,title:"组件中的传值2",content:"通过Prop传递数据2"},
+							{id:3,title:"组件中的传值3",content:"通过Prop传递数据3"}
+
+						]
+				},
+				components: {
+					// 2.挂载子组件
+					Vmain: Vmain
+				}
+			})
+		
+		
+	(2)如何从子组件传递数据到父组件
+
+        1.给子组件中的某个按钮绑定原声事件,。我们可以调用内建的 this.$emit('自定义的事件名','传递的数据')，来向父级组件触发一个自定义的事件.
+
+        2.在父组件中的子组件标签中 要绑定自定义的事件,
+
+		# 点击改变字体大小
+		    //头部组件
+			var Vheader = {
+				template: `
+					<header class='head'>
+						{{title}}
+					</header>
+				`,
+				props: ['title']
+			};
+
+			// 侧边栏组件
+			var Vaside = {
+				template: `
+					<div class='aside'>
+					 我是侧边栏
+					</div>
+				`
+			}
+
+			// 内容区域
+			var Vcontent = {
+				template: `
+					<div class='content'>
+						<ul>
+							<li v-for="post in posts" :key="post.id">
+								<h2>我的博客标题{{post.title}}</h2>
+								<h2>我的博客内容{{post.content}}</h2>
+							</li>
+						</ul>
+						<button @click="changeSize">改变字体大小</button>
+					</div>
+				`,
+				props: ['posts'],
+				methods: {
+					changeSize() {
+						// 通过$emit()方法来触发自定义的事件
+						// 第一个参数是自定义的事件名字 第二个参数就是传递的值
+						this.$emit('postChangeSize', 1)
+					}
+				}
+			};
+
+			// 1. 声明入口组件
+			// 局部组件
+			var Vmain = {
+				template: `
+					<div class="main" :style="{fontSize:fontsize+'px'}">
+
+						<Vheader v-bind:title="title"></Vheader>
+						<div class="wrap">
+							<Vaside/>
+							<Vcontent v-bind:posts="appPosts" @postChangeSize="clickHandler"/>
+						</div>
+
+					</div>
+				`,
+				methods:{
+					clickHandler(value){
+						this.fontsize = this.fontsize+value;
+					}
+				},
+				data() {
+					return {
+						fontsize: 18
+					}
+				},
+
+				components: {
+					// 等价于Vheader:Vheader
+					Vheader,
+					Vaside,
+					Vcontent
+				},
+				props: ['title', 'appPosts']
+			};
+
+			new Vue({
+				el: "#app",
+				// 3. 使用子组件
+				template: '<Vmain :title="text" :appPosts="posts"></Vmain>',
+				data: {
+					"text": '我是一个标题',
+					posts: [
+						{id: 1, title: "组件中的传值", content: "通过Prop传递数据"},
+						{id: 2, title: "组件中的传值2", content: "通过Prop传递数据2"},
+						{id: 3, title: "组件中的传值3", content: "通过Prop传递数据3"}
+
+					]
+				},
+				components: {
+					// 2.挂载子组件
+					Vmain: Vmain
+				}
+
+
+			})
+						
+		
+	
+	全局组件的使用:
+			Vue.component('全局组件的名字',{
+				跟new Vue() 实例化对象中的options是一样，但是要注意：
+				不管是公共组件还是局部组件 data必须是个函数 函数一定要返回 {}
+			  })
+
+		  <slot> 元素作为承载分发内容的出口
+	  
+	过滤器的使用
+				1.注册局部过滤器 
+					price:0
+				  filters:{
+					   '过滤器的名字':function(value){
+
+						} 
+				   }
+
+				<!-- 2.使用过滤器 使用管道符 | -->
+				  {{price  | '过滤器的名字'}}
+
+	全局过滤器的使用：
+			 // 注册全局的过滤器
+			 <!-- 第一个参数是过滤器的名字，第二个参数是执行的操作 -->
+				Vue.filter('reverse',function(value) {
+					
+					return value.split('').reverse().join('');
+				});	
+				
+	
+	
+	计算属性（data中的相关数据）和侦听器（watch）：
+		<!-- 侦听的是单个属性 -->
+		watch:{
+			  数据属性的名字：function(value){
+
+			},
+			   数据属性的名字2：function(value){
+
+			}
+		}
+		<!--侦听多个属性:计算属性 computed -->
+
+		<!-- {{str.split('').reverse().join('')}} -->
+
+		<!-- v-bind -->
+		
+		
+	计算属性 :默认只有getter方法
+
+		data(){
+		  return {
+			name:'alex',
+			age:18
+		}
+		}
+
+		compuetd:{
+			  key:value
+			  计算属性的方法名:funtion(){
+				return `${this.name}他的年龄是${this.age}岁`
+			}
+		}
+		
+	计算属性之音乐播放器的示例：
+		示例一：
+				<div id="music">
+					<audio :src="currentSrc" controls autoplay></audio>
+					<ul>
+						<li v-for='(item,index) in musics' @click ='clickHandler(index)'>
+							<h2>{{item.id}}--歌曲为：{{item.name}}</h2>
+							<p>歌手:{{item.author}}</p>
+						</li>
+					</ul>
+				</div>
+
+				<script type="text/javascript" src="./node_modules/vue/dist/vue.min.js"></script>
+				<script>
+
+						var musicData = [{
+						id: 1,
+						name: '于荣光 - 少林英雄',
+						author: '于荣光',
+						songSrc: './static/于荣光 - 少林英雄.mp3'
+					},
+						{
+							id: 2,
+							name: 'Joel Adams - Please Dont Go',
+							author: 'Joel Adams',
+							songSrc: './static/Joel Adams - Please Dont Go.mp3'
+						},
+						{
+							id: 3,
+							name: 'MKJ - Time',
+							author: 'MKJ',
+							songSrc: './static/MKJ - Time.mp3'
+						},
+						{
+							id: 4,
+							name: 'Russ - Psycho (Pt. 2)',
+							author: 'Russ',
+							songSrc: './static/Russ - Psycho (Pt. 2).mp3'
+						}
+					];
+
+					new Vue({
+						el: "#music",
+						data() {
+							return {
+								musics:musicData,
+								musicSrc:'./static/于荣光 - 少林英雄.mp3'
+							}
+						},
+						template: ``,
+						computed:{
+							currentSrc(){
+								return this.musicSrc
+							}
+						},
+						methods:{
+							clickHandler(index){
+								this.musicSrc = this.musics[index].songSrc
+							}
+						}
+					});
+
+				</script
+		示例二：
+				<style type="text/css">
+        
+						*{
+							padding: 0;
+							margin: 0;
+						}
+						ul{
+							list-style: none;
+						}
+						ul li {
+							margin: 30px 20px;
+							padding: 10px;
+						}
+						ul li.active{
+							background-color: #20FFFF;
+						}
+					</style>
+				</head>
+
+				<body>
+					<div id="music">
+						<audio :src="currentSrc" controls autoplay></audio>
+						<ul>
+							<li v-for = '(item,index) in musics' @click = 'clickHandler(index)' :class = '{active:currentIndex == index}'>
+								<h2>{{item.id}}--歌曲为:{{item.name}}</h2>
+								<p>歌手:{{item.author}}</p>
+							</li>
+						 
+						</ul>
+					</div>
+					<script type="text/javascript" src="./node_modules/vue/dist/vue.min.js"></script>
+					<script type="text/javascript">
+					var musicData = [{
+							id: 1,
+							name: '于荣光 - 少林英雄',
+							author: '于荣光',
+							songSrc: './static/于荣光 - 少林英雄.mp3'
+						},
+						{
+							id: 2,
+							name: 'Joel Adams - Please Dont Go',
+							author: 'Joel Adams',
+							songSrc: './static/Joel Adams - Please Dont Go.mp3'
+						},
+						{
+							id: 3,
+							name: 'MKJ - Time',
+							author: 'MKJ',
+							songSrc: './static/MKJ - Time.mp3'
+						},
+						{
+							id: 4,
+							name: 'Russ - Psycho (Pt. 2)',
+							author: 'Russ',
+							songSrc: './static/Russ - Psycho (Pt. 2).mp3'
+						}
+					];
+					new Vue({
+						el: '#music',
+						data() {
+							return {
+								musics:musicData,
+								   currentIndex:0
+								// musicSrc:'./static/于荣光 - 少林英雄.mp3'
+							}
+						},
+						methods:{
+							clickHandler(index){
+								// alert(index);
+								this.currentIndex = index;
+								
+							}
+						},
+						computed:{
+								currentSrc(){
+									// 监听了两个属性 musics  currentIndex
+									return  this.musics[this.currentIndex].songSrc;
+								}
+						},
+						template: ``
+					});
+					</script>
+					
+		示例三：使用set方法
+				<div id="app">
+				<h4>{{alexDesc}}</h4>
+				<button @click='clickHandler'>修改</button>
+			</div>
+			<script type="text/javascript" src="./node_modules/vue/dist/vue.min.js"></script>
+			<script type="text/javascript">
+				new Vue({
+					el: '#app',
+					template: ``,
+					data() {
+						return {
+							myName: 'alex',
+							age: 18
+						}
+					},
+					methods: {
+						clickHandler() {
+						   this.alexDesc = 'ALEX IS SB'
+						}
+					},
+					computed: {
+						alexDesc: {
+							set: function (newValue) {
+								console.log(newValue);
+								this.myName = newValue
+							},
+							get: function () {
+								var str = `${this.myName}他的年龄是${this.age}岁了可以去大保健`
+								return str
+							}
+							// 默认只有getter
+
+						}}});
+			</script>
+
+			</body>
+	
+	Vue生命周期以及钩子函数
+		<body>
+			<div id="app">
+				<App></App>
+			</div>
+			<script type="text/javascript" src="./node_modules/vue/dist/vue.min.js"></script>
+			<script type="text/javascript">
+				// beforeCreate
+				// created
+				// beforeMount
+				// mounted
+				// beforeUpdate
+				// updated
+				// activated
+				// deactivated
+				// beforeDestroy
+				// destroyed
+
+				var Test ={
+					data(){
+						return{
+							msg:"哈哈哈"
+						}
+					},
+					template:`
+						<div>
+
+							<div>{{msg}}</div>
+							<button @click = 'changeHandler'>修改</button>
+						</div>
+					`,
+					methods:{
+					  changeHandler(){
+						  this.msg= this.msg + 'alex'
+					  }
+					},
+					beforeCreate(){
+						//在组件创建之前
+						console.log(this.msg)
+					},
+					created(){
+						// 组件创建之后
+						// 使用该组件,就会触发以上的钩子函数, created中可以操作数据,如发送ajax，并且可以实现VUE对页面的影响
+						console.log(this.msg)
+					},
+					beforeMount(){
+						// 装载数据到DOM之前会调用
+						console.log(document.getElementById('app'))
+					},
+					mounted(){
+						// 装载数据到DOM之后会调用， 可以获取真实存在的DOM元素， VUE操作以后的DOM
+						// 这个地方可以操作DOM
+						console.log(document.getElementById('app'))
+					},
+					beforeUpdate(){
+						// 在更新之前，调用此钩子函数, 应用:获取原始的DOM
+						 console.log(document.getElementById('app').innerHTML)
+					},
+					updated(){
+						// 在更新之后, 调用此钩子函数, 应用:更新之后的DOM
+					},
+					beforeDestroy(){
+						console.log('beforeDestroy')
+					},
+					destroyed(){
+						console.log('destroyed')
+					},
+					activated(){
+						console.log('组件被激活')
+					},
+					deactivated(){
+						console.log('组件被停用')
+					}
+
+				};
+
+				var App = {
+					data(){
+						return{
+							isShow:true
+						}
+					},
+
+					template:`
+						<div>
+							<keep-alive>
+								<Test v-if="isShow"></Test>
+							</keep-alive>
+							<button @click = 'changeHandler'>创建和销毁组件</button>
+						</div>
+					`,
+					methods:{
+						changeHandler(){
+							this.isShow = !this.isShow;
+						}
+					},
+					components:{
+						Test
+					}
+				};
+
+				new Vue({
+					el:'#app',
+					template:'',
+					components:{
+						App
+					}
+				})
+			</script>
+		</body>
+					
+
+	Vue获取DOM元素
+	   // $refs获取组件内的元素
+       // $parent:获取当前组件的父组件
+       // $children:获取当前组件的子组件
+       // $root:获取New Vue的实例化对象
+       //$el:获取组件对象的DOM元素
+      
+		<body>
+			 <div id="app"></div>
+			 <script type="text/javascript" src="./node_modules/vue/dist/vue.min.js"></script>
+			 <script type="text/javascript">
+				Vue.component('subComp', {
+					template:`<div></div>`
+				});
+
+				var App = {
+					template:`<div>
+								<subComp ref="subc"></subComp>
+								<button ref="btn">我是按钮</button>
+								<p ref="sb">alex</p>
+							</div>`,
+					beforeCreate(){
+							console.log(this.$refs.btn); // undefined
+					},
+					created(){
+							console.log(this.$refs.btn); // undefined
+					},
+					beforeMount(){
+							console.log(this.$refs.btn); // undefined
+					},
+					mounted(){
+						console.log(this.$refs.btn);
+						// 如果是给组件绑定的ref属性那么this.$refs.subc取到的是组件对象
+						console.log(this.$refs.subc);
+						var op = this.$refs.sb;
+						this.$refs.btn.onclick = function () {
+							alert(op.innerHTML)
+						}
+					}
+
+				};
+
+
+				new Vue({
+					el:'#app',
+					data(){
+						return{
+
+						}
+					},
+					template:'<App/>',
+					components:{
+						App
+					}
+				})
+			 </script>
+		</body>
+		
+		
+		
+	获取更新之后的dom添加事件的特殊情况
+    // $nextTick 是在下次Dom更新循环结束之后执行的延迟回调，在修改数据之后使用$nextTick ，则可以在回调中获	
+	<body>
+     <div id="app"></div>
+     <script type="text/javascript" src="./node_modules/vue/dist/vue.min.js"></script>
+     <script type="text/javascript">
+        Vue.component('subComp', {
+            template:`<div></div>`
+        });
+
+        var App = {
+            data(){
+                return{
+                    isShow:false
+                }
+            },
+
+            template:`<div>
+                        <input type="text" v-if="isShow" ref="fos">
+                    </div>`,
+            mounted(){
+                // vue实现响应式并不是数据发生变化之后DOM立即发生变化， 而是按一定的策略进行DOM更新
+                // $nextTick是在下次Dom更新循环结束之后执行的延迟回调,在修改数据之后使用$nexTick，则可以在回调中获取更新之后的DOM
+                this.isShow = true;
+
+
+                this.$nextTick(function () {
+                    //  获取更新之后的Dom
+                     this.$refs.fos.focus()
+                })
+            }
+
+
+        };
+
+        new Vue({
+            el:'#app',
+            data(){
+                return{
+
+                }
+            },
+            template:'<App/>',
+            components:{
+                App
+            }
+        })
+     </script>
+</body>	
+
+
+四 vue-cli脚手架安装和webpack-simple模板项目生成
+
+ue-cli 是一个官方发布 vue.js 项目脚手架，使用 vue-cli 可以快速创建 vue 项目。
+
+GitHub地址是：https://github.com/vuejs/vue-cli
+
+一、安装Nodejs
+
+首先需要安装Node环境。安装完成之后，可以在命令行工具中输入node -v和npm -v,如果能显示出版本号，就说明安装成功。
+
+二、安装vue-cli
+
+安装好node之后，我们就可以直接全局安装vue-cli:
+npm install -g vue-cli
+
+使用这种方式可能会安装比较慢，推荐大家使用国内的淘宝镜像来安装。(之前安装过了就不过多赘述了)
+cnpm install -g vue-cli
+
+如果安装失败，可以使用 npm cache clean 清理缓存，然后再重新安装。后面的安装过程中，如有安装失败的情况，也需要先清理缓存
+
+安装完成后，可以使用vue -V(大写的V)查看vue的版本。
+
+如果接下来你不知道要干嘛，那么你可以在命令行中输入
+
+vue -help
+
+
+Vue.js官方提供了两种类型的模板项目：
+基于vue cli和browserify的项目模板
+基于vue cli和webpack的项目模板
+vue cli是Vue.js官方提供的命令行创建Vue.js项目脚手架的工具。这两种类型的项目模板分别提供了简单模式和完全模式，简单模式仅包含基于vue.js开发必要的一些资源和包，使用该模式可以快速地投入到开发。完全模式则还包括ESLink、单元测试等功能。
+我们在这里使用webpack的项目模板。没有为什么，因为webpack有点叼叼的。
+我们今天玩一下webpac-simple 基于webpack的简单模板。
+
+1 切换到当前目录下
+2 vue init webpack-simple 01
+3 根据提示操作
+4 cd 01
+5 npm insta 
+6 npm rundev
+7 只关心src下的文件夹里面的文件
+
+

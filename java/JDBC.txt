@@ -1,0 +1,459 @@
+一 JDBC简介
+	1 什么是JDBC
+		JDBC是java database connectivity的缩写，是SUN公司提供的一套操作数据库的标准规范。JDBC提供一些操作数据的API，开发者可以在java中使用这些API操作数据库，实现对表中数据的增删改查操作，JDBC相当于java和数据库之间的一座桥梁。
+	
+	2 JDBC的四个核心接口
+		DriverManager:用于注册驱动并创建符合该驱动的数据库的连接。
+		Connection: 表示与数据库创建的连接对象，即一个connection对应着一个会话，相当于在mysql workbench中打开了一个连接。
+		Statement: 操作数据库sql语句的对象，有个两个实现类：Statement和PreparedStatement（常用）。
+		ResultSet: 从数据库中查询的结果集。
+
+二 JDBC的使用
+	
+	1 JDBC开发的准备工作
+		JDBC规范在jdk中的
+		java.sql.;
+		javax.sql.;
+		这两个包下面，不过这里面都是接口，要想使用JDBC的话，需要下载相关的数据库驱动jar包，这里咱们使用的是MySQL数据库，所以需要下载MySQL的数据库驱动：http://pan.baidu.com/s/1hsJ1Rww
+		创建一个dynamic web project，之后将上面下载的数据库驱动解压，解压后将mysql-connector-java-5.1.43-bin.jar包拷贝到项目中的WebContent/WEB-INF/lib目录下。
+	
+	2 JDBC使用步骤
+		一般情况下分为以下6步：
+			注册驱动
+			获取连接Connection
+			得到执行sql语句的对象Statement
+			执行sql语句，并返回结果
+			处理结果
+			关闭Connection
+			
+		
+		实现代码：
+			package com.monkey1024.jdbc;
+			import java.sql.*;
+
+			public class JDBC_Test01 {
+				public static void main(String[] args) throws ClassNotFoundException, SQLException {
+					// 注册驱动
+					Class.forName("com.mysql.jdbc.Driver");
+					// 获取链接Connection
+					Connection conn = DriverManager.getConnection("jdbc:mysql://192.168.0.108:3306/food_db", "harry.cai", "123456" );
+					// 得到执行sql语句的对象Statement
+					Statement stmt = conn.createStatement();
+					// 执行sql并返回语句
+					ResultSet rs = stmt.executeQuery("SELECT * FROM user");
+					// 处理结果
+					while (rs.next()){
+						System.out.println(rs.getObject("uid"));
+						System.out.println(rs.getObject("nickname"));
+						System.out.println(rs.getObject("email"));
+					}
+
+					// 关闭连接
+					rs.close();
+					stmt.close();
+					conn.close();
+				}
+			}
+
+	3 单元测试框架junit简介
+		junit是一个单元测试框架,之前的代码中只能运行main方法中的内容,使用junit之后,可以直接运行非main方法中的内容
+		要使用junit需要先导入相关jar包,可以取junit官网下载相关jar。
+		使用方法：
+			在想要运行的方法上面加上@Test注解
+			package com.monkey1024.jdbc;
+
+			/**
+			 *  junit
+			 */
+			public class CaculateTest01 {
+				/**
+				 * 使用junit执行方法时
+				 * 1. 方法不能有返回值
+				 * 2. 方法不能有参数
+				 */
+				@org.junit.Test
+				public void test1(){
+					System.out.println("HA HA HA");
+				}
+			}
+		junit断言
+			junit中提供了Assert类，通过调用该类中的方法,可以测试一下方法运行的结果根我们想要的结果是否一致
+			计算类：
+				package com.monkey1024.jdbc;
+
+				public class Caclulate {
+					public int add(int a, int b){
+						return a+b;
+					}
+					public double devide(double a, double b){
+						return a/b;
+					}
+				}
+			单元测试：
+				public class CaculateTest01 {
+				/**
+				 * 使用junit执行方法时
+				 * 1. 方法不能有返回值
+				 * 2. 方法不能有参数
+				 */
+				@org.junit.Test
+				public void test1(){
+					System.out.println("HA HA HA");
+				}
+				@Test
+				public void test(){
+					Caclulate c = new Caclulate();
+					// 如果和预期不一样会报错
+					Assert.assertEquals(17, c.add(10, 5));
+				}
+			}
+	
+	4 使用JDBC实现数据库增删查改
+		package com.monkey1024.jdbc;
+		import com.monkey1024.jdbc.jbdc.bean.User;
+		import org.junit.Test;
+
+		import java.sql.*;
+		import java.util.ArrayList;
+		import java.util.List;
+
+		public class CRUD_Test01 {
+			public void testInsert() throws ClassNotFoundException, SQLException {
+				// 注册驱动
+				Class.forName("com.mysql.jdbc.Driver");
+				// 获取链接Connection
+				Connection conn = DriverManager.getConnection("jdbc:mysql://192.168.0.108:3306/food_db", "harry.cai", "123456");
+				// 得到执行sql语句的对象statement
+				Statement stmt = conn.createStatement();
+				// 执行sql语句并得到返回的结果
+				int flag = stmt.executeUpdate("insert into(name,password, birthday) values ('cat', '123456', '414804000@qq.com') ");
+				if (flag > 0) {
+					System.out.println("sql执行成功");
+				}
+				// 关闭资源
+				stmt.close();
+				conn.close();
+			}
+
+			@Test
+			public void testUpdate() throws ClassNotFoundException, SQLException  {
+				// 注册驱动
+				Class.forName("com.mysql.jdbc.Driver");
+				// 获取链接Connection
+				Connection conn = DriverManager.getConnection("jdbc:mysql://192.168.0.108:3306/food_db", "harry.cai", "123456");
+				// 得到执行sql语句的对象statement
+				Statement stmt = conn.createStatement();
+				// 执行sql语句并得到返回的结果
+				int flag = stmt.executeUpdate("update  t_user set password='123' where name='cat'");
+				if (flag > 0) {
+					System.out.println("sql执行成功");
+				}
+				// 关闭资源
+				stmt.close();
+				conn.close();
+			}
+
+			public void testDelete() throws ClassNotFoundException, SQLException  {
+				// 注册驱动
+				Class.forName("com.mysql.jdbc.Driver");
+				// 获取链接Connection
+				Connection conn = DriverManager.getConnection("jdbc:mysql://192.168.0.108:3306/food_db", "harry.cai", "123456");
+				// 得到执行sql语句的对象statement
+				Statement stmt = conn.createStatement();
+				// 执行sql语句并得到返回的结果
+				int flag = stmt.executeUpdate("delete from  t_user set password='123' where name='cat");
+				if (flag > 0) {
+					System.out.println("sql执行成功");
+				}
+				// 关闭资源
+				stmt.close();
+				conn.close();
+			}
+			public void testSelect() throws ClassNotFoundException, SQLException{
+				// 注册驱动
+				Class.forName("com.mysql.jdbc.Driver");
+				// 获取链接Connection
+				Connection conn = DriverManager.getConnection("jdbc:mysql://192.168.0.108:3306/food_db", "harry.cai", "123456" );
+				// 得到执行sql语句的对象Statement
+				Statement stmt = conn.createStatement();
+				// 执行sql并返回语句
+				ResultSet rs = stmt.executeQuery("SELECT * FROM user");
+				// 处理结果
+				List<User> userList = new ArrayList<User>();
+				while (rs.next()){
+					User u = new User();
+					u.setId(rs.getInt("id"));
+					u.setName(rs.getString("name"));
+					u.setPassword(rs.getString("password"));
+					u.setEmail(rs.getNString("email"));
+					u.setBirthday(rs.getDate("birthday"));
+					userList.add(u);
+
+				}
+
+				// 关闭连接
+				rs.close();
+				stmt.close();
+				conn.close();
+			}
+		}
+	
+	5 重构上面的代码
+		db.properties:
+			driverClass=com.mysql.jdbc.Driver
+			url=jdbc:mysql://192.168.0.108:3306/food_db
+			username=harry.cai
+			password=123456
+			
+		DBUtil.java:
+			package com.monkey1024.jdbc.util;
+
+			import java.sql.Connection;
+			import java.sql.DriverManager;
+			import java.sql.SQLException;
+			import java.util.ResourceBundle;
+
+			public class DBUtil {
+				
+				private static String driverClass;
+				private static String url;
+				private static String username;
+				private static String password;
+				
+				static{
+					// 获取properties的配置
+					ResourceBundle rb = ResourceBundle.getBundle("db");
+					driverClass = rb.getString("driverClass");
+					url = rb.getString("url");
+					username = rb.getString("username");
+					password = rb.getString("password");
+					try {
+						//注册驱动
+						Class.forName(driverClass);
+					} catch (ClassNotFoundException e) {
+						e.printStackTrace();
+					}
+				}
+				
+				public static Connection getConnection() throws SQLException{
+					return DriverManager.getConnection(url, username, password);
+				}
+			}
+
+		CRUD_Test03:
+			package com.monkey1024.jdbc;
+
+			import java.sql.Connection;
+			import java.sql.DriverManager;
+			import java.sql.ResultSet;
+			import java.sql.SQLException;
+			import java.sql.Statement;
+			import java.util.ArrayList;
+			import java.util.List;
+
+			import org.junit.Test;
+
+			import com.monkey1024.jdbc.bean.User;
+			import com.monkey1024.jdbc.util.DBUtil;
+
+			/**
+			 * 使用jdbc实现增删改
+			 *
+			 */
+			public class CRUD_Test03 {
+
+				@Test
+				public void testInsert() throws Exception {
+					// 注册驱动
+					Class.forName("com.mysql.jdbc.Driver");
+
+					// 获取连接Connection
+					Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/monkey1024", "root", "monkey1024");
+
+					// 得到执行sql语句的对象statement
+					Statement stmt = conn.createStatement();
+
+					// 执行sql语句，并得到返回结果
+					int flag = stmt.executeUpdate(
+							"insert into t_user(name,password,email,birthday) values ('cat','123456','cat@163.com','1993-11-11')");
+					if (flag > 0) {
+						System.out.println("成功");
+					}
+
+					// 关闭资源
+					stmt.close();
+					conn.close();
+				}
+
+				@Test
+				public void testUpdate() throws Exception {
+					// 注册驱动
+					Class.forName("com.mysql.jdbc.Driver");
+
+					// 获取连接Connection
+					Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/monkey1024", "root", "monkey1024");
+
+					// 得到执行sql语句的对象statement
+					Statement stmt = conn.createStatement();
+
+					// 执行sql语句，并得到返回结果
+					int flag = stmt.executeUpdate("update t_user set password='123' where name='cat'");
+					if (flag > 0) {
+						System.out.println("成功");
+					}
+
+					// 关闭资源
+					stmt.close();
+					conn.close();
+				}
+
+				@Test
+				public void testDelete() throws Exception {
+					// 注册驱动
+					Class.forName("com.mysql.jdbc.Driver");
+
+					// 获取连接Connection
+					Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/monkey1024", "root", "monkey1024");
+
+					// 得到执行sql语句的对象statement
+					Statement stmt = conn.createStatement();
+
+					// 执行sql语句，并得到返回结果
+					int flag = stmt.executeUpdate("delete from t_user where name='cat'");
+					if (flag > 0) {
+						System.out.println("成功");
+					}
+
+					// 关闭资源
+					stmt.close();
+					conn.close();
+				}
+
+				@Test
+				public void testSelect() {
+					// 获取连接Connection
+					try (Connection conn = DBUtil.getConnection();
+							// 得到执行sql语句的对象Statement
+							Statement stmt = conn.createStatement();
+							// 执行sql语句，并返回结果
+							ResultSet rs = stmt.executeQuery("select id,name,password,email,birthday from t_user")) {
+
+						// 处理结果
+						List<User> userList = new ArrayList<>();
+						while (rs.next()) {
+							User u = new User();
+							u.setId(rs.getInt("id"));
+							u.setName(rs.getString("name"));
+							u.setPassword(rs.getString("password"));
+							u.setEmail(rs.getString("email"));
+							u.setBirthday(rs.getDate("birthday"));
+							userList.add(u);
+						}
+						System.out.println(userList);
+					} catch (SQLException e) {
+						e.printStackTrace();
+					} 
+
+				}
+			}
+	
+	6 PreparedStatment解决sql注入的问题
+		什么是SQL注入
+			就是部分用户在表单中输入sql语句的片段，对没有输入检验的网站可能带来毁灭性的打击，轻则绕过登录，重则删库、泄露数据。
+			
+			假设某个网站没有输入参数检验，并且后台的sql语句为：
+				String sql = "select * from user where username='" + username + "' and password='" + password + "'";
+			
+			那么如果我在表单中输入的用户名不存在或乱输入一个密码
+				String afterSql="select * from user where username='' or 1=1 -- and password='123'";
+			where中的子句username='' or 1=1永远为真，是因为使用了--，将后面的密码判断给注释了。这样子我可以绕过登录，去做一些危害网站的事情，
+		
+			在JDBC中，使用Statement的子类PreparedStatement
+			事先将sql语句传入PreparedStatement中，等会要传入的参数使用？代替，那么该sql语句会进行预编译，之后将前台获取的参数通过set方式传入编译后的sql语句中，那么此时被注入的sql语句无法得到编译，从而避免了sql注入的问题。
+			
+			package com.monkey1024.jdbc.service;
+
+			import java.sql.Connection;
+			import java.sql.PreparedStatement;
+			import java.sql.ResultSet;
+			import java.sql.SQLException;
+
+			import com.monkey1024.jdbc.bean.User;
+			import com.monkey1024.jdbc.util.DBUtil;
+
+			public class LoginServiceNew {
+
+				public User findUserByNameAndPassword(String name, String password) {
+					User u = null;
+					String sql = "select id,name,password,email,birthday from t_user where name=? and password=?";
+					System.out.println(sql);
+					// 获取连接Connection
+					try (Connection conn = DBUtil.getConnection();
+						PreparedStatement stmt = conn.prepareStatement(sql)) {
+						stmt.setString(1, name);
+						stmt.setString(2, password);
+
+						try (// 执行sql语句，并返回结果
+								ResultSet rs = stmt.executeQuery()) {
+							// 处理结果
+							while (rs.next()) {
+								u = new User();
+								u.setId(rs.getInt("id"));
+								u.setName(rs.getString("name"));
+								u.setPassword(rs.getString("password"));
+								u.setEmail(rs.getString("email"));
+								u.setBirthday(rs.getDate("birthday"));
+							}
+
+						}
+
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+
+					return u;
+				}
+			}
+	
+	7 封装数据库工具类
+		package com.harry.dbutil;
+
+		import java.sql.*;
+		import java.util.concurrent.locks.Condition;
+
+		public class DBUtils {
+			private static String url = "jdbc:mysql://192.168.0.108:3306/food_db";
+			private static String user = "harry.cai";
+			private static String password = "123456";
+			private static String driverClass = "com.mysql.jdbc.Driver";
+			static {
+				// 注册驱动
+				try {
+					Class.forName(driverClass);
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+			}
+
+			public static Connection getConnection() throws SQLException {
+				// 连接数据连接
+				return DriverManager.getConnection(url, user, password);
+			}
+			public static void close(ResultSet rs, Statement stmt){
+				// 关闭数据库资源
+				if(rs != null){
+					try {
+						rs.close();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+				if(stmt != null){
+					try {
+						stmt.close();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
