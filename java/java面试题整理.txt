@@ -757,8 +757,8 @@
 		作用域类别：
 			* singleton 在SpringIOC容器中仅存在一个Bean实例， Bean以单例的方式存在
 			* Prototype 每次调用getBean()时都会返回一个新的实例
-			* request 	每次HTTP请求都会创建一个新的Bean, 该作用域仅适用于WebApplicationContxt环境
-			* session   同一个HTTP Session 共享一个Bean, 不同的HTTP Session使用不同的Bean。 该作用域仅适用于WebApplicationContext环境
+			* request 	每次HTTP请求都会创建一个新的Bean, 在一次 Http 请求中，容器会返回该 Bean 的同一实例。而对不同的 Http 请求则会产生新的 Bean，而且该 bean 仅在当前 Http Request 内有效,当前 Http 请求结束，该 bean实例也将会被销毁,该作用域仅适用于WebApplicationContxt环境
+			* session   同一个HTTP Session 共享一个Bean, 而对不同的 Session 请求则会创建新的实例，该 bean 实例仅在当前 Session 内有效不同的HTTP Session使用不同的Bean。 该作用域仅适用于WebApplicationContext环境
 			
 	2. 简单描述Spring支持的常用数据库事务传播属性和事务隔离级别
 		事务的传播行为: 当事务方法被另一个事务方法调用时, 必须制定事务应该如何传播。 例如：方法可能继续在现有事务中运行，也可能开启一个新事务，并在自己的事务中运行
@@ -874,7 +874,18 @@
 				   恢复备份速度慢
 				   每次读写都同步的有一定性能压力
 				   存在个别Bug 造成不能恢复
-
+	
+	8. Spring Bean 生命周期
+		(1) 实例化， 实例化一个Bean,也就是我们常说的new
+		(2) IOC依赖注入，按照Spring上下文对实例化的Bean进行配置，也就是IOC注入
+		(3) setBeanName实现，如果这个Bean已经实现了BeanNameAwar接口，会调用它实现的setBeanName(String)方法,从此传递就是Spring配置文件中Bean的id值
+		(4) BeanFactoryAware实现，如果这个Bean已经实现了BeanFactoryAware接口，会调用它实现的setBeanFactory， setBeanFactory(BeanFactory)传递的是Spring工厂自身(可以用这个方式来获取其他Bean, 只需在Spring配置文件中配置一个普通Bean就可以)
+		(5) ApplicationContextAware实现，如果这个Bean已经实现了ApplicatonContextAware接口,会调用setApplicationContext方法，传入Spring上下文(同样这个方式也可以实现步骤4的内容,但比4更好, 因为Application是BeanFactory的子接口,有更多的实现方法)
+		(6) postProcessBeforeInitialization接口实现-初始化预处理，如果Bean关联了BeanPostProcessor接口,将会调用PostProcessBeforeInitialzation(Object obj, String s)方法，BeanPostProcessor经常被用作是Bean内容的更改，并且由于这个是在Bean初始化结束时调用那个的方法，也可以被应用于内存或缓存技术。
+		(7) ini-method 如果Bean在Spring配置文件配置了init-method属性会自动调用其配置的初始化方法
+		(8) 如果这个Bean关联了BeanPostProcessor接口,将会调用postProcessAftarInitializtion(Object obj, String s)方法.
+		(9) Destroy过期自动清理阶段当 Bean 不再需要时，会经过清理阶段，如果 Bean 实现了 DisposableBean 这个接口，会调用那个其实现的 destroy()方法
+		(10) destroy-method 自配置清理最后，如果这个 Bean 的 Spring 配置中配置了 destroy-method 属性，会自动调用其配置的销毁方法。 
 四 数据库
 	Mysql 什么情况创建索引
 		(1) 创建索引的情况
