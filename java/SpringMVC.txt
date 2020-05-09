@@ -198,7 +198,7 @@
 五 使用注解编写Spring MVC程序
 	在实际开发中，我们会创建很多Controller来满足业务方面的需求，这样就会导致一个问题，需要在springmvc.xml配置文件中配置大量的bean导致该配置文件变的臃肿起来，为了解决这个问题，spring MVC提供了一系列的注解，通过设置注解，可以使springmvc.xml配置文件变的简洁。
 	注册扫描器
-		在配置文件中我们只需要注册一个组件扫描器即可，其中base-package写上你的包名即可，下面这种写法表示会扫描com.monkey1024下的所有包和类，该组件扫描器是spring中的内容。
+		在配置文件中我们只需要注册一个组件扫描器即可，其中base-package写上你的包名即可，下面这种写法表示会扫描com.harry下的所有包和类，该组件扫描器是spring中的内容。
 		    <!-- 注册组件扫描器 -->
 			<context:component-scan base-package="com.harry.*"/>
 		
