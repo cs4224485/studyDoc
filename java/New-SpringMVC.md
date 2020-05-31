@@ -1612,7 +1612,7 @@ public class UserNameNotMatchPasswordException extends RuntimeException{
 
 > 对一些特殊的异常进行处理，比 如NoSuchRequestHandlingMethodException、HttpReques tMethodNotSupportedException、HttpMediaTypeNotSuppo rtedException、HttpMediaTypeNotAcceptableException 等。
 
-十一、SpingMVC的执行流程
+# 十一、SpingMVC的执行流程
 
 > ​	1）用户发送请求至前端控制器 DispatcherServlet。 
 > ​	2）DispatcherServlet 收到请求调用 HandlerMapping 处理器映射器。
