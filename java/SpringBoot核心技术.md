@@ -185,6 +185,8 @@ public @interface EnableAutoConfiguration {
 
 @**AutoConfigurationPackage**：自动配置包
 
+可以通过 AutoConfigurationPackages 工具类获取自动配置package列表。当通过注解@SpringBootApplication标注启动类时，已经为启动类添加了@AutoConfigurationPackage注解。路径为 @SpringBootApplication -> @EnableAutoConfiguration -> @AutoConfigurationPackage。也就是说当SpringBoot应用启动时默认会将启动类所在的package作为自动配置的package。
+
 ​	@**Import**(AutoConfigurationPackages.Registrar.class)：
 
 ​		Spring的底层注解@Import，给容器中导入一个组件；导入的组件有AutoConfigurationPackages.Registrar.class

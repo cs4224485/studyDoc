@@ -704,7 +704,7 @@
 					 defaultZone: http://eureka7001.com:7001/eureka/,http://eureka7002.com:7002/eureka/ #er交互的地址查询服务和注册服务都需要依赖这个地址。
 						
 		(5) 修改微服务8801的yml文件
-			ureka:
+			eureka:
 			  client: #客户端注册进eureka服务列表内
 				service-url: 
 				  defaultZone: http://eureka7001.com:7001/eureka/,http://eureka7002.com:7002/eureka/,http://eureka7003.com:7003/eureka/
@@ -1042,7 +1042,7 @@
 六 Feign负载均衡
 	1 什么是Feign
 		与Ribbon一样, Feign也是Netfix提供的， Feign是一个声明式、模板化的Web Service客户端，它简化了开发者编写Web服务客户端的操作，
-		开发者可以通过简单的接口和注解来调用HTTP API, Spring Cloud Feign它挣了Ribbon和Hystix，具有可插拔、基于注解、负载均衡、服务熔断等一系列编辑功能。
+		开发者可以通过简单的接口和注解来调用HTTP API, Spring Cloud Feign它整合了Ribbon和Hystix，具有可插拔、基于注解、负载均衡、服务熔断等一系列编辑功能。
 		
 	2 Ribbon和Feign的区别
 		相较于 Ribbon + RestTemplate 的方式，Feign 大大简化了代码的开发，Feign 支持多种注解，包括Feign 注解、JAX-RS 注解、Spring MVC 注解等，Spring Cloud 对 Feing 进行了优化，整合了 Ribbon和 Eureka，从而让 Feign 的使用更加方便。
