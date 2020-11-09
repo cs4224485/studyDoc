@@ -765,4 +765,32 @@
 			drop procedure proc_name;
 			
 			
+		(5) 案例
+			#案例1：创建存储过程实现 根据女神名，查询对应的男神信息
+
+			CREATE PROCEDURE myp2(IN beautyName VARCHAR(20))
+			BEGIN
+				SELECT bo.*
+				FROM boys bo
+				RIGHT JOIN beauty b ON bo.id = b.boyfriend_id
+				WHERE b.name=beautyName;
+				
+
+			END $
 			
+			#案例2 ：创建存储过程实现，用户是否登录成功
+
+			CREATE PROCEDURE myp4(IN username VARCHAR(20),IN PASSWORD VARCHAR(20))
+			BEGIN
+				DECLARE result INT DEFAULT 0;#声明并初始化
+				
+				SELECT COUNT(*) INTO result#赋值
+				FROM admin
+				WHERE admin.username = username
+				AND admin.password = PASSWORD;
+				
+				SELECT IF(result>0,'成功','失败');#使用
+			END $
+			
+			#调用
+			CALL myp3('张飞','8888')$

@@ -1,4 +1,4 @@
-一、Spring Boot与缓存
+# 一、Spring Boot与缓存
 
 ## 1 JSR107
 
@@ -1204,7 +1204,7 @@ public void search(){
 }
 ```
 
-# 四、Spring Boot与任务2
+# 四、Spring Boot与任务
 
 ## 1、异步任务
 

@@ -154,7 +154,7 @@ Spring MVC 使用 @RequestMapping 注解为控制器指定可 以处理哪些 UR
 
 标准的 HTTP 请求报头
 
-![image-20200523155803766](\images\image-20200523155803766.png)
+![image-20200523155803766](images\image-20200523155803766.png)
 
 @RequestMapping 除了可以使用请求 URL 映射请求外， 还可以使用请求方法、请求参数及请求头映射请求 
 
@@ -326,7 +326,7 @@ Spring MVC 在内部使用了一个 org.springframework.ui.Model 接口存 储�
 
 ​	 – 如果方法的入参为 Map 或 Model 类 型，Spring MVC 会将隐含模型的引用传 递给这些入参。在方法体内，开发者可以 通过这个入参对象访问到模型中的所有数 据，也可以向模型中添加新的属性数据
 
-![image-20200523164713573](\images\image-20200523164713573.png)
+![image-20200523164713573](images\image-20200523164713573.png)
 
 ## @SessionAttributes
 
@@ -467,7 +467,7 @@ SpringMVC 确定目标方法 POJO 类型入参的过程:
 
 常用的视图实现类：
 
-![image-20200524150323433](\images\image-20200524150323433.png)
+![image-20200524150323433](images\image-20200524150323433.png)
 
 ## 使用视图解析器
 
@@ -503,7 +503,7 @@ public class HelloView implements View {
 
 常用的视图解析器实现类
 
-![image-20200524152712449](\images\image-20200524152712449.png)
+![image-20200524152712449](images\image-20200524152712449.png)
 
 程序员可以选择一种视图解析器或混用多种视图解析器
 
@@ -544,7 +544,7 @@ public String testView(){
 
  – 显示效果
 
-![image-20200527195356460](\images\image-20200527195356460.png)
+![image-20200527195356460](images\image-20200527195356460.png)
 
 ```java
 @RequestMapping("/emps")
@@ -1068,19 +1068,19 @@ HttpMessageConverter接口定义的方法：
 
 ​	void write(T t,MediaType contnetType,HttpOutputMessgae outputMessage):将T类型的对象写到响应流中，同时指定相应的媒体类 型为 contentType。
 
-![image-20200528221612625](\images\image-20200528221612625.png)
+![image-20200528221612625](images\image-20200528221612625.png)
 
 HttpMessageConverter 的实现类
 
-![image-20200528221654264](\images\image-20200528221654264.png)
+![image-20200528221654264](images\image-20200528221654264.png)
 
 DispatcherServlet 默认装配RequestMappingHandlerAdapter ，而 RequestMappingHandlerAdapter 默认装配如下 HttpMessageConverter：
 
-![image-20200528221815700](\images\image-20200528221815700.png)
+![image-20200528221815700](images\image-20200528221815700.png)
 
 加入jackson jar 包后， RequestMappingHandlerAdapter装配的HttpMessageConverter 如下：
 
-![image-20200528221853897](\images\image-20200528221853897.png)
+![image-20200528221853897](images\image-20200528221853897.png)
 
 使用 HttpMessageConverter 将请求信息转化并绑定到处理方法的入 参中或将响应结果转为对应类型的响应信息，Spring提供了两种途径：
 
@@ -1407,7 +1407,7 @@ Spring MVC也可以使用拦截器对请求进行拦截处理，用户 可以自
 
 ### 拦截器方法执行顺序
 
-![image-20200531103736683](\images\image-20200531103736683.png)
+![image-20200531103736683](images\image-20200531103736683.png)
 
 ### 配置自定义拦截器
 
@@ -1472,7 +1472,7 @@ public class TestController03 {
 
 ### 多拦截器的执行流程
 
-![image-20200531104528641](\images\image-20200531104528641.png)
+![image-20200531104528641](images\image-20200531104528641.png)
 
 ### 拦截器的使用案例：权限控制
 
@@ -1557,13 +1557,13 @@ Spring MVC通过HandlerExceptionResolver处理程序的异常，包括 Handler �
 
 SpringMVC 提供的 HandlerExceptionResolver 的实现类
 
-![image-20200531105412107](\images\image-20200531105412107.png)
+![image-20200531105412107](images\image-20200531105412107.png)
 
 ### HandlerExceptionResolver
 
 使用了  \<mvc:annotation-driven/> 配置：
 
-![image-20200531105640993](\images\image-20200531105640993.png)
+![image-20200531105640993](images\image-20200531105640993.png)
 
 ### ExceptionHandlerExceptionResolver
 
