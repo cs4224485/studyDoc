@@ -3732,7 +3732,6 @@ server-id=2
 ```bash
 net stop mysql
 net start mysql
-12
 ```
 
 - Linux
