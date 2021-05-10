@@ -1,4 +1,4 @@
-# 一 、微服务概括
+一 、微服务概括
 
 ## 微服务概述
 
@@ -10,7 +10,7 @@
 
 ### 微服务与微服务架构
 
-- 微服务是一种架构模式或者一种架构风格，提倡将单一应用程序划分成一组小的服务==独立部署==，服务之间相互配合、相互协调，每个服务运行于自己的进程中。
+- 微服务是一种架构模式或者一种架构风格，提倡将单一应用程序划分成一组小的服务独立部署，服务之间相互配合、相互协调，每个服务运行于自己的进程中。
 - 服务与服务间采用轻量级通讯，如HTTP的RESTful API等
 - 避免统一的、集中式的服务管理机制
 
@@ -101,7 +101,7 @@
 - 分布式系统的简化版（官方介绍）
 - SpringCloud基于SpringBoot提供了一整套微服务的解决方案，包括服务注册与发现，配置中心，全链路监控，服务网关，负载均衡，熔断器等组件，除了基于Netflix的开源组件做高度抽象封装之外，还有一些选型中立的开源组件
 - SpringCloud利用SpringBoot的开发便利性巧妙地简化了分布式系统的基础设施开发，SpringCloud为开发人员提供了快速构建分布式系统的一些工具，包括配置管理、服务发现、断路器、路由、微代理、事件总线，全局所、决策精选、分布式会话等等，他们都可以用SpringBoot的开发风格做到一键启动和部署。
-- 一句话概括：SpringCloud是分布式微服务架构下的一站式解决方案，是各个微服务架构落地技术的几何体，俗称微服务全家桶==
+- 一句话概括：SpringCloud是分布式微服务架构下的一站式解决方案，是各个微服务架构落地技术的几何体，俗称微服务全家桶
 
 ### SpringCloud和SpringBoot的关系
 
@@ -1159,7 +1159,7 @@ eureka服务端的实例名称
     fetch-registry: false
     service-url:
       # 设置与Eureka Server交互的地址查询服务和注册服务都需要依赖这个地址
-      defaultZone: http://eureka7002.com:7002/eureka/s
+      defaultZone: http://eureka7002.com:7002/eureka/
 ```
 
 7002yml
@@ -2028,7 +2028,7 @@ Spring Cloud Ribbon是基于Netflix Ribbon实现的一套客户端负载均衡�
 - 简单来说负载均衡就是将用户的请求ping平摊的分配到多个任务上，从而是系统达到HA（高可用）
 - 两种负载均衡：
   1. 集中式LB：偏硬件，服务的消费方和提供方之间使用独立的LB设施，由该设施负责把访问请求以某种策略转发至服务的提供方。
-  2. 进程内LB：骗软件， 将LB逻辑集成到消费方，消费方从服务注册中心指导哪些地址可用，再自己选择一个合适的服务器
+  2. 进程内LB：偏软件， 将LB逻辑集成到消费方，消费方从服务注册中心指导哪些地址可用，再自己选择一个合适的服务器
 
 ### 架构说明
 
@@ -2039,8 +2039,6 @@ Spring Cloud Ribbon是基于Netflix Ribbon实现的一套客户端负载均衡�
 #### POM文件说明
 
 ![image-20210301212534147](\images\image-20210301212534147.png)
-
-![image-20210301212556483](C:\Users\harry.cai\AppData\Roaming\Typora\typora-user-images\image-20210301212615530.png)
 
 #### RestTemplate的使用
 
@@ -2450,7 +2448,7 @@ logging:
 #### 服务雪崩
 
 - 扇出过程中，如果某一个环节的服务出现故障或连接超时，就会导致前面的服务占用越来越多的资源，进而引起系统崩溃，就是“雪崩效应”。
-- 对于高流量的应用来说，单一的后端依赖会导致服务器所有的资源都在几秒钟内饱和。比失败更糟糕的是，这些应用程序还可能导致服务之间的延迟增加，备份队列，线程和其他系统资源紧张，导致整个系统发生更多的级联故障。这些都表示需要==对故障
+- 对于高流量的应用来说，单一的后端依赖会导致服务器所有的资源都在几秒钟内饱和。比失败更糟糕的是，这些应用程序还可能导致服务之间的延迟增加，备份队列，线程和其他系统资源紧张，导致整个系统发生更多的级联故障。
 
 ![image-20210304201908291](\images\image-20210304201908291.png)
 
@@ -3147,7 +3145,7 @@ PaymentHystrixMain8001启动
 
 故意关闭微服务8001
 
-客户端自己调用提示：此时服务端provider已经downl ,但是我们做了服务降级处理,  让客户端在服务端不可用时也会获得提示信息而不会挂起耗死服务器
+客户端自己调用提示：此时服务端provider已经down了,但是我们做了服务降级处理,  让客户端在服务端不可用时也会获得提示信息而不会挂起耗死服务器
 
 ### 服务熔断
 
@@ -3351,7 +3349,7 @@ public class PaymentHystrixMain8001 {
     }
 
     /**
-     * 此配置是为了服务监控而配置，与服务容错本身无观，springCloud 升级之后的坑
+     * 此配置是为了服务监控而配置，与服务容错本身无关，springCloud 升级之后的坑
      * ServletRegistrationBean因为springboot的默认路径不是/hystrix.stream
      * 只要在自己的项目中配置上下面的servlet即可
      * @return
@@ -3416,7 +3414,7 @@ SpringCloud Gateway使用的是Webflux中的reactor-netty响应
 
 ![image-20210308194522915](\images\image-20210308194522915.png)
 
-### 有Zuull了怎么又出来gateway
+### 有Zuul了怎么又出来gateway
 
 我们为什么选择Gateway?
 
@@ -3513,7 +3511,7 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled: true # 开启从注册中心动态创建路由的功能，利用微服务名称j进行路由
+          enabled: true # 开启从注册中心动态创建路由的功能，利用微服务名称进行路由
       routes:
         - id: payment_route # 路由的id,没有规定规则但要求唯一,建议配合服务名
           #匹配后提供服务的路由地址
@@ -3619,7 +3617,7 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled: true # 开启从注册中心动态创建路由的功能，利用微服务名称j进行路由
+          enabled: true # 开启从注册中心动态创建路由的功能，利用微服务名称进行路由
       routes:
         - id: payment_route # 路由的id,没有规定规则但要求唯一,建议配合服务名
           #匹配后提供服务的路由地址
@@ -3718,7 +3716,7 @@ GlobalFilter https://cloud.spring.io/spring-cloud-static/spring-cloud-gateway/2.
 
 ##### 自定义过滤器
 
-两个主要接口介绍 mplments GlobalFilter,Ordered
+两个主要接口介绍 implments GlobalFilter,Ordered
 
 ###### 案例代码
 
@@ -3766,15 +3764,13 @@ public class MyLogGatewayFilter implements GlobalFilter, Ordered {
 
 ![image-20210310194146090](\images\image-20210310194146090.png)
 
-![image-20210310194200670](C:\Users\harry.cai\AppData\Roaming\Typora\typora-user-images\image-20210310194200670.png)
-
 #### 能干嘛
 
 集中管理配置文件
 
 不同环境不同配置，动态化的配置更新，分环境比如dev/test/prod/beta/release
 
-运行期间动态调整配置，不再需要在每个服务部署的机器上编写配置文件，服务会向配置中心同意拉去配置自己的信息
+运行期间动态调整配置，不再需要在每个服务部署的机器上编写配置文件，服务会向配置中心统一拉去配置自己的信息
 
 当配置发生改变时，服务不需要重启即可感知到配置的变化并应用新的配置
 
@@ -4284,7 +4280,7 @@ Spring Cloud Stream中文指导手册：https://blog.csdn.net/qq_32734365/articl
 
 Stream中的消息通信方式遵循了发布-订阅模式，在RabbitMQ就是Exchange，在Kafka中就是Topic。
 
-##### pring Cloud Stream标准流程套路
+##### spring Cloud Stream标准流程套路
 
 Binder：很方便的连接中间件，屏蔽差异
 
