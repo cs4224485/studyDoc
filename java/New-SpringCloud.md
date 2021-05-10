@@ -4581,3 +4581,46 @@ group：HarryA，HarryA
 先启动8802，无分组属性配置，后台没有打出来消息
 
 再启动8803，无分组属性配置，后台打出来了MQ上的消息
+
+# 十四、SpringCloud Sleuth分布式链路跟踪
+
+#### 概述
+
+为什么会出现这个技术？需要解决哪些问题？
+
+![image-20210313112052478](\images\image-20210313112052478.png)
+
+https://cloud.spring.io/spring-cloud-sleuth/reference/html/
+
+spring Cloud Sleuth提供了一套完整的服务跟踪的解决方案,在分布式系统中提供追踪解决方案并且兼容支持了zipkin
+
+![image-20210313112134802](\images\image-20210313112134802.png)
+
+#### 搭建链路监控步骤
+
+1、SpringCloud从F版已不需要自己构建Zipkin Server了，只需要调用jar包即可，https://dl.bintray.com/openzipkin/maven/io/zipkin/java/zipkin-server/
+
+​	 运行命令：java -jar zipkin-server-2.12.9-exec.jar
+
+​	 运行控制台： http://localhost:9411/zipkin/
+
+​	![image-20210313112339503](\images\image-20210313112339503.png)
+
+![image-20210313112359145](images\image-20210313112359145.png)
+
+Trace：类似于树结构的Span结合，表示一条调用链路，存在唯一标识
+
+span：标识调用链路来源，通俗的理解span就是一次请求信息
+
+2.服务提供者
+
+3.服务消费者
+
+4.依次启动eureka7001/8001/80，80调用8001几次测试下
+
+5.打开浏览器访问http://localhost:9411
+
+会出现以下界面
+
+![image-20210313112524509](\images\image-20210313112524509.png)
+
