@@ -1035,3 +1035,903 @@ DownwardAPI(把外部环境中的信息输出给容器)
 
 ![image-20220110153708446](\images\image-20220110153708446.png)
 
+### 资源清单格式
+
+```
+apiVersion: group/apiversion # 如果没有给定 group 名称，那么默认为 core，可以使用 kubectl api-
+versions # 获取当前 k8s 版本上所有的 apiVersion 版本信息( 每个版本可能不同 )
+kind: #资源类别
+metadata： #资源元数据
+	name
+	namespace
+	lables
+	annotations # 主要目的是方便用户阅读查找
+spec: # 期望的状态（disired state）
+status：# 当前状态，本字段有 Kubernetes 自身维护，用户不能去定义
+```
+
+### 资源清单的常用命令
+
+#### 获取 apiversion 版本信息
+
+```
+[root@k8s-master01 ~]# kubectl api-versions
+admissionregistration.k8s.io/v1beta1
+apiextensions.k8s.io/v1beta1
+apiregistration.k8s.io/v1
+apiregistration.k8s.io/v1beta1
+apps/v1
+......(以下省略
+```
+
+
+
+#### 获取字段设置帮助文档
+
+```
+[root@k8s-master01 ~]# kubectl explain pod
+KIND: Pod
+VERSION: v1
+DESCRIPTION:
+Pod is a collection of containers that can run on a host. This resource is
+created by clients and scheduled onto hosts.
+FIELDS:
+apiVersion <string>
+........
+........
+```
+
+#### 字段配置格式
+
+```
+piVersion <string> #表示字符串类型
+metadata <Object> #表示需要嵌套多层字段
+labels <map[string]string> #表示由k:v组成的映射
+finalizers <[]string> #表示字串列表
+ownerReferences <[]Object> #表示对象列表
+hostPID <boolean> #布尔类型
+priority <integer> #整型
+name <string> -required- #如果类型后面接 -required-，表示为必填字段
+```
+
+#### 通过定义清单文件创建 Pod
+
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+	name: pod-demo
+	namespace: default
+	labels:
+		app: myapp
+spec:
+	containers:
+	- name: myapp-1
+		image: hub.harry.com/library/myapp:v1
+	- name: busybox-1
+		image: busybox:latest
+		command:
+		- "/bin/sh"
+		- "-c"
+		- "sleep 3600"
+```
+
+```
+kubectl get pod xx.xx.xx -o yaml
+<!--使用 -o 参数 加 yaml，可以将资源的配置以 yaml的格式输出出来，也可以使用json，输出为json格式-->
+```
+
+
+
+### pod的生命周期
+
+![image-20220112160346055](\images\image-20220112160346055.png)
+
+#### init容器
+
+Pod 能够具有多个容器，应用运行在容器里面，但是它也可能有一个或多个先于应用容器启动的 Init
+容器
+
+Init 容器与普通的容器非常像，除了如下两点：
+	Init 容器总是运行到成功完成为止
+	每个 Init 容器都必须在下一个 Init 容器启动之前成功完成
+
+如果 Pod 的 Init 容器失败，Kubernetes 会不断地重启该 Pod，直到 Init 容器成功为止。然而，
+如果 Pod 对应的 restartPolicy 为 Never，它不会重新启动
+
+Init 容器的作用
+
+因为 Init 容器具有与应用程序容器分离的单独镜像，所以它们的启动相关代码具有如下优势：
+
+> ​	它们可以包含并运行实用工具，但是出于安全考虑，是不建议在应用程序容器镜像中包含这些实用工具
+>
+> ​	它们可以包含使用工具和定制化代码来安装，但是不能出现在应用程序镜像中。例如，创建镜像没必要FROM 另一个镜像，只需要在安装过程中使用类似 sed、 awk、 python 或 dig这样的工具。
+>
+> ​    应用程序镜像可以分离出创建和部署的角色，而没有必要联合它们构建一个单独的镜像。
+>
+> ​	Init 容器使用 Linux Namespace，所以相对应用程序容器来说具有不同的文件系统视图。因此，它们能够具有访问 Secret 的权限，而应用程序容器则不能。
+>
+> ​	它们必须在应用程序容器启动之前运行完成，而应用程序容器是并行运行的，所以 Init 容器能够提供了一种简单的阻塞或延迟应用容器的启动的方法，直到满足了一组先决条件。
+
+特殊说明 
+
+> ​	在 Pod 启动过程中，Init 容器会按顺序在网络和数据卷初始化之后启动。每个容器必须在下一个容器启动之前成功退出
+> ​	如果由于运行时或失败退出，将导致容器启动失败，它会根据 Pod 的 restartPolicy 指定的策略进行重试。然而，如果 Pod 的 restartPolicy 设置为 Always，Init 容器失败时会使用RestartPolicy 策略
+>
+> ​	在所有的 Init 容器没有成功之前，Pod 将不会变成 Ready 状态。Init 容器的端口将不会在Service 中进行聚集。 正在初始化中的 Pod 处于 Pending 状态，但应该会将 Initializing 状态设置为 true
+>
+> ​	如果 Pod 重启，所有 Init 容器必须重新执行
+>
+> ​	对 Init 容器 spec 的修改被限制在容器 image 字段，修改其他字段都不会生效。更改 Init容器的 image 字段，等价于重启该 Pod
+>
+> ​	Init 容器具有应用容器的所有字段。除了 readinessProbe，因为 Init 容器无法定义不同于完成（completion）的就绪（readiness）之外的其他状态。这会在验证过程中强制执行
+>
+> ​	在 Pod 中的每个 app 和 Init 容器的名称必须唯一；与任何其它容器共享同一个名称，会在验证时抛出错误
+
+
+
+#### 容器探针
+
+探针是由 kubelet 对容器执行的定期诊断。要执行诊断，kubelet 调用由容器实现的 Handler。有三种类型的处理程序：
+
+> ExecAction：在容器内执行指定命令。如果命令退出时返回码为 0 则认为诊断成功。
+>
+> TCPSocketAction：对指定端口上的容器的 IP 地址进行 TCP 检查。如果端口打开，则诊断被认为是成功的。
+>
+> HTTPGetAction：对指定的端口和路径上的容器的 IP 地址执行 HTTP Get 请求。如果响应的状态码大于等于200 且小于 400，则诊断被认为是成功的
+>
+> 
+
+每次探测都将获得以下三种结果之一：
+
+> 成功：容器通过了诊断。
+> 失败：容器未通过诊断。
+> 未知：诊断失败，因此不会采取任何行动
+
+#### 探测方式
+
+livenessProbe：指示容器是否正在运行。如果存活探测失败，则 kubelet 会杀死容器，并且容器将受到其 重启策略 的影响。如果容器不提供存活探针，则默认状态为 Success
+
+readinessProbe：指示容器是否准备好服务请求。如果就绪探测失败，端点控制器将从与 Pod 匹配的所有Service 的端点中删除该 Pod 的 IP 地址。初始延迟之前的就绪状态默认为 Failure。如果容器不提供就绪探针，则默认状态为 Success
+
+#### Pod hook
+
+Pod hook（钩子）是由 Kubernetes 管理的 kubelet 发起的，当容器中的进程启动前或者容器中的进程终止之前运行，这是包含在容器的生命周期之中。可以同时为 Pod 中的所有容器都配置 hook
+
+Hook 的类型包括两种：
+
+	exec：执行一段命令
+	HTTP：发送HTTP请求
+
+#### 重启策略
+
+PodSpec 中有一个 restartPolicy 字段，可能的值为 Always、OnFailure 和 Never。默认为Always。 restartPolicy 适用于 Pod 中的所有容器。restartPolicy 仅指通过同一节点上的kubelet 重新启动容器。失败的容器由 kubelet 以五分钟为上限的指数退避延迟（10秒，20秒，40秒...）重新启动，并在成功执行十分钟后重置。如 Pod 文档 中所述，一旦绑定到一个节点，Pod 将永远不会重新绑定到另一个节点。
+
+#### Pod phase
+
+Pod 的 status 字段是一个 PodStatus 对象，PodStatus中有一个 phase 字段。
+
+Pod 的相位（phase）是 Pod 在其生命周期中的简单宏观概述。该阶段并不是对容器或 Pod 的综合汇总，也不是为了做为综合状态机
+
+Pod 相位的数量和含义是严格指定的。除了本文档中列举的状态外，不应该再假定 Pod 有其他的phase 值
+
+> 
+>
+> 挂起（Pending）：Pod 已被 Kubernetes 系统接受，但有一个或者多个容器镜像尚未创建。等待时间包括调度 Pod 的时间和通过网络下载镜像的时间，这可能需要花点时间
+>
+> 运行中（Running）：该 Pod 已经绑定到了一个节点上，Pod 中所有的容器都已被创建。至少有一个容器正在运行，或者正处于启动或重启状态
+>
+> 成功（Succeeded）：Pod 中的所有容器都被成功终止，并且不会再重启
+>
+> 失败（Failed）：Pod 中的所有容器都已终止了，并且至少有一个容器是因为失败终止。也就是说，容器以非 0 状态退出或者被系统终止
+>
+> 未知（Unknown）：因为某些原因无法取得 Pod 的状态，通常是因为与 Pod 所在主机通信失败
+
+### Init容器
+
+init 模板
+
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+    name: myapp-pod
+    labels:
+        app: myapp
+spec:
+    containers:
+    - name: myapp-container
+    image: busybox
+    command: ['sh', '-c', 'echo The app is running! && sleep 3600']
+    initContainers:
+    - name: init-myservice
+    image: busybox
+    command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
+    - name: init-mydb
+    image: busybox
+    command: ['sh', '-c', 'until nslookup mydb; do echo waiting for mydb sleep 2; done;']
+
+```
+
+```
+# 通过模板运行一个 pod会先去运行init的容器
+[root@k8s-master01 ~]# kubectl create -f ini-pod.yml
+pod/myapp-pod created
+```
+
+目前可以看到两个init容器还没成功
+
+![image-20220112201513155](\images\image-20220112201513155.png)
+
+
+
+```
+[root@k8s-master01 ~]# kubectl describe pod myapp-pod
+```
+
+![image-20220112201718483](\images\image-20220112201718483.png)
+
+```
+[root@k8s-master01 ~]# kubectl log myapp-pod -c init-myservice
+```
+
+![image-20220112201920459](\images\image-20220112201920459.png)
+
+发现一直没找到服务应答所以运行失败，这里运行一个service
+
+```yml
+kind: Service
+apiVersion: v1
+metadata:
+    name: myservice
+spec:
+    ports:
+      - protocol: TCP
+        port: 80
+        targetPort: 9376
+---
+kind: Service
+apiVersion: v1
+metadata:
+    name: mydb
+spec:
+    ports:
+      - protocol: TCP
+        port: 80
+        targetPort: 9377
+
+```
+
+```
+[root@k8s-master01 ~]# kubectl create -f myservice.yml
+service/myservice created
+service/mydb created
+```
+
+这两个pod 会作为dns服务器解析service的ip
+
+![image-20220112204105208](\images\image-20220112204105208.png)
+
+![image-20220112204138225](\images\image-20220112204138225.png)
+
+状态变成了running
+
+![image-20220112204224091](\images\image-20220112204224091.png)
+
+### 检测探针 - 就绪检测
+
+readinessProbe-httpget
+
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: readiness-httpget-pod
+  namespace: default
+spec:
+  containers:
+  - name: readiness-httpget-container
+    image: wangyanglinux/myapp:v1
+    imagePullPolicy: IfNotPresent
+    readinessProbe:
+      httpGet:
+        port: 80
+        path: /index1.html
+      initialDelaySeconds: 1
+      periodSeconds: 3
+```
+
+```
+[root@k8s-master01 ~]# kubectl create -f read.yml
+pod/readiness-httpget-pod created
+```
+
+![image-20220112205809852](\images\image-20220112205809852.png)
+
+![image-20220112205908960](\images\image-20220112205908960.png)
+
+进入容器创建一个html
+
+```
+[root@k8s-master01 ~]# kubectl exec readiness-httpget-pod  -c readiness-httpget-container -it -- /bin/sh
+/ # cd home/
+/home # cd ..
+/ # cd /usr/share/nginx/
+/usr/share/nginx # ls
+html
+/usr/share/nginx # cd html/
+/usr/share/nginx/html # ls
+50x.html    index.html
+/usr/share/nginx/html # echo "123" >> index1.html
+```
+
+![image-20220112210206637](\images\image-20220112210206637.png)
+
+### 检测探针 - 存活检测
+
+livenessProbe-exec
+
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: liveness-exec-pod
+  namespace: default
+spec:
+  containers:
+  - name: liveness-exec-container
+    image: busybox
+    imagePullPolicy: IfNotPresent
+    command: ["/bin/sh","-c","touch /tmp/live ; sleep 60; rm -rf /tmp/live; sleep 3600"]
+    livenessProbe:
+      exec:
+        command: ["test","-e","/tmp/live"]
+      initialDelaySeconds: 1
+      periodSeconds: 3
+```
+
+```
+[root@k8s-master01 ~]# kubectl delete pod --all
+pod "myapp-pod" deleted
+pod "nginx-deployment-585bd494df-47h6b" deleted
+pod "nginx-deployment-585bd494df-fc8qg" deleted
+pod "nginx-deployment-585bd494df-ps24r" deleted
+pod "readiness-httpget-pod" deleted
+[root@k8s-master01 ~]# kubectl delete svc --all
+service "kubernetes" deleted
+service "mydb" deleted
+service "myservice" deleted
+service "nginx-deployment" deleted
+[root@k8s-master01 ~]# kubectl create -f liveless.yml
+
+```
+
+![image-20220112211408716](\images\image-20220112211408716.png)
+
+发现pod重启了， 因为livenessProbe发现容器创建的文件已经不存在了
+
+![image-20220112211716660](\images\image-20220112211716660.png)
+
+livenessProbe-httpget
+
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: liveness-httpget-pod
+  namespace: default
+spec:
+  containers:
+  - name: liveness-httpget-container
+    image: wangyanglinux/myapp:v1
+    imagePullPolicy: IfNotPresent
+    ports:
+    - name: http
+      containerPort: 80
+    livenessProbe:
+      httpGet:
+        port: http
+        path: /index.html
+      initialDelaySeconds: 1
+      periodSeconds: 3
+      timeoutSeconds: 10
+
+```
+
+目前看到pod正常运行
+
+![image-20220112213120138](\images\image-20220112213120138.png)
+
+![image-20220112213221046](\images\image-20220112213221046.png)
+
+现在进入容器把index.html干掉
+
+![image-20220112213500209](\images\image-20220112213500209.png)
+
+livenessProbe-tcp
+
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: probe-tcp
+spec:
+  containers:
+  - name: nginx
+    image: hub.harry.com/library/myapp:v1
+    livenessProbe:
+      initialDelaySeconds: 5
+      timeoutSeconds: 1
+      tcpSocket:
+        port: 80
+```
+
+![image-20220113200856058](\images\image-20220113200856058.png)
+
+### 就绪和存货检查共存
+
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: liveness-httpget-pod
+  namespace: default
+spec:
+  containers:
+  - name: liveness-httpget-container
+    image: wangyanglinux/myapp:v1
+    imagePullPolicy: IfNotPresent
+    ports:
+    - name: http
+      containerPort: 80
+    livenessProbe:
+      httpGet:
+        port: http
+        path: /index.html
+      initialDelaySeconds: 1
+      periodSeconds: 3
+      timeoutSeconds: 10
+    readinessProbe:
+      httpGet:
+        port: 80
+        path: /index1.html
+      initialDelaySeconds: 1
+      periodSeconds: 3
+```
+
+### 启动、退出动作
+
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lifecycle-demo
+spec:
+  containers:
+  - name: lifecycle-demo-container
+    image: nginx
+    lifecycle:
+      postStart:
+        exec:
+          command: ["/bin/sh", "-c", "echo Hello from the postStart handler >/usr/share/message"]
+      preStop:
+        exec:
+          command: ["/bin/sh", "-c", "echo Hello from the poststop handler >/usr/share/message"]
+
+
+```
+
+![image-20220113212046482](\images\image-20220113212046482.png)
+
+# 四、K8S控制器
+
+## 1、Deployment控制器
+
+### RS 与 RC 与 Deployment 关联
+
+RC （ReplicationController ）主要的作用就是用来确保容器应用的副本数始终保持在用户定义的副本数 。即如
+果有容器异常退出，会自动创建新的Pod来替代；而如果异常多出来的容器也会自动回收
+
+Kubernetes 官方建议使用 RS（ReplicaSet ） 替代 RC （ReplicationController ） 进行部署，RS 跟 RC 没有
+本质的不同，只是名字不一样，并且 RS 支持集合式的 selector
+
+```yml
+
+apiVersion: extensions/v1beta1
+kind: ReplicaSet
+metadata:
+  name: frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        tier: frontend
+    spec:
+      containers:
+      - name: myapp
+        image: hub.harry.com/library/myapp:v1
+        env:
+        - name: GET_HOSTS_FROM
+          value: dns
+        ports:
+        - containerPort: 80
+
+```
+
+![image-20220115093358758](\images\image-20220115093358758.png)
+
+修改pod标签
+
+```
+[root@k8s-master01 ~]# kubectl label pod frontend-htwrl  tier=frontend1 --overwrite=true
+```
+
+![image-20220115093601941](\images\image-20220115093601941.png)
+
+### RS 与 Deployment 的关联
+
+![image-20220115093733731](\images\image-20220115093733731.png)
+
+#### Deployment
+
+Deployment 为 Pod 和 ReplicaSet 提供了一个声明式定义(declarative)方法，用来替代以前的
+ReplicationController 来方便的管理应用。典型的应用场景包括：
+
+​	定义Deployment来创建Pod和ReplicaSet
+​	滚动升级和回滚应用
+​	扩容和缩容
+​	暂停和继续Deployment
+
+#### 部署一个简单的 Nginx 应
+
+```yml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.7.9
+        ports:
+        - containerPort: 80
+```
+
+```
+[root@k8s-master01 ~]# kubectl create -f dep-rs.yml --record
+## --record参数可以记录命令，我们可以很方便的查看每次 revision 的变化
+```
+
+![image-20220115094704107](\images\image-20220115094704107.png)
+
+![image-20220115094736831](\images\image-20220115094736831.png)
+
+#### 扩容
+
+```
+[root@k8s-master01 ~]# kubectl scale deployment nginx-deployment --replicas 10
+deployment.extensions/nginx-deployment scaled
+```
+
+![image-20220115094953414](D:\studyDoc\java\images\image-20220115094953414.png)
+
+更新deployment的镜像
+
+```
+[root@k8s-master01 ~]# kubectl set image deployment/nginx-deployment nginx=wangyanglinux/myapp:v2                                                              deployment.extensions/nginx-deployment image updated
+```
+
+更新镜像会创建出来一个RS
+
+![image-20220115100120498](\images\image-20220115100120498.png)
+
+回滚操作
+
+```
+[root@k8s-master01 ~]# kubectl rollout undo deployment/nginx-deployment
+deployment.extensions/nginx-deployment rolled back
+```
+
+#### 更新 Deployment
+
+假如我们现在想要让 nginx pod 使用 nginx:1.9.1 的镜像来代替原来的 nginx:1.7.9 的镜像
+
+```
+[root@k8s-master01 ~]# kubectl set image deployment/nginx-deployment nginx=nginx:1.9.1
+```
+
+可以使用 edit 命令来编辑 Deployment
+
+```
+[root@k8s-master01 ~]# kubectl edit deployment/nginx-deployment
+```
+
+查看rollout状态
+
+```
+[root@k8s-master01 ~]# kubectl rollout status deployment/nginx-deployment
+deployment "nginx-deployment" successfully rolled out
+```
+
+查看历史 RS
+
+![image-20220115101134593](\images\image-20220115101134593.png)
+
+#### Deployment 更新策略
+
+Deployment 可以保证在升级时只有一定数量的 Pod 是 down 的。默认的，它会确保至少有比期望的Pod数量少
+一个是up状态（最多一个不可用）
+
+Deployment 更新策略
+Deployment 可以保证在升级时只有一定数量的 Pod 是 down 的。默认的，它会确保至少有比期望的Pod数量少
+一个是up状态（最多一个不可用）
+Deployment 同时也可以确保只创建出超过期望数量的一定数量的 Pod。默认的，它会确保最多比期望的Pod数
+量多一个的 Pod 是 up 的（最多1个 surge ）
+
+将来的 Kuberentes 版本中，将从1-1变成25%-25%
+
+#### Rollover（多个rollout并行）
+
+假如您创建了一个有5个 niginx:1.7.9  replica的 Deployment，但是当还只有3个 nginx:1.7.9 的 replica 创建
+出来的时候您就开始更新含有5个 nginx:1.9.1  replica 的 Deployment。在这种情况下，Deployment 会立即
+杀掉已创建的3个 nginx:1.7.9 的 Pod，并开始创建 nginx:1.9.1 的 Pod。它不会等到所有的5个 nginx:1.7.9 的
+Pod 都创建完成后才开始改变航道
+
+#### 回退 Deployment
+
+```
+[root@k8s-master01 ~]# kubectl set image deployment/nginx-deployment nginx=nginx:1.91
+[root@k8s-master01 ~]# kubectl rollout status deployments nginx-deployment
+[root@k8s-master01 ~]# kubectl rollout history deployment/nginx-deployment
+```
+
+![image-20220115101439756](\images\image-20220115101439756.png)
+
+可以用 kubectl rollout status 命令查看 Deployment 是否完成。如果 rollout 成功完成， kubectl rollout
+status 将返回一个0值的 Exit Code
+
+```
+kubectl rollout undo deployment/nginx-deployment
+kubectl rollout undo deployment/nginx-deployment --to-revision=2 ## 可以使用 --revision参数指定
+某个历史版本
+kubectl rollout pause deployment/nginx-deployment ## 暂停 deployment 的更新
+```
+
+![image-20220115101602418](\images\image-20220115101602418.png)
+
+## 2、Deamonset
+
+DaemonSet 确保全部（或者一些）Node 上运行一个 Pod 的副本。当有 Node 加入集群时，也会为他们新增一
+个 Pod 。当有 Node 从集群移除时，这些 Pod 也会被回收。删除 DaemonSet 将会删除它创建的所有 Pod
+
+使用 DaemonSet 的一些典型用法：
+
+​	运行集群存储 daemon，例如在每个 Node 上运行 glusterd 、 ceph
+​	在每个 Node 上运行日志收集 daemon，例如 fluentd 、 logstash
+​	在每个 Node 上运行监控 daemon，例如 Prometheus Node Exporter、 collectd 、Datadog 代理、New Relic 代理，或 Ganglia gmon
+
+```
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: deamonset-example
+  labels:
+    app: daemonset
+spec:
+  selector:
+    matchLabels:
+      name: deamonset-example
+  template:
+    metadata:
+      labels:
+        name: deamonset-example
+    spec:
+      containers:
+      - name: daemonset-example
+        image: wangyanglinux/myapp
+```
+
+![image-20220115102603274](\images\image-20220115102603274.png)
+
+## 3、Job
+
+job 负责批处理任务，即仅执行一次的任务，它保证批处理任务的一个或多个 Pod 成功结束
+
+特殊说明
+
+> spec.template格式同Pod
+> RestartPolicy仅支持Never或OnFailure
+> 单个Pod时，默认Pod成功运行后Job即结束
+> .spec.completions 标志Job结束需要成功运行的Pod个数，默认为1
+> .spec.parallelism 标志并行运行的Pod的个数，默认为1
+> spec.activeDeadlineSeconds 标志失败Pod的重试最大时间，超过这个时间不会继续重试
+
+Example
+
+```yml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pi
+spec:
+  template:
+    metadata:
+      name: pi
+    spec:
+      containers:
+      - name: pi
+        image: perl
+        command: ["perl", "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+      restartPolicy: Never
+
+```
+
+![image-20220115104936741](\images\image-20220115104936741.png)
+
+任务完成后job退出
+
+![image-20220115105051357](\images\image-20220115105051357.png)
+
+### CroncJob Spec
+
+> spec.template格式同Pod
+> RestartPolicy仅支持Never或OnFailure
+> 单个Pod时，默认Pod成功运行后Job即结束
+> .spec.completions 标志Job结束需要成功运行的Pod个数，默认为1
+> .spec.parallelism 标志并行运行的Pod的个数，默认为1
+> spec.activeDeadlineSeconds 标志失败Pod的重试最大时间，超过这个时间不会继续重试
+
+Cron Job 管理基于时间的 Job，即：
+
+​	在给定时间点只运行一次
+
+​	周期性地在给定时间点运行
+
+典型的用法如下所示：
+
+​	在给定的时间点调度 Job 运行
+​	创建周期性运行的 Job，例如：数据库备份、发送邮件
+
+> spec.schedule ：调度，必需字段，指定任务运行周期，格式同 Cron
+>
+> .spec.jobTemplate ：Job 模板，必需字段，指定需要运行的任务，格式同 Job
+>
+> .spec.startingDeadlineSeconds ：启动 Job 的期限（秒级别），该字段是可选的。如果因为任何原因而错
+> 过了被调度的时间，那么错过执行时间的 Job 将被认为是失败的。如果没有指定，则没有期限
+>
+> .spec.concurrencyPolicy ：并发策略，该字段也是可选的。它指定了如何处理被 Cron Job 创建的 Job 的
+> 并发执行。只允许指定下面策略中的一种：
+>
+> ​	Allow （默认）：允许并发运行 Job
+> ​	Forbid ：禁止并发运行，如果前一个还没有完成，则直接跳过下一个
+> ​	Replace ：取消当前正在运行的 Job，用一个新的来替换
+>
+> ​	注意，当前策略只能应用于同一个 Cron Job 创建的 Job。如果存在多个 Cron Job，它们创建的 Job 之间总
+> 是允许并发运行。
+>
+> .spec.suspend ：挂起，该字段也是可选的。如果设置为 true ，后续所有执行都会被挂起。它对已经开始
+> 执行的 Job 不起作用。默认值为 false
+>
+> 
+>
+> .spec.successfulJobsHistoryLimit 和 .spec.failedJobsHistoryLimit ：历史限制，是可选的字段。它
+> 们指定了可以保留多少完成和失败的 Job。默认情况下，它们分别设置为 3 和 1 。设置限制的值为 0 ，相
+> 关类型的 Job 完成后将不会被保留。
+
+Example
+
+```yml
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: hello
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: hello
+            image: busybox
+            args:
+            - /bin/sh
+            - -c
+            - date; echo Hello from the Kubernetes cluster
+          restartPolicy: OnFailure
+```
+
+![image-20220115105815761](\images\image-20220115105815761.png)
+
+![image-20220115110508029](\images\image-20220115110508029.png)
+
+# 五、K8S Service
+
+Kubernetes  Service  定义了这样一种抽象：一个  Pod  的逻辑分组，一种可以访问它们的策略 —— 通常称为微
+服务。 这一组  Pod  能够被  Service  访问到，通常是通过  Label Selector
+
+![image-20220115110828763](\images\image-20220115110828763.png)
+
+Service能够提供负载均衡的能力，但是在使用上有以下限制：
+
+​	只提供 4 层负载均衡能力，而没有 7 层功能，但有时我们可能需要更多的匹配规则来转发请求，这点上 4 层负载均衡是不支持的
+
+### Service 的类型
+
+Service 在 K8s 中有以下四种类型
+
+> ClusterIp：默认类型，自动分配一个仅 Cluster 内部可以访问的虚拟 IP
+>
+> NodePort：在 ClusterIP 基础上为 Service 在每台机器上绑定一个端口，这样就可以通过 : NodePort 来访问该服务
+>
+> LoadBalancer：在 NodePort 的基础上，借助 cloud provider 创建一个外部负载均衡器，并将请求转发到: NodePort
+>
+> ExternalName：把集群外部的服务引入到集群内部来，在集群内部直接使用。没有任何类型代理被创建，这只有 kubernetes 1.7 或更高版本的 kube-dns 才支持
+
+![image-20220115111010676](\images\image-20220115111010676.png)
+
+### VIP 和 Service 代理
+
+在 Kubernetes 集群中，每个 Node 运行一个  kube-proxy  进程。 kube-proxy  负责为  Service  实现了一种
+VIP（虚拟 IP）的形式，而不是  ExternalName  的形式。 在 Kubernetes v1.0 版本，代理完全在 userspace。在
+Kubernetes v1.1 版本，新增了 iptables 代理，但并不是默认的运行模式。 从 Kubernetes v1.2 起，默认就是
+iptables 代理。 在 Kubernetes v1.8.0-beta.0 中，添加了 ipvs 代理
+
+在 Kubernetes 1.14 版本开始默认使用 ipvs 代理
+
+在 Kubernetes v1.0 版本， Service 是 “4层”（TCP/UDP over IP）概念。 在 Kubernetes v1.1 版本，新增了
+Ingress API（beta 版），用来表示 “7层”（HTTP）服务
+
+### 代理模式的分类
+
+I、userspace 代理模式
+
+![image-20220115111236494](\images\image-20220115111236494.png)
+
+II、iptables 代理模式
+
+![image-20220115111302990](\images\image-20220115111302990.png)
+
+这种模式，kube-proxy 会监视 Kubernetes Service 对象和 Endpoints ，调用 netlink 接口以相应地创建
+ipvs 规则并定期与 Kubernetes Service 对象和 Endpoints 对象同步 ipvs 规则，以确保 ipvs 状态与期望一
+致。访问服务时，流量将被重定向到其中一个后端 Pod
+
+与 iptables 类似，ipvs 于 netfilter 的 hook 功能，但使用哈希表作为底层数据结构并在内核空间中工作。这意
+味着 ipvs 可以更快地重定向流量，并且在同步代理规则时具有更好的性能。此外，ipvs 为负载均衡算法提供了更
+多选项，例如：
+
+> rr ：轮询调度
+> lc ：最小连接数
+> dh ：目标哈希
+> sh ：源哈希
+> sed ：最短期望延迟
+> nq ： 不排队调度
+
+![image-20220115115041737](\images\image-20220115115041737.png)
+
+### ClusterIP
+
+clusterIP 主要在每个 node 节点使用 iptables，将发向 clusterIP 对应端口的数据，转发到 kube-proxy 中。然
+后 kube-proxy 自己内部实现有负载均衡的方法，并可以查询到这个 service 下对应 pod 的地址和端口，进而把
+数据转发给对应的 pod 的地址和端口
+
+![image-20220115115131697](\images\image-20220115115131697.png)
+
+为了实现图上的功能，主要需要以下几个组件的协同工作：
+
+> piserver 用户通过kubectl命令向apiserver发送创建service的命令，apiserver接收到请求后将数据存储到etcd中
+>
+> kube-proxy kubernetes的每个节点中都有一个叫做kube-porxy的进程，这个进程负责感知service，pod的变化，并将变化的信息写入本地的iptables规则中
+>
+> iptables 使用NAT等技术将virtualIP的流量转至endpoint中
+
