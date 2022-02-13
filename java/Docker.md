@@ -1716,3 +1716,424 @@ ENTRYPOINT可以和CMD一起用，一般是变参才会使用 CMD ，这里的 C
 
 ![image-20220212115340098](\images\image-20220212115340098.png)
 
+### 自定义镜像mycentosjava8
+
+Centos7镜像具备vim+ifconfig+jdk8，JDK的下载镜像地址：https://mirrors.yangxingzhen.com/jdk/
+
+#### 准备编写Dockerfile文件
+
+![image-20220213100614207](\images\image-20220213100614207.png)
+
+```dockerfile
+FROM centos
+MAINTAINER harry<caishuang0413@gmail.com>
+
+ENV MYPATH /usr/local
+WORKDIR $MYPATH
+
+#安装vim编辑器
+RUN yum -y install vim
+#安装ifconfig命令查看网络IP
+RUN yum -y install net-tools
+#安装java8及lib库
+RUN yum -y install glibc.i686
+RUN mkdir /usr/local/java
+#ADD 是相对路径jar,把jdk-8u171-linux-x64.tar.gz添加到容器中,安装包必须要和Dockerfile文件在同一位置
+ADD jdk-8u171-linux-x64.tar.gz /usr/local/java/
+#配置java环境变量
+ENV JAVA_HOME /usr/local/java/jdk1.8.0_171
+ENV JRE_HOME $JAVA_HOME/jre
+ENV CLASSPATH $JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib:$CLASSPATH
+ENV PATH $JAVA_HOME/bin:$PATH
+
+EXPOSE 80
+
+CMD echo $MYPATH
+CMD echo "success--------------ok"
+CMD /bin/bash
+
+```
+
+```
+docker build -t 新镜像名字:TAG .
+```
+
+注意，上面TAG后面有个空格，有个点
+
+![image-20220213102539285](\images\image-20220213102539285.png)
+
+运行  docker run -it 新镜像名字:TAG
+
+![image-20220213102650815](\images\image-20220213102650815.png)
+
+![image-20220213102838819](\images\image-20220213102838819.png)
+
+### 虚悬镜像
+
+仓库名、标签都是<none>的镜像，俗称dangling image
+
+Dockerfile写一个
+
+```
+FROM ubuntu
+CMD echo 'action is success'
+```
+
+docker build .
+
+![image-20220213103228877](\images\image-20220213103228877.png)
+
+```
+docker image ls -f dangling=true
+```
+
+![image-20220213103517954](\images\image-20220213103517954.png)
+
+删除
+
+docker image prune
+
+虚悬镜像已经失去存在价值，可以删除
+
+![image-20220213103635712](\images\image-20220213103635712.png)
+
+# 十、Docker微服务实战
+
+#### 通过IDEA新建一个普通微服务模块
+
+pom
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.6.3</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.harry.docker_boot</groupId>
+    <artifactId>docker_boot</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>docker_boot</name>
+    <description>Demo project for Spring Boot</description>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <junit.version>4.12</junit.version>
+        <log4j.version>1.2.17</log4j.version>
+        <lombok.version>1.16.18</lombok.version>
+        <mysql.version>5.1.47</mysql.version>
+        <druid.version>1.1.16</druid.version>
+        <mapper.version>4.1.5</mapper.version>
+        <mybatis.spring.boot.version>1.3.0</mybatis.spring.boot.version>
+    </properties>
+
+    <dependencies>
+        <!--SpringBoot通用依赖模块-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!--test-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+
+```
+
+yml
+
+```
+server.port=6001
+```
+
+启动类
+
+```java
+package com.harry.docker_boot;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class DockerBootApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(DockerBootApplication.class, args);
+    }
+
+}
+
+```
+
+controller
+
+```java
+package com.harry.springboot.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+
+@Controller
+public class HelloController {
+    @RequestMapping("/hello")
+    @ResponseBody
+    public String HelloSpringBoot(){
+        return "hello World";
+    }
+}
+
+```
+
+
+
+#### 通过dockerfile发布微服务部署到docker容器
+
+docker_boot-0.0.1-SNAPSHOT.jar
+
+编写Dockerfile
+
+```dockerfile
+# 基础镜像使用java
+FROM java:8
+# 作者
+MAINTAINER harry
+# VOLUME 指定临时文件目录为/tmp，在主机/var/lib/docker目录下创建了一个临时文件并
+链接到容器的/tmp
+VOLUME /tmp
+# 将jar包添加到容器中并更名为harry_docker.jar
+ADD docker_boot-0.0.1-SNAPSHOT.jar harry_docker.jar
+# 运行jar包
+RUN bash -c 'touch /zzyy_docker.jar'
+ENTRYPOINT ["java","-jar","/harry_docker.jar"]
+#暴露6001端口作为微服务
+EXPOSE 6001
+
+```
+
+将微服务jar包和Dockerfile文件上传到同一个目录下/mydocker
+
+![image-20220213111406526](\images\image-20220213111406526.png)
+
+```
+[root@docker-01 docker_boot]# docker build -t harry_docker:1.6 .
+```
+
+![image-20220213111656372](\images\image-20220213111656372.png)
+
+运行容器
+
+```
+[root@docker-01 docker_boot]# docker run -d -p 6001:6001 harry_docker:1.6
+```
+
+![image-20220213111945781](\images\image-20220213111945781.png)
+
+# 十一 Docker网络
+
+容器间的互联和通信以及端口映射，容器IP变动时候可以通过服务名直接网络通信而不受到影响
+
+docker不启动，默认网络情况
+
+![image-20220213112249283](\images\image-20220213112249283.png)
+
+docker启动后，网络情况，会产生一个名为docker0的虚拟网桥
+
+![image-20220213112333389](\images\image-20220213112333389.png)
+
+查看docker网络模式命令，默认创建3大网络模式
+
+![image-20220213112428921](\images\image-20220213112428921.png)
+
+### 常用基本命令
+
+All命令
+
+![image-20220213112544717](\images\image-20220213112544717.png)
+
+查看网络
+
+```
+docker network ls
+```
+
+查看网络源数据
+
+docker network inspect  XXX网络名字
+
+```
+[root@docker-01 docker_boot]# docker network inspect bridge
+```
+
+![image-20220213112906718](\images\image-20220213112906718.png)
+
+案例
+
+![image-20220213113535805](\images\image-20220213113535805.png)
+
+![image-20220213113632979](\images\image-20220213113632979.png)
+
+### 网络模式
+
+#### 总体介绍
+
+![image-20220213113729396](\images\image-20220213113729396.png)
+
+bridge模式：使用--network  bridge指定，默认使用docker0
+
+host模式：使用--network host指定
+
+none模式：使用--network none指定
+
+container模式：使用--network container:NAME或者容器ID指定
+
+#### 容器实例内默认网络IP生产规则
+
+1 先启动两个ubuntu容器实例
+
+![image-20220213113957013](\images\image-20220213113957013.png)
+
+2 docker inspect 容器ID or 容器名字
+
+![image-20220213114049488](\images\image-20220213114049488.png)
+
+![image-20220213114118794](\images\image-20220213114118794.png)
+
+3  关闭ube实例，新建u3，查看ip变化
+
+![image-20220213114305598](\images\image-20220213114305598.png)
+
+结论：docker容器内部的ip是有可能会发生改变的
+
+### 案例说明
+
+#### bridge
+
+Docker 服务默认会创建一个 docker0 网桥（其上有一个 docker0 内部接口），该桥接网络的名称为docker0，它在内核层连通了其他的物理或虚拟网卡，这就将所有容器和本地主机都放到同一个物理网络。Docker 默认指定了 docker0 接口 的 IP 地址和子网掩码，让主机和容器之间可以通过网桥相互通信。
+
+查看 bridge 网络的详细信息，并通过 grep 获取名称项
+
+docker network inspect bridge | grep name
+
+![image-20220213114451669](\images\image-20220213114451669.png)
+
+ifconfig
+
+![image-20220213114534870](\images\image-20220213114534870.png)
+
+说明
+
+> 1 Docker使用Linux桥接，在宿主机虚拟一个Docker容器网桥(docker0)，Docker启动一个容器时会根据Docker网桥的网段分配给容器一个IP地址，称为Container-IP，同时Docker网桥是每个容器的默认网关。因为在同一宿主机内的容器都接入同一个网桥，这样容器之间就能够通过容器的Container-IP直接通信。
+>
+> 2 docker run 的时候，没有指定network的话默认使用的网桥模式就是bridge，使用的就是docker0。在宿主机ifconfig,就可以看到docker0和自己create的network(后面讲)eth0，eth1，eth2……代表网卡一，网卡二，网卡三……，lo代表127.0.0.1，即localhost，inet addr用来表示网卡的IP地址
+>
+> 3 网桥docker0创建一对对等虚拟设备接口一个叫veth，另一个叫eth0，成对匹配。
+>    3.1 整个宿主机的网桥模式都是docker0，类似一个交换机有一堆接口，每个接口叫veth，在本地主机和容器内分别创建一个虚拟接口，并让他们彼此联通（这样一对接口叫veth pair）；
+>    3.2 每个容器实例内部也有一块网卡，每个接口叫eth0；
+>    3.3 docker0上面的每个veth匹配某个容器实例内部的eth0，两两配对，一一匹配。
+>  通过上述，将宿主机上的所有容器都连接到这个内部网络上，两个容器在同一个网络下,会从这个网关下各自拿到分配的ip，此时两个容器的网络是互通的。
+
+![image-20220213114629214](\images\image-20220213114629214.png)
+
+```
+docker run -d -p 8081:8080   --name tomcat81 billygoo/tomcat8-jdk8
+docker run -d -p 8082:8080   --name tomcat82 billygoo/tomcat8-jdk8
+```
+
+![image-20220213114752859](\images\image-20220213114752859.png)
+
+![image-20220213114844720](\images\image-20220213114844720.png)
+
+![image-20220213115010573](\images\image-20220213115010573.png)
+
+#### host
+
+直接使用宿主机的 IP 地址与外界进行通信，不再需要额外进行NAT 转换。
+
+案例
+
+容器将不会获得一个独立的Network Namespace， 而是和宿主机共用一个Network Namespace。容器将不会虚拟出自己的网卡而是使用宿主机的IP和端口。
+
+![image-20220213115213570](\images\image-20220213115213570.png)
+
+警告
+
+```
+[root@docker-01 docker_boot]# docker run -d -p 8083:8080 --network host --name tomcat83 billygoo/tomcat8-jdk8
+```
+
+![image-20220213115533388](\images\image-20220213115533388.png)
+
+问题：
+     docke启动时总是遇见标题中的警告
+原因：
+    docker启动时指定--network=host或-net=host，如果还指定了-p映射端口，那这个时候就会有此警告，
+并且通过-p设置的参数将不会起到任何作用，端口号会以主机端口号为主，重复时则递增。
+解决:
+    解决的办法就是使用docker的其他网络模式，例如--network=bridge，这样就可以解决问题，或者直接无视。
+
+正确
+
+```
+[root@docker-01 docker_boot]# docker run -d --network host --name tomcat83 billygoo/tomcat8-jdk8
+```
+
+无之前的配对显示了，看容器实例内部
+
+![image-20220213122415963](\images\image-20220213122415963.png)
+
+没有设置-p的端口映射了，如何访问启动的tomcat83？？
+
+http://宿主机IP:8080/
+
+在CentOS里面用默认的火狐浏览器访问容器内的tomcat83看到访问成功，因为此时容器的IP借用主机的，
+所以容器共享宿主机网络IP，这样的好处是外部主机与容器可以直接通信。
+
+#### none
+
+在none模式下，并不为Docker容器进行任何网络配置。 
+也就是说，这个Docker容器没有网卡、IP、路由等信息，只有一个lo
+需要我们自己为Docker容器添加网卡、配置IP等。
+
+禁用网络功能，只有lo标识(就是127.0.0.1表示本地回环)
+
+```
+[root@docker-01 docker_boot]# docker run -d -p 8084:8080 --network none --name tomcat84 billygoo/tomcat8-jdk8
+```
+
+ 进入容器内部查看
+
+![image-20220213123036518](\images\image-20220213123036518.png)
+
+#### container
+
+新建的容器和已经存在的一个容器共享一个网络ip配置而不是和宿主机共享。新创建的容器不会创建自己的网卡，配置自己的IP，而是和一个指定的容器共享IP、端口范围等。同样，两个容器除了网络方面，其他的如文件系统、进程列表等还是隔离的。
+
+![image-20220213123153776](\images\image-20220213123153776.png)
+
