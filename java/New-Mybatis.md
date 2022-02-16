@@ -1382,7 +1382,8 @@ public static void main(String[] args) throws Exception {
         Criteria criteria = example.createCriteria(); 
         //select id, deptName, locAdd from tbl_dept WHERE 
         // ( deptName like ? and id > ? ) criteria.andDeptnameLike("%部%"); 
-        criteria.andIdGreaterThan(2); List<Dept> list = mapper.selectByExample(example); 
+        criteria.andIdGreaterThan(2);
+        List<Dept> list = mapper.selectByExample(example); 
         for (Dept dept : list) { 
             System. out .println(dept); 
         } 
@@ -1433,7 +1434,7 @@ Configuration封装了所有配置文件的详细信息
 
 ![image-20200819204511508](images\image-20200819204511508.png)
 
-# 八、MyBatis-插件开
+# 八、MyBatis-插件开发
 
 MyBatis在四大对象的创建过程中，都会有插件进行介入。插件可以利用动态代理机制一层层的包装目标对象，而实现在目标对象执行目标方法之前进行拦截的效果。
 
