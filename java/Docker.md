@@ -2691,6 +2691,35 @@ Hash环的数据倾斜问题
 缺点 
 数据的分布和节点的位置有关，因为这些节点不是均匀的分布在哈希环上的，所以数据在进行存储时达不到均匀分布的效果。
 
+#### 哈希槽分区
+
+##### 1 为什么出现
+
+![image-20220217190524128](\images\image-20220217190524128.png)
+
+
+
+哈希槽实质就是一个数组，数组[0,2^14 -1]形成hash slot空间。
+
+##### 2 能干什么
+
+解决均匀分配的问题，在数据和节点之间又加入了一层，把这层称为哈希槽（slot），用于管理数据和节点之间的关系，现在就相当于节点上放的是槽，槽里放的是数据。
+
+![image-20220217190621591](\images\image-20220217190621591.png)
+
+槽解决的是粒度问题，相当于把粒度变大了，这样便于数据移动。
+哈希解决的是映射问题，使用key的哈希值来计算所在的槽，便于数据分配。
+
+##### 3 哈希槽计算
+
+Redis 集群中内置了 16384 个哈希槽，redis 会根据节点数量大致均等的将哈希槽映射到不同的节点。当需要在 Redis 集群中放置一个 key-value时，redis 先对 key 使用 crc16 算法算出一个结果，然后把结果对 16384 求余数，这样每个 key 都会对应一个编号在 0-16383 之间的哈希槽，也就是映射到某个节点上。如下代码，key之A 、B在Node2， key之C落在Node3
+
+![image-20220217191021857](\images\image-20220217191021857.png)
+
+![image-20220217191039339](\images\image-20220217191039339.png)
+
+
+
 ### 配置Redis 3主3从集群
 
 #### 新建6个docker容器redis实例
@@ -4673,3 +4702,195 @@ mvn package命令将微服务形成新的jar包,并上传到Linux服务器/mydoc
 ##### 关停
 
 ![image-20220216202133461](\images\image-20220216202133461.png)
+
+# 十三 Docker轻量级可视化工具Portainer
+
+Portainer 是一款轻量级的应用，它提供了图形化界面，用于方便地管理Docker环境，包括单机环境和集群环境。
+
+#### 安装
+
+官网：https://www.portainer.io/
+
+​			https://docs.portainer.io/v/ce-2.9/start/install/server/docker/linux
+
+
+
+#### 步骤
+
+docker命令安装
+
+```
+[root@docker-01 ~]# docker run -d -p 8000:8000 -p 9000:9000 --name portainer     --restart=always     -v /var/run/docker.sock:/var/run/docker.sock     -v portainer_data:/data     portainer/portainer
+```
+
+![image-20220217191531163](\images\image-20220217191531163.png)
+
+第一次登录需创建admin，访问地址：xxx.xxx.xxx.xxx:9000
+
+用户名，直接用默认admin，密码记得8位，随便你写
+
+设置admin用户和密码后首次登陆
+
+![image-20220217192113751](\images\image-20220217192113751.png)
+
+选择local选项卡后本地docker详细信息展示
+
+![image-20220217192227985](\images\image-20220217192227985.png)
+
+上一步的图形展示对应的docker命令
+
+![image-20220217192358840](\images\image-20220217192358840.png)
+
+创建一个容器
+
+![image-20220217192553647](\images\image-20220217192553647.png)
+
+# 十四 Docker容器监控之CAdvisor+InfluxDB+Granfana
+
+CAdvisor监控收集+InfluxDB存储数据+Granfana展示图表
+
+通过过docker stats命令可以很方便的看到当前宿主机上所有容器的CPU,内存以及网络流量等数据，一般小公司够用了。。。。
+
+但是，docker stats统计结果只能是当前宿主机的全部容器，数据资料是实时的，没有地方存储、没有健康指标过线预警等功能
+
+![image-20220217192919179](\images\image-20220217192919179.png)
+
+### CAdvisor
+
+![image-20220217193029971](\images\image-20220217193029971.png)
+
+### InfluxDB
+
+![image-20220217193055988](\images\image-20220217193055988.png)
+
+### Granfana
+
+![image-20220217193122760](\images\image-20220217193122760.png)
+
+### compose容器编排
+
+#### 新建目录
+
+```
+[root@docker-01 mydocker]# mkdir cid
+[root@docker-01 mydocker]# cd cid/
+[root@docker-01 cid]# pwd
+/mydocker/cid
+[root@docker-01 cid]#
+```
+
+新建3件套组合的
+
+#### docker-compose.yml
+
+```yml
+version: '3.1'
+ 
+volumes:
+  grafana_data: {}
+ 
+services:
+ influxdb:
+  image: tutum/influxdb:0.9
+  restart: always
+  environment:
+    - PRE_CREATE_DB=cadvisor
+  ports:
+    - "8083:8083"
+    - "8086:8086"
+  volumes:
+    - ./data/influxdb:/data
+ 
+ cadvisor:
+  image: google/cadvisor
+  links:
+    - influxdb:influxsrv
+  command: -storage_driver=influxdb -storage_driver_db=cadvisor -storage_driver_host=influxsrv:8086
+  restart: always
+  ports:
+    - "8080:8080"
+  volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:rw
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+ 
+ grafana:
+  user: "104"
+  image: grafana/grafana
+  user: "104"
+  restart: always
+  links:
+    - influxdb:influxsrv
+  ports:
+    - "3000:3000"
+  volumes:
+    - grafana_data:/var/lib/grafana
+  environment:
+    - HTTP_USER=admin
+    - HTTP_PASS=admin
+    - INFLUXDB_HOST=influxsrv
+    - INFLUXDB_PORT=8086
+    - INFLUXDB_NAME=cadvisor
+    - INFLUXDB_USER=root
+    - INFLUXDB_PASS=roo
+```
+
+#### 启动docker-compose文件
+
+```
+[root@docker-01 cid]# docker-compose up -d
+```
+
+![image-20220217193955675](\images\image-20220217193955675.png)
+
+### 测试
+
+#### 浏览cAdvisor收集服务，http://ip:8080/
+
+![image-20220219094129502](\images\image-20220219094129502.png)
+
+第一次访问慢，请稍等，cadvisor也有基础的图形展现功能，这里主要用它来作数据采集
+
+#### 浏览influxdb存储服务，http://ip:8083/
+
+![image-20220219094254007](\images\image-20220219094254007.png)
+
+#### 浏览grafana展现服务，http://ip:3000
+
+ip+3000端口的方式访问,默认帐户密码（admin/admin）
+
+![image-20220219094428201](\images\image-20220219094428201.png)
+
+##### 配置步骤
+
+配置数据源
+
+![image-20220219094516354](\images\image-20220219094516354.png)
+
+选择influxdb数据源
+
+![image-20220219094610597](\images\image-20220219094610597.png)
+
+配置细节
+
+![image-20220219094640245](\images\image-20220219094640245.png)
+
+![image-20220219094716357](\images\image-20220219094716357.png)
+
+![image-20220219094755727](\images\image-20220219094755727.png)
+
+配置面板panel
+
+![image-20220219095035856](\images\image-20220219095035856.png)
+
+![image-20220219095114817](\images\image-20220219095114817.png)
+
+![image-20220219095232259](\images\image-20220219095232259.png)
+
+![image-20220219095302708](\images\image-20220219095302708.png)
+
+![image-20220219095326060](\images\image-20220219095326060.png)
+
+![image-20220219095541731](\images\image-20220219095541731.png)
+

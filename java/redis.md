@@ -1635,8 +1635,7 @@ public class Test02
             String key = (String) iterator.next();
             System.out.println(key);
         }
-        System.out.println("jedis.exists====>"+jedis.exists("k2"));
-        System.out.println(jedis.ttl("k1"));
+        System.out.println("jedis.exists====>"+jedis.exisl
         //String
         //jedis.append("k1","myreids");
         System.out.println(jedis.get("k1"));
