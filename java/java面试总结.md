@@ -161,5 +161,158 @@ public class Singleton6 {
 
 ```
 
+## 类初始化过程
 
+1 一个类要创建实例需要先加载并初始化该类
+
+​	main方法所在的类需要先加载和初始化
+
+2 一个子类要初始化需要先初始化父类
+
+3 一个类初始化就是执行\<clinit>()方法
+
+​	\<clinit>()方法由静态类变量显示赋值代码和静态代码块组成
+
+实例初始化
+
+ 1. 实例初始化就是执行\<init>()方法
+
+    \<init>()方法可能重载有多个，有几个构造器就有几个\<init>方法
+
+```java
+package basic;
+
+public class Father {
+    private int i = test();
+    private static int j = method();
+    static {
+        System.out.println("(1)");
+    }
+    Father(){
+        System.out.println("(2)");
+    }
+    {
+        System.out.println("(3)");
+    }
+    public int test(){
+        System.out.println("(4)");
+        return 1;
+    }
+    public static int method(){
+        System.out.println("(5)");
+        return 1;
+    }
+}
+
+class Son extends Father{
+    private int i = test();
+    private static int j = method();
+    static {
+        System.out.println("(6)");
+    }
+    Son(){
+        System.out.println("(7)");
+    }
+    {
+        System.out.println("(8)");
+    }
+    public int test(){
+        System.out.println("(9)");
+        return 1;
+    }
+    public static int method(){
+        System.out.println("(10)");
+        return 1;
+    }
+    public static void main(String[] args){
+        Son s1 = new Son();
+        System.out.println();
+        Son s2 = new Son();
+    }
+}
+```
+
+## 方法的参数传递机制
+
+形参是基本数据类型：传递数据值
+
+引用数据类型：地址值
+
+特殊类型：String 包装类等对象不可变性
+
+![image-20220326201334669](\images\image-20220326201334669.png)
+
+```java
+package basic;
+
+import java.util.Arrays;
+
+public class Exam4 {
+    public static void main(String[] args) {
+        int i = 1;
+        String str = "hello";
+        Integer num = 200;
+        int[] arr = {1,2,3,4,5};
+        MyDate my = new MyDate();
+        change(i,str,num,arr,my);
+        System.out.println("i="  + i);
+        System.out.println("str=" + str);
+        System.out.println("num=" + num);
+        System.out.println("arr=" + Arrays.toString(arr));
+        System.out.println("my.a="+ my.a);
+    }
+    public static void change(int j, String s, Integer n, int[] a, MyDate m){
+        j += 1;
+        s += "world";
+        n += 1;
+        a[0] += 1;
+        m.a += 1;
+    }
+}
+class MyDate{
+    int a = 10;
+}
+
+```
+
+
+
+## 递归与迭代
+
+```java
+public class TestStep {
+    public static void main(String[] args) {
+        System.out.println(recursion(5));
+        System.out.println(loop(40));
+    }
+    public static int recursion(int n){
+        if (n <1){
+            return -1;
+        }
+        if (n == 1 || n == 2){
+            return n;
+        }
+        return recursion(n-2) + (n -1);
+    }
+
+    public static int loop(int n){
+        if (n <1){
+            return -1;
+        }
+        if (n == 1 || n == 2){
+            return n;
+        }
+        int one = 2; // 初始化走到第二级台阶的走法
+        int two = 1; // 初始化走到第一级台阶的走法
+        int sum = 0;
+        for (int i = 3; i <=n ; i++) {
+            sum = one + two;
+            two = one;
+            one = sum;
+        }
+        return sum;
+    }
+}
+
+```
 
