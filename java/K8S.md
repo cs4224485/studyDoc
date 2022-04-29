@@ -462,8 +462,6 @@ docker version
 
 说明已经正常。
 
-
-
 ### 安装 Kubeadm （主从配置）
 
 ```
@@ -625,6 +623,36 @@ kubeadm join 192.168.31.10:6443 --token atyqdb.ny54v98ew1hf5a21     --discovery-
 [root@master ~]# kubectl drain node03.linux.com --delete-local-data --force --ignore-daemonsets
 [root@master ~]# kubectl delete node node03.linux.com
 ```
+
+### 排查节点加入不到集群的问题
+
+首先检查kublet的log
+
+```
+[root@k8s-node02 ~]# journalctl -xefu kubelet
+```
+
+发现node2节点连不上master
+
+![image-20220413101630750](\images\image-20220413101630750.png)
+
+#### 检查并关闭swap后重启所有节点
+
+```
+[root@k8s-node02 ~]# swapoff -a
+```
+
+![image-20220413101811252](\images\image-20220413101811252.png)
+
+#### 检查防火墙
+
+```
+iptables -L
+```
+
+防火墙也没有问题 最后发现因为之前做了HA的地址是.200,这里从新加入一下k8s集群
+
+
 
 
 
@@ -2681,7 +2709,7 @@ configmap/game-config created
 
 #### 使用文件创建
 
-只要指定为一个文件就可以从单个文件中创建 ConfigMa
+只要指定为一个文件就可以从单个文件中创建 ConfigMap
 
 ```
 [root@k8s-master01 configmap]# kubectl create configmap game-config-2 --from-file=dir/game.properties
