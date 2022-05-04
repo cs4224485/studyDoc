@@ -1244,7 +1244,7 @@ spec:
 
 3、应用的可访问性
 
-![image-20220413135803375](\images\image-20220413135803375.png)
+![image-20220413135803375](\\images\image-20220413135803375.png)
 
 ### 部署MySQL
 
@@ -1278,29 +1278,29 @@ skip-character-set-client-handshake
 skip-name-resolve
 ```
 
-![image-20220413140252570](\images\image-20220413140252570.png)
+![image-20220413140252570](\\images\image-20220413140252570.png)
 
 
 
 mysql部署分析
 
-![image-20220413135957654](\images\image-20220413135957654.png)
+![image-20220413135957654](\\images\image-20220413135957654.png)
 
-![image-20220413140428006](\images\image-20220413140428006.png)
+![image-20220413140428006](\\images\image-20220413140428006.png)
 
-![image-20220413140907717](\images\image-20220413140907717.png)
+![image-20220413140907717](\\images\image-20220413140907717.png)
 
 容器启动 进入容器/etc/mysql.con.d/目录下查看挂载的配置文件
 
-![image-20220413143749312](\images\image-20220413143749312.png)
+![image-20220413143749312](\\images\image-20220413143749312.png)
 
 创建一个服务将myslq暴露到外网
 
-![image-20220413144513047](\images\image-20220413144513047.png)
+![image-20220413144513047](\\images\image-20220413144513047.png)
 
-![image-20220413144956628](\images\image-20220413144956628.png)
+![image-20220413144956628](\\images\image-20220413144956628.png)
 
-![image-20220413144838538](\images\image-20220413144838538.png)
+![image-20220413144838538](\\images\image-20220413144838538.png)
 
 ### 部署Redis
 
@@ -1328,7 +1328,7 @@ docker run -d -p 6379:6379 --restart=always \
 
 #### redis部署分析
 
-![image-20220413155206765](\images\image-20220413155206765.png)
+![image-20220413155206765](\\images\image-20220413155206765.png)
 
 #### 部署ElasticSearch
 
@@ -1351,4 +1351,4 @@ elasticsearch:7.13.4
 
 es部署分析
 
-![image-20220413160409778](\images\image-20220413160409778.png)
+![image-20220413160409778](\\images\image-20220413160409778.png)

@@ -1371,7 +1371,7 @@ public class MyBeanPostProcessor implements BeanPostProcessor, Order {
 
 随后，我们以Debug的方式来运行IOCTest_LifeCycle类中的test01()方法，运行后的效果如下所示。
 
-![image-20210906193448517](D:\studyDoc\java\images\image-20210906193448517.png)
+![image-20210906193448517](images\image-20210906193448517.png)
 
 可以看到，程序已经运行到MyBeanPostProcessor类的postProcessBeforeInitialization()方法中了
 
@@ -1407,7 +1407,7 @@ AbstractApplicationContext类中的refresh()方法有点长所以又截了一张
 
 这行代码的作用同样是初始化所有的（非懒加载的）单实例bean。
 
-![image-20210906194742818](\images\image-20210906194742818.png)
+![image-20210906194742818](images\image-20210906194742818.png)
 
 第五步，我们继续跟进方法调用栈，如下所示，可以看到，方法的执行定位到DefaultListableBeanFactory类的preInstantiateSingletons()方法的最后一个else分支调用的getBean()方法上。
 
@@ -2270,7 +2270,7 @@ public class MainConfigOfAutowired {
 我们先看一下@Resource注解的源码，如下所示。
 
 
-![在这里插入图片描述](D:\studyDoc\java\images\123123123213.jpg)
+![在这里插入图片描述](images\123123123213.jpg)
 
 ### @Inject注解
 
@@ -2278,7 +2278,7 @@ public class MainConfigOfAutowired {
 
 我们先看一下@Inject注解的源码，如下所示。
 
-![image-20210908200339892](\images\image-20210908200339892.png)
+![image-20210908200339892](images\image-20210908200339892.png)
 
 **温馨提示，要想使用@Inject注解，需要在项目的pom.xml文件中添加如下依赖，即导入javax.inject这个包。**
 

@@ -2,7 +2,7 @@
 
 # 一 Kubernetes基础概念
 
-![image-20220106170132193](\images\image-20220106170132193.png)
+![image-20220106170132193](\\images\image-20220106170132193.png)
 
 kubernetes具有以下特性：
 
@@ -25,7 +25,7 @@ Kubernetes 为你提供了一个可弹性运行分布式系统的框架。 Kuber
 
 ## 组件建构
 
-![image-20220106170327243](\images\image-20220106170327243.png)
+![image-20220106170327243](\\images\image-20220106170327243.png)
 
 ### 1、控制平面组件（Control Plane Components）
 
@@ -194,7 +194,7 @@ lannel 是 CoreOS 团队针对 Kubernetes 设计的一个网络规划服务，�
 这些 IP 地址之间建立一个覆盖网络（Overlay Network），通过这个覆盖网络，将数据包原封
 不动地传递到目标容器内
 
-![image-20220110151250366](\images\image-20220110151250366.png)
+![image-20220110151250366](\\images\image-20220110151250366.png)
 
 ETCD 之 Flannel 提供说明：
 
@@ -214,7 +214,7 @@ Pod 到外网：Pod 向外网发送请求，查找路由表, 转发数据包到�
 
 外网访问 Pod：Service
 
-![image-20220110152432212](\images\image-20220110152432212.png)
+![image-20220110152432212](\\images\image-20220110152432212.png)
 
 
 
@@ -349,7 +349,7 @@ chmod 755 /etc/sysconfig/modules/ipvs.modules && bash /etc/sysconfig/modules/ipv
 lsmod | grep -e ip_vs -e nf_conntrack_ipv4
 ```
 
-![image-20220106201119447](\images\image-20220106201119447.png)
+![image-20220106201119447](\\images\image-20220106201119447.png)
 
 高版本的centos内核nf_conntrack_ipv4被nf_conntrack替换了，所以装不了。解决方法
 
@@ -516,7 +516,7 @@ done
 rm -rf /tmp/image-list.txt
 ```
 
-![image-20220108115131255](D:\studyDoc\java\images\image-20220108115131255.png)
+![image-20220108115131255](D:\studyDoc\java\\images\image-20220108115131255.png)
 
 ```
 kubeadm config print init-defaults > kubeadm-config.yaml
@@ -571,7 +571,7 @@ kubeadm init --config=kubeadm-config.yaml --experimental-upload-certs | tee kube
 
 ```
 
-![image-20220108120710672](\images\image-20220108120710672.png)
+![image-20220108120710672](\\images\image-20220108120710672.png)
 
 ```
 [root@k8s-master01 ~]# mkdir -p $HOME/.kube
@@ -579,7 +579,7 @@ kubeadm init --config=kubeadm-config.yaml --experimental-upload-certs | tee kube
 [root@k8s-master01 ~]#  sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
-![image-20220108121030622](\images\image-20220108121030622.png)
+![image-20220108121030622](\\images\image-20220108121030622.png)
 
 ```
 [root@k8s-master01 install-k8s]# mv kubeadm-init.log kubeadm-config.yaml install-k8s/core
@@ -602,7 +602,7 @@ rwy6yz.eczjz9g7zq5bztts
 [root@k8s-master01 core]# kubeadm token list
 ```
 
-![image-20220110194550072](\images\image-20220110194550072.png)
+![image-20220110194550072](\\images\image-20220110194550072.png)
 
 获取CA证书 sha256 编码 hash 值
 
@@ -634,7 +634,7 @@ kubeadm join 192.168.31.10:6443 --token atyqdb.ny54v98ew1hf5a21     --discovery-
 
 发现node2节点连不上master
 
-![image-20220413101630750](\images\image-20220413101630750.png)
+![image-20220413101630750](\\images\image-20220413101630750.png)
 
 #### 检查并关闭swap后重启所有节点
 
@@ -642,7 +642,7 @@ kubeadm join 192.168.31.10:6443 --token atyqdb.ny54v98ew1hf5a21     --discovery-
 [root@k8s-node02 ~]# swapoff -a
 ```
 
-![image-20220413101811252](\images\image-20220413101811252.png)
+![image-20220413101811252](\\images\image-20220413101811252.png)
 
 #### 检查防火墙
 
@@ -664,15 +664,15 @@ wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-
 [root@k8s-master01 flannel]# kubectl create -f kube-flannel.yml
 ```
 
-![image-20220108123136373](\images\image-20220108123136373.png)
+![image-20220108123136373](\\images\image-20220108123136373.png)
 
-![image-20220108123307568](\images\image-20220108123307568.png)
+![image-20220108123307568](\\images\image-20220108123307568.png)
 
-![image-20220108123400317](D:\studyDoc\java\images\image-20220108123400317.png)
+![image-20220108123400317](D:\studyDoc\java\\images\image-20220108123400317.png)
 
 ### 【kubeadm初始化报错】failed to run Kubelet: misconfiguration: kubelet cgroup driver: "cgroupfs" is different from docker cgroup driver: "systemd" 
 
-![image-20220109130940456](\images\image-20220109130940456.png)
+![image-20220109130940456](\\images\image-20220109130940456.png)
 
 分别修改docker与控制平台的kubelet为systemd 【官方推荐】
 
@@ -889,7 +889,7 @@ chmod -R 777 /data/cert
 访问测试
 默认管理员用户名认管理员用户名/密码为密码为admin / Harbor12345
 
-![image-20220109114749347](\images\image-20220109114749347.png)
+![image-20220109114749347](\\images\image-20220109114749347.png)
 
 ### harbor修改配置文件后重启
 
@@ -912,7 +912,7 @@ vim/etc/docker/daemon.json
 docker pull hello-world
 ```
 
-![image-20220109115206663](\images\image-20220109115206663.png)
+![image-20220109115206663](\\images\image-20220109115206663.png)
 
 ```
 docker tag hello-world hub.harry.com/library/myhellowrod-v1 # 打一个标签
@@ -925,7 +925,7 @@ docker login hub.harry.com
 docker push hub.harry.com/library/myhellowrod:v1
 ```
 
-![image-20220109123252429](\images\image-20220109123252429.png)
+![image-20220109123252429](\\images\image-20220109123252429.png)
 
 k8s 部署一个nginx
 
@@ -933,11 +933,11 @@ k8s 部署一个nginx
 [root@k8s-master01 ~]# kubectl run nginx-deployement --image=hub.harry.com/library/mynginx:v1 --port=80 --replicas=1
 ```
 
-![image-20220109141755545](\images\image-20220109141755545.png)
+![image-20220109141755545](\\images\image-20220109141755545.png)
 
-![image-20220109141829585](\images\image-20220109141829585.png)
+![image-20220109141829585](\\images\image-20220109141829585.png)
 
-![image-20220109141910897](\images\image-20220109141910897.png)
+![image-20220109141910897](\\images\image-20220109141910897.png)
 
 [root@k8s-master01 ~]# kubectl get pod -o wide # 查看详细
 
@@ -974,7 +974,7 @@ e、用户UI：用户可以轻松的浏览、搜索镜像仓库以及对项目�
 
  g、Harbor和 dockerregistry 关系：Harbor实质上是对 dockerregistry 做了封装，扩展了自己的业务模块
 
-![image-20220109124410636](\images\image-20220109124410636.png)
+![image-20220109124410636](\\images\image-20220109124410636.png)
 
 ## 4、部署一个镜像测试
 
@@ -990,7 +990,7 @@ e、用户UI：用户可以轻松的浏览、搜索镜像仓库以及对项目�
 [root@k8s-master01 ~]# docker rmi -f hub.harry.com/library/myapp:v1
 ```
 
-![image-20220111192353060](\images\image-20220111192353060.png)
+![image-20220111192353060](\\images\image-20220111192353060.png)
 
 ```
 [root@k8s-master01 ~]# kubectl run nginx-deployment --image=hub.harry.com/library/myapp:v1 --replicas=1 
@@ -999,13 +999,13 @@ deployment.apps/nginx-deployment created
 
 ```
 
-![image-20220111193138050](\images\image-20220111193138050.png)
+![image-20220111193138050](\\images\image-20220111193138050.png)
 
-![image-20220111193218986](\images\image-20220111193218986.png)
+![image-20220111193218986](\\images\image-20220111193218986.png)
 
-![image-20220111195333774](\images\image-20220111195333774.png)
+![image-20220111195333774](\\images\image-20220111195333774.png)
 
-![image-20220111195457543](\images\image-20220111195457543.png)
+![image-20220111195457543](\\images\image-20220111195457543.png)
 
 访问一下pod的nginx服务
 
@@ -1013,7 +1013,7 @@ deployment.apps/nginx-deployment created
 [root@k8s-master01 ~]# curl 10.244.1.10
 ```
 
-![image-20220111195609999](\images\image-20220111195609999.png)
+![image-20220111195609999](\\images\image-20220111195609999.png)
 
 对pod进行扩容
 
@@ -1022,19 +1022,19 @@ deployment.apps/nginx-deployment created
 deployment.extensions/nginx-deployment scaled
 ```
 
-![image-20220111195904798](\images\image-20220111195904798.png)
+![image-20220111195904798](\\images\image-20220111195904798.png)
 
 创建service暴露服务
 
-![image-20220111200014630](\images\image-20220111200014630.png)
+![image-20220111200014630](\\images\image-20220111200014630.png)
 
 ```
 [root@k8s-master01 ~]# kubectl expose deployment nginx-deployment --port=30000 --target-port=80
 ```
 
-![image-20220111200214817](\images\image-20220111200214817.png)
+![image-20220111200214817](\\images\image-20220111200214817.png)
 
-![image-20220111200325183](\images\image-20220111200325183.png)
+![image-20220111200325183](\\images\image-20220111200325183.png)
 
 # 三、 Kbuernetes资源清单
 
@@ -1063,15 +1063,15 @@ DownwardAPI(把外部环境中的信息输出给容器)
 
 常用字段的解释
 
-![image-20220110153322327](\images\image-20220110153322327.png)
+![image-20220110153322327](\\images\image-20220110153322327.png)
 
-![image-20220110153541014](\images\image-20220110153541014.png)
+![image-20220110153541014](\\images\image-20220110153541014.png)
 
-![image-20220110153614153](\images\image-20220110153614153.png)
+![image-20220110153614153](\\images\image-20220110153614153.png)
 
-![image-20220110153641973](\images\image-20220110153641973.png)
+![image-20220110153641973](\\images\image-20220110153641973.png)
 
-![image-20220110153708446](\images\image-20220110153708446.png)
+![image-20220110153708446](\\images\image-20220110153708446.png)
 
 ### 资源清单格式
 
@@ -1163,7 +1163,7 @@ kubectl get pod xx.xx.xx -o yaml
 
 ### pod的生命周期
 
-![image-20220112160346055](\images\image-20220112160346055.png)
+![image-20220112160346055](\\images\image-20220112160346055.png)
 
 #### init容器
 
@@ -1299,7 +1299,7 @@ pod/myapp-pod created
 
 目前可以看到两个init容器还没成功
 
-![image-20220112201513155](\images\image-20220112201513155.png)
+![image-20220112201513155](\\images\image-20220112201513155.png)
 
 
 
@@ -1307,13 +1307,13 @@ pod/myapp-pod created
 [root@k8s-master01 ~]# kubectl describe pod myapp-pod
 ```
 
-![image-20220112201718483](\images\image-20220112201718483.png)
+![image-20220112201718483](\\images\image-20220112201718483.png)
 
 ```
 [root@k8s-master01 ~]# kubectl log myapp-pod -c init-myservice
 ```
 
-![image-20220112201920459](\images\image-20220112201920459.png)
+![image-20220112201920459](\\images\image-20220112201920459.png)
 
 发现一直没找到服务应答所以运行失败，这里运行一个service
 
@@ -1348,13 +1348,13 @@ service/mydb created
 
 这两个pod 会作为dns服务器解析service的ip
 
-![image-20220112204105208](\images\image-20220112204105208.png)
+![image-20220112204105208](\\images\image-20220112204105208.png)
 
-![image-20220112204138225](\images\image-20220112204138225.png)
+![image-20220112204138225](\\images\image-20220112204138225.png)
 
 状态变成了running
 
-![image-20220112204224091](\images\image-20220112204224091.png)
+![image-20220112204224091](\\images\image-20220112204224091.png)
 
 ### 检测探针 - 就绪检测
 
@@ -1384,9 +1384,9 @@ spec:
 pod/readiness-httpget-pod created
 ```
 
-![image-20220112205809852](\images\image-20220112205809852.png)
+![image-20220112205809852](\\images\image-20220112205809852.png)
 
-![image-20220112205908960](\images\image-20220112205908960.png)
+![image-20220112205908960](\\images\image-20220112205908960.png)
 
 进入容器创建一个html
 
@@ -1403,7 +1403,7 @@ html
 /usr/share/nginx/html # echo "123" >> index1.html
 ```
 
-![image-20220112210206637](\images\image-20220112210206637.png)
+![image-20220112210206637](\\images\image-20220112210206637.png)
 
 ### 检测探针 - 存活检测
 
@@ -1444,11 +1444,11 @@ service "nginx-deployment" deleted
 
 ```
 
-![image-20220112211408716](\images\image-20220112211408716.png)
+![image-20220112211408716](\\images\image-20220112211408716.png)
 
 发现pod重启了， 因为livenessProbe发现容器创建的文件已经不存在了
 
-![image-20220112211716660](\images\image-20220112211716660.png)
+![image-20220112211716660](\\images\image-20220112211716660.png)
 
 livenessProbe-httpget
 
@@ -1478,13 +1478,13 @@ spec:
 
 目前看到pod正常运行
 
-![image-20220112213120138](\images\image-20220112213120138.png)
+![image-20220112213120138](\\images\image-20220112213120138.png)
 
-![image-20220112213221046](\images\image-20220112213221046.png)
+![image-20220112213221046](\\images\image-20220112213221046.png)
 
 现在进入容器把index.html干掉
 
-![image-20220112213500209](\images\image-20220112213500209.png)
+![image-20220112213500209](\\images\image-20220112213500209.png)
 
 livenessProbe-tcp
 
@@ -1504,7 +1504,7 @@ spec:
         port: 80
 ```
 
-![image-20220113200856058](\images\image-20220113200856058.png)
+![image-20220113200856058](\\images\image-20220113200856058.png)
 
 ### 就绪和存货检查共存
 
@@ -1559,7 +1559,7 @@ spec:
 
 ```
 
-![image-20220113212046482](\images\image-20220113212046482.png)
+![image-20220113212046482](\\images\image-20220113212046482.png)
 
 # 四、K8S控制器
 
@@ -1600,7 +1600,7 @@ spec:
 
 ```
 
-![image-20220115093358758](\images\image-20220115093358758.png)
+![image-20220115093358758](\\images\image-20220115093358758.png)
 
 修改pod标签
 
@@ -1608,11 +1608,11 @@ spec:
 [root@k8s-master01 ~]# kubectl label pod frontend-htwrl  tier=frontend1 --overwrite=true
 ```
 
-![image-20220115093601941](\images\image-20220115093601941.png)
+![image-20220115093601941](\\images\image-20220115093601941.png)
 
 ### RS 与 Deployment 的关联
 
-![image-20220115093733731](\images\image-20220115093733731.png)
+![image-20220115093733731](\\images\image-20220115093733731.png)
 
 #### Deployment
 
@@ -1650,9 +1650,9 @@ spec:
 ## --record参数可以记录命令，我们可以很方便的查看每次 revision 的变化
 ```
 
-![image-20220115094704107](\images\image-20220115094704107.png)
+![image-20220115094704107](\\images\image-20220115094704107.png)
 
-![image-20220115094736831](\images\image-20220115094736831.png)
+![image-20220115094736831](\\images\image-20220115094736831.png)
 
 #### 扩容
 
@@ -1661,7 +1661,7 @@ spec:
 deployment.extensions/nginx-deployment scaled
 ```
 
-![image-20220115094953414](D:\studyDoc\java\images\image-20220115094953414.png)
+![image-20220115094953414](D:\studyDoc\java\\images\image-20220115094953414.png)
 
 更新deployment的镜像
 
@@ -1671,7 +1671,7 @@ deployment.extensions/nginx-deployment scaled
 
 更新镜像会创建出来一个RS
 
-![image-20220115100120498](\images\image-20220115100120498.png)
+![image-20220115100120498](\\images\image-20220115100120498.png)
 
 回滚操作
 
@@ -1703,7 +1703,7 @@ deployment "nginx-deployment" successfully rolled out
 
 查看历史 RS
 
-![image-20220115101134593](\images\image-20220115101134593.png)
+![image-20220115101134593](\\images\image-20220115101134593.png)
 
 #### Deployment 更新策略
 
@@ -1733,7 +1733,7 @@ Pod 都创建完成后才开始改变航道
 [root@k8s-master01 ~]# kubectl rollout history deployment/nginx-deployment
 ```
 
-![image-20220115101439756](\images\image-20220115101439756.png)
+![image-20220115101439756](\\images\image-20220115101439756.png)
 
 可以用 kubectl rollout status 命令查看 Deployment 是否完成。如果 rollout 成功完成， kubectl rollout
 status 将返回一个0值的 Exit Code
@@ -1745,7 +1745,7 @@ kubectl rollout undo deployment/nginx-deployment --to-revision=2 ## 可以使用
 kubectl rollout pause deployment/nginx-deployment ## 暂停 deployment 的更新
 ```
 
-![image-20220115101602418](\images\image-20220115101602418.png)
+![image-20220115101602418](\\images\image-20220115101602418.png)
 
 ## 2、Deamonset
 
@@ -1779,7 +1779,7 @@ spec:
         image: wangyanglinux/myapp
 ```
 
-![image-20220115102603274](\images\image-20220115102603274.png)
+![image-20220115102603274](\\images\image-20220115102603274.png)
 
 ## 3、Job
 
@@ -1814,11 +1814,11 @@ spec:
 
 ```
 
-![image-20220115104936741](\images\image-20220115104936741.png)
+![image-20220115104936741](\\images\image-20220115104936741.png)
 
 任务完成后job退出
 
-![image-20220115105051357](\images\image-20220115105051357.png)
+![image-20220115105051357](\\images\image-20220115105051357.png)
 
 ### CroncJob Spec
 
@@ -1889,16 +1889,16 @@ spec:
           restartPolicy: OnFailure
 ```
 
-![image-20220115105815761](\images\image-20220115105815761.png)
+![image-20220115105815761](\\images\image-20220115105815761.png)
 
-![image-20220115110508029](\images\image-20220115110508029.png)
+![image-20220115110508029](\\images\image-20220115110508029.png)
 
 # 五、K8S Service
 
 Kubernetes  Service  定义了这样一种抽象：一个  Pod  的逻辑分组，一种可以访问它们的策略 —— 通常称为微
 服务。 这一组  Pod  能够被  Service  访问到，通常是通过  Label Selector
 
-![image-20220115110828763](\images\image-20220115110828763.png)
+![image-20220115110828763](\\images\image-20220115110828763.png)
 
 Service能够提供负载均衡的能力，但是在使用上有以下限制：
 
@@ -1916,7 +1916,7 @@ Service 在 K8s 中有以下四种类型
 >
 > ExternalName：把集群外部的服务引入到集群内部来，在集群内部直接使用。没有任何类型代理被创建，这只有 kubernetes 1.7 或更高版本的 kube-dns 才支持
 
-![image-20220115111010676](\images\image-20220115111010676.png)
+![image-20220115111010676](\\images\image-20220115111010676.png)
 
 ### VIP 和 Service 代理
 
@@ -1934,11 +1934,11 @@ Ingress API（beta 版），用来表示 “7层”（HTTP）服务
 
 I、userspace 代理模式
 
-![image-20220115111236494](\images\image-20220115111236494.png)
+![image-20220115111236494](\\images\image-20220115111236494.png)
 
 II、iptables 代理模式
 
-![image-20220115111302990](\images\image-20220115111302990.png)
+![image-20220115111302990](\\images\image-20220115111302990.png)
 
 这种模式，kube-proxy 会监视 Kubernetes Service 对象和 Endpoints ，调用 netlink 接口以相应地创建
 ipvs 规则并定期与 Kubernetes Service 对象和 Endpoints 对象同步 ipvs 规则，以确保 ipvs 状态与期望一
@@ -1955,7 +1955,7 @@ ipvs 规则并定期与 Kubernetes Service 对象和 Endpoints 对象同步 ipvs
 > sed ：最短期望延迟
 > nq ： 不排队调度
 
-![image-20220115115041737](\images\image-20220115115041737.png)
+![image-20220115115041737](\\images\image-20220115115041737.png)
 
 ### ClusterIP
 
@@ -1963,7 +1963,7 @@ clusterIP 主要在每个 node 节点使用 iptables，将发向 clusterIP 对�
 后 kube-proxy 自己内部实现有负载均衡的方法，并可以查询到这个 service 下对应 pod 的地址和端口，进而把
 数据转发给对应的 pod 的地址和端口
 
-![image-20220115115131697](\images\image-20220115115131697.png)
+![image-20220115115131697](\\images\image-20220115115131697.png)
 
 为了实现图上的功能，主要需要以下几个组件的协同工作：
 
@@ -2023,9 +2023,9 @@ spec:
 
 ```
 
-![image-20220116103812721](\images\image-20220116103812721.png)
+![image-20220116103812721](\\images\image-20220116103812721.png)
 
-![image-20220116105227050](\images\image-20220116105227050.png)
+![image-20220116105227050](\\images\image-20220116105227050.png)
 
 ### Headless Service
 
@@ -2047,11 +2047,11 @@ spec:
 
 ```
 
-![image-20220116105659808](\images\image-20220116105659808.png)
+![image-20220116105659808](\\images\image-20220116105659808.png)
 
-![image-20220116105917998](\images\image-20220116105917998.png)
+![image-20220116105917998](\\images\image-20220116105917998.png)
 
-![image-20220116110350072](\images\image-20220116110350072.png)
+![image-20220116110350072](\\images\image-20220116110350072.png)
 
 ### NodePort
 
@@ -2076,18 +2076,18 @@ spec:
 
 ```
 
-![image-20220116111050787](\images\image-20220116111050787.png)
+![image-20220116111050787](\\images\image-20220116111050787.png)
 
-![image-20220116111156418](\images\image-20220116111156418.png)
+![image-20220116111156418](\\images\image-20220116111156418.png)
 
-![image-20220116111654398](\images\image-20220116111654398.png)
+![image-20220116111654398](\\images\image-20220116111654398.png)
 
 ### LoadBalancer
 
 loadBalancer 和 nodePort 其实是同一种方式。区别在于 loadBalancer 比 nodePort 多了一步，就是可以调用
 cloud provider 去创建 LB 来向节点导流
 
-![image-20220116111815385](\images\image-20220116111815385.png)
+![image-20220116111815385](\\images\image-20220116111815385.png)
 
 ### ExternalName
 
@@ -2114,9 +2114,9 @@ spec:
 Ingress-Nginx github 地址：https://github.com/kubernetes/ingress-nginx
 Ingress-Nginx 官方网站：https://kubernetes.github.io/ingress-nginx/
 
-![image-20220117191943102](\images\image-20220117191943102.png)
+![image-20220117191943102](\\images\image-20220117191943102.png)
 
-![image-20220117192003502](\images\image-20220117192003502.png)
+![image-20220117192003502](\\images\image-20220117192003502.png)
 
 #### Ingress 工作原理
 
@@ -2423,9 +2423,9 @@ spec:
 [root@k8s-master01 ingress]# kubectl apply -f service-nodeport.yaml
 ```
 
-![image-20220117203959572](\images\image-20220117203959572.png)
+![image-20220117203959572](\\images\image-20220117203959572.png)
 
-![image-20220117204353810](\images\image-20220117204353810.png)
+![image-20220117204353810](\\images\image-20220117204353810.png)
 
 #### Ingress HTTP 代理访问
 
@@ -2471,13 +2471,13 @@ deployment.extensions/nginx-dm unchanged
 service/nginx-svc created
 ```
 
-![image-20220117205402814](\images\image-20220117205402814.png)
+![image-20220117205402814](\\images\image-20220117205402814.png)
 
-![image-20220117205447531](\images\image-20220117205447531.png)
+![image-20220117205447531](\\images\image-20220117205447531.png)
 
-![image-20220117205521634](\images\image-20220117205521634.png)
+![image-20220117205521634](\\images\image-20220117205521634.png)
 
-![image-20220117205712667](\images\image-20220117205712667.png)
+![image-20220117205712667](\\images\image-20220117205712667.png)
 
 ```yml
 apiVersion: extensions/v1beta1
@@ -2501,11 +2501,11 @@ spec:
 ingress.extensions/nginx-test created
 ```
 
-![image-20220117210115208](\images\image-20220117210115208.png)
+![image-20220117210115208](\\images\image-20220117210115208.png)
 
 接下来就可以通过域名来访问了(注意关闭自己电脑的代理)
 
-![image-20220117220027763](\images\image-20220117220027763.png)
+![image-20220117220027763](\\images\image-20220117220027763.png)
 
 创建另外一个www2.harry.com
 
@@ -2557,13 +2557,13 @@ spec:
 
 ```
 
-![image-20220117220804815](\images\image-20220117220804815.png)
+![image-20220117220804815](\\images\image-20220117220804815.png)
 
-![image-20220117220849184](\images\image-20220117220849184.png)
+![image-20220117220849184](\\images\image-20220117220849184.png)
 
-![image-20220117220930326](\images\image-20220117220930326.png)
+![image-20220117220930326](\\images\image-20220117220930326.png)
 
-![image-20220117221042577](\images\image-20220117221042577.png)
+![image-20220117221042577](\\images\image-20220117221042577.png)
 
 #### Ingress HTTPS 代理访问
 
@@ -2601,9 +2601,9 @@ spec:
 
 
 
-![image-20220118161459949](\images\image-20220118161459949.png)
+![image-20220118161459949](\\images\image-20220118161459949.png)
 
-![image-20220118161706443](\images\image-20220118161706443.png)
+![image-20220118161706443](\\images\image-20220118161706443.png)
 
 Nginx 进行 BasicAuth
 
@@ -2640,11 +2640,11 @@ spec:
 
 
 
-![image-20220118162607687](\images\image-20220118162607687.png)
+![image-20220118162607687](\\images\image-20220118162607687.png)
 
 #### Nginx 进行重写
 
-![image-20220118163327976](\images\image-20220118163327976.png)
+![image-20220118163327976](\\images\image-20220118163327976.png)
 
 ```yml
 apiVersion: extensions/v1beta1
@@ -2702,7 +2702,7 @@ configmap/game-config created
 
 ```
 
-![image-20220118204704090](\images\image-20220118204704090.png)
+![image-20220118204704090](\\images\image-20220118204704090.png)
 
 —from-file 指定在目录下的所有文件都会被用在 ConfigMap 里面创建一个键值对，键的名字就是文件名，值就
 是文件
@@ -2716,7 +2716,7 @@ configmap/game-config created
 configmap/game-config-2 created
 ```
 
-![image-20220118205355631](\images\image-20220118205355631.png)
+![image-20220118205355631](\\images\image-20220118205355631.png)
 
 —from-file 这个参数可以使用多次，你可以使用两次分别指定上个实例中的那两个配置文件，效果就跟指定整个
 目录是一样的
@@ -2744,7 +2744,7 @@ data:
   special.type: char
 ```
 
-![image-20220118210411066](\images\image-20220118210411066.png)
+![image-20220118210411066](\\images\image-20220118210411066.png)
 
 ```yml
 apiVersion: v1
@@ -2790,7 +2790,7 @@ spec:
 
 ```
 
-![image-20220118211905417](\images\image-20220118211905417.png)
+![image-20220118211905417](\\images\image-20220118211905417.png)
 
 #### 用 ConfigMap 设置命令行参数
 
@@ -2830,7 +2830,7 @@ spec:
 
 ```
 
-![image-20220118213153984](\images\image-20220118213153984.png)
+![image-20220118213153984](\\images\image-20220118213153984.png)
 
 #### 通过数据卷插件使用ConfigMap
 
@@ -2858,9 +2858,9 @@ spec:
 
 ```
 
-![image-20220119164213595](\images\image-20220119164213595.png)
+![image-20220119164213595](\\images\image-20220119164213595.png)
 
-![image-20220119164238969](\images\image-20220119164238969.png)
+![image-20220119164238969](\\images\image-20220119164238969.png)
 
 #### ConfigMap 的热更新
 
@@ -2914,7 +2914,7 @@ kubectl edit configmap log-config1
 
 修改 log_level 的值为 DEBUG 等待大概 10 秒钟时间，再次查看环境变量的值
 
-![image-20220119165817946](\images\image-20220119165817946.png)
+![image-20220119165817946](\\images\image-20220119165817946.png)
 
 ConfigMap 更新后滚动更新 Pod
 
@@ -2996,7 +2996,7 @@ data:
 
 
 
-![image-20220119175732670](\images\image-20220119175732670.png)
+![image-20220119175732670](\\images\image-20220119175732670.png)
 
 #### 使用方式
 
@@ -3024,7 +3024,7 @@ spec:
 
 ```
 
-![image-20220119183009129](\images\image-20220119183009129.png)
+![image-20220119183009129](\\images\image-20220119183009129.png)
 
 ##### 2、将 Secret 导出到环境变量中
 
@@ -3061,13 +3061,13 @@ spec:
 
 
 
-![image-20220119184230642](\images\image-20220119184230642.png)
+![image-20220119184230642](\\images\image-20220119184230642.png)
 
 ### kubernetes.io/dockerconfigjson
 
 把Harbor仓库的镜像设置成private
 
-![image-20220119190209116](\images\image-20220119190209116.png)
+![image-20220119190209116](\\images\image-20220119190209116.png)
 
 注意现在其他节点把这个docker镜像删掉
 
@@ -3075,7 +3075,7 @@ spec:
 [root@k8s-node02 ~]# docker rmi hub.harry.com/library/myapp:v1
 ```
 
-![image-20220119191300192](\images\image-20220119191300192.png)
+![image-20220119191300192](\\images\image-20220119191300192.png)
 
 使用 Kuberctl 创建 docker registry 认证的 secret
 
@@ -3086,7 +3086,7 @@ secret/myregistrykey2 created
 
 ```
 
-![image-20220119192203769](\images\image-20220119192203769.png)
+![image-20220119192203769](\\images\image-20220119192203769.png)
 
 在创建 Pod 的时候，通过 imagePullSecrets 来引用刚创建的 `myregistrykey2`
 
@@ -3104,7 +3104,7 @@ spec:
 
 ```
 
-![image-20220119192316396](\images\image-20220119192316396.png)
+![image-20220119192316396](\\images\image-20220119192316396.png)
 
 ## 3、volume
 
@@ -3160,11 +3160,11 @@ spec:
 
 ```
 
-![image-20220120191105024](\images\image-20220120191105024.png)
+![image-20220120191105024](\\images\image-20220120191105024.png)
 
 去另外一个容器发现index.htnl还在
 
-![image-20220120193009721](\images\image-20220120193009721.png)
+![image-20220120193009721](\\images\image-20220120193009721.png)
 
 ### hostPath
 
@@ -3182,7 +3182,7 @@ hostPath 的用途如下：
 
 
 
-![image-20220121141825340](\images\image-20220121141825340.png)
+![image-20220121141825340](\\images\image-20220121141825340.png)
 
 使用这种卷类型是请注意，因为：
 
@@ -3284,7 +3284,7 @@ spec:
 
 ```
 
-![image-20220122092142992](\images\image-20220122092142992.png)
+![image-20220122092142992](\\images\image-20220122092142992.png)
 
 ### PV 访问模式
 
@@ -3302,7 +3302,7 @@ PersistentVolume 可以以资源提供者支持的任何方式挂载到主机上
 ​	ROX - ReadOnlyMany
 ​	RWX - ReadWriteMany
 
-![image-20220122092630191](\images\image-20220122092630191.png)
+![image-20220122092630191](\\images\image-20220122092630191.png)
 
 ### 回收策略
 
@@ -3376,7 +3376,7 @@ spec:
 
 ```
 
-![image-20220122102411143](\images\image-20220122102411143.png)
+![image-20220122102411143](\\images\image-20220122102411143.png)
 
 创建多个pv
 
@@ -3429,7 +3429,7 @@ spec:
 
 ```
 
-![image-20220122104052866](\images\image-20220122104052866.png)
+![image-20220122104052866](\\images\image-20220122104052866.png)
 
 #### 创建PVC
 
@@ -3487,15 +3487,15 @@ spec:
 
 web-1的这个pod并没有绑定pv成功， 因为满足RWO的pv只有一个
 
-![image-20220122105318886](\images\image-20220122105318886.png)
+![image-20220122105318886](\\images\image-20220122105318886.png)
 
-![image-20220122105339733](\images\image-20220122105339733.png)
+![image-20220122105339733](\\images\image-20220122105339733.png)
 
-![image-20220122105543942](\images\image-20220122105543942.png)
+![image-20220122105543942](\\images\image-20220122105543942.png)
 
 再创建两个RWO的pv 看到已经绑定成功
 
-![image-20220122110357393](\images\image-20220122110357393.png)
+![image-20220122110357393](\\images\image-20220122110357393.png)
 
 #### 关于 StatefulSet
 
@@ -3510,7 +3510,7 @@ web-1的这个pod并没有绑定pv成功， 因为满足RWO的pv只有一个
 >
 > 删除 Pod 不会删除其 pvc，手动删除 pvc 将自动释放 pv
 
-![image-20220122111311946](\images\image-20220122111311946.png)
+![image-20220122111311946](\\images\image-20220122111311946.png)
 
 
 
@@ -3624,11 +3624,11 @@ spec:
 
 ```
 
-![image-20220124162311239](\images\image-20220124162311239.png)
+![image-20220124162311239](\\images\image-20220124162311239.png)
 
 preferredDuringSchedulingIgnoredDuringExecution
 
-![image-20220124164136687](\images\image-20220124164136687.png)
+![image-20220124164136687](\\images\image-20220124164136687.png)
 
 ```yml
 apiVersion: v1
@@ -3654,7 +3654,7 @@ spec:
 
 ```
 
-![image-20220124164520497](\images\image-20220124164520497.png)
+![image-20220124164520497](\\images\image-20220124164520497.png)
 
 合体
 
@@ -3759,7 +3759,7 @@ spec:
 
 因为现在的pod里面没有一个标签app=pod-1所有pod一直是peddling状态
 
-![image-20220124173054748](\images\image-20220124173054748.png)
+![image-20220124173054748](\\images\image-20220124173054748.png)
 
 修改affinity的标签
 
@@ -3769,11 +3769,11 @@ pod/affinity labeled
 
 ```
 
-![image-20220124173249695](\images\image-20220124173249695.png)
+![image-20220124173249695](\\images\image-20220124173249695.png)
 
 亲和性/反亲和性调度策略比较如下：
 
-![image-20220124171926859](\images\image-20220124171926859.png)
+![image-20220124171926859](\\images\image-20220124171926859.png)
 
 ## Taint 和 Toleration
 
@@ -3818,7 +3818,7 @@ kubectl taint nodes node1 key1:NoSchedule
 
 ```
 
-![image-20220124180353011](\images\image-20220124180353011.png)
+![image-20220124180353011](\\images\image-20220124180353011.png)
 
 ### 容忍(Tolerations)
 
@@ -3875,7 +3875,7 @@ Kubernetes 作为一个分布式集群的管理工具，保证集群的安全性
 各个组件通信的中介，也是外部控制的入口。所以 Kubernetes 的安全机制基本就是围绕保护 API Server 来设计
 的。Kubernetes 使用了认证（Authentication）、鉴权（Authorization）、准入控制（AdmissionControl）三步来保证API Server的安全
 
-![image-20220125153045679](\images\image-20220125153045679.png)
+![image-20220125153045679](\\images\image-20220125153045679.png)
 
 ## Authentication
 
@@ -3893,11 +3893,11 @@ HTTP Base 认证：通过 用户名+密码 的方式认证
 
 ### HTTPS 证书认证：
 
-![image-20220125153403823](\images\image-20220125153403823.png)
+![image-20220125153403823](\\images\image-20220125153403823.png)
 
 ### 需要认证的节点
 
-![image-20220125153438004](\images\image-20220125153438004.png)
+![image-20220125153438004](\\images\image-20220125153438004.png)
 
 两种类型
 
@@ -3944,19 +3944,19 @@ ca.crt、namespace
 [root@k8s-master01 ~]# kubectl get secret --all-namespaces
 ```
 
-![image-20220125154352318](\images\image-20220125154352318.png)
+![image-20220125154352318](\\images\image-20220125154352318.png)
 
 ```
 [root@k8s-master01 ~]# kubectl describe secret default-token-r6fs8  --namespace=kube-system
 ```
 
-![image-20220125154719357](\images\image-20220125154719357.png)
+![image-20220125154719357](\\images\image-20220125154719357.png)
 
 默认情况下，每个 namespace 都会有一个 ServiceAccount，如果 Pod 在创建时没有指定 ServiceAccount，就会使用 Pod 所属的 namespace 的 ServiceAccount
 
 ### 总结
 
-![image-20220125154826416](\images\image-20220125154826416.png)
+![image-20220125154826416](\\images\image-20220125154826416.png)
 
 ## Authorization
 
@@ -3986,7 +3986,7 @@ BAC（Role-Based Access Control）基于角色的访问控制，在 Kubernetes 1
 RBAC 引入了 4 个新的顶级资源对象：Role、ClusterRole、RoleBinding、ClusterRoleBinding，4 种对象类型
 均可以通过 kubectl 与 API 操作
 
-![image-20220125165304793](\images\image-20220125165304793.png)
+![image-20220125165304793](\\images\image-20220125165304793.png)
 
 需要注意的是 Kubenetes 并不会提供用户管理，那么 User、Group、ServiceAccount 指定的用户又是从哪里
 来的呢？ Kubenetes 组件（kubectl、kube-proxy）或是其他自定义的用户在向 CA 申请证书时，需要提供一个
@@ -4203,7 +4203,7 @@ Groups 书写格式与 Users 相同，都为一个字符串，并且没有特定
 
 ```
 
-![image-20220125210306905](\images\image-20220125210306905.png)
+![image-20220125210306905](\\images\image-20220125210306905.png)
 
 ```
 # 设置客户端认证参数
@@ -4241,7 +4241,7 @@ Switched to context "kubernetes".
 
 在default名称空间下可以看到没有任何pod
 
-![image-20220125211602509](\images\image-20220125211602509.png)
+![image-20220125211602509](\\images\image-20220125211602509.png)
 
 创建一个pod在当前名称空间下
 
@@ -4250,7 +4250,7 @@ Switched to context "kubernetes".
 
 ```
 
-![image-20220125211952902](\images\image-20220125211952902.png)
+![image-20220125211952902](\\images\image-20220125211952902.png)
 
 ## 准入控制
 
@@ -4288,7 +4288,7 @@ release
 
 Helm 包含两个组件：Helm 客户端和 Tiller 服务器，如下图所示
 
-![image-20220126134842520](\images\image-20220126134842520.png)
+![image-20220126134842520](\\images\image-20220126134842520.png)
 
 Helm 客户端负责 chart 和 release 的创建和管理以及和 Tiller 的交互。Tiller 服务器运行在 Kubernetes 集群
 中，它会处理 Helm 客户端的请求，与 Kubernetes API Server 交互
@@ -4345,13 +4345,13 @@ clusterrolebinding.rbac.authorization.k8s.io/tiller created
 
 ```
 
-![image-20220126140706105](\images\image-20220126140706105.png)
+![image-20220126140706105](\\images\image-20220126140706105.png)
 
 tiller 默认被部署在 k8s 集群中的 kube-system 这个namespace 下
 
-![image-20220126140859780](\images\image-20220126140859780.png)
+![image-20220126140859780](\\images\image-20220126140859780.png)
 
-![image-20220126140934406](\images\image-20220126140934406.png)
+![image-20220126140934406](\\images\image-20220126140934406.png)
 
 ## Helm 自定义模板
 
@@ -4420,7 +4420,7 @@ EOF
 
 ```
 
-![image-20220126190524176](\images\image-20220126190524176.png)
+![image-20220126190524176](\\images\image-20220126190524176.png)
 
 ```
 # 列出已经部署的 Release
@@ -4428,14 +4428,14 @@ EOF
 
 ```
 
-![image-20220126191401346](\images\image-20220126191401346.png)
+![image-20220126191401346](\\images\image-20220126191401346.png)
 
 ```
 # 查询一个特定的 Release 的状态
 [root@k8s-master01 hellowrold]# helm status exasperated-ibex
 ```
 
-![image-20220126192006741](\images\image-20220126192006741.png)
+![image-20220126192006741](\\images\image-20220126192006741.png)
 
 ```
 # 移除所有与这个 Release 相关的 Kubernetes 资源
@@ -4444,7 +4444,7 @@ release "exasperated-ibex" deleted
 
 ```
 
-![image-20220126192214058](\images\image-20220126192214058.png)
+![image-20220126192214058](\\images\image-20220126192214058.png)
 
 ```
 [root@k8s-master01 hellowrold]# helm rollback exasperated-ibex 1
@@ -4536,7 +4536,7 @@ rbac:
 
 ```
 
-![image-20220127145914834](\images\image-20220127145914834.png)
+![image-20220127145914834](\\images\image-20220127145914834.png)
 
 ```shell
 修改 ClusterIP 为 NodePort
@@ -4544,9 +4544,9 @@ rbac:
 service/kubernetes-dashboard edited
 ```
 
-![image-20220127150624294](\images\image-20220127150624294.png)
+![image-20220127150624294](\\images\image-20220127150624294.png)
 
-![image-20220127152736469](\images\image-20220127152736469.png)
+![image-20220127152736469](\\images\image-20220127152736469.png)
 
 ## 部署部署 prometheus
 
@@ -4664,17 +4664,17 @@ rm -rf /tmp/k8s-images.txt
 
 ```
 
-![image-20220127163448716](\images\image-20220127163448716.png)
+![image-20220127163448716](\\images\image-20220127163448716.png)
 
-![image-20220127163653899](\images\image-20220127163653899.png)
-
-
-
-![image-20220127165642322](\images\image-20220127165642322.png)
+![image-20220127163653899](\\images\image-20220127163653899.png)
 
 
 
-![image-20220127165624545](\images\image-20220127165624545.png)
+![image-20220127165642322](\\images\image-20220127165642322.png)
+
+
+
+![image-20220127165624545](\\images\image-20220127165624545.png)
 
 ### Horizontal Pod Autoscaling
 
@@ -4691,7 +4691,7 @@ rm -rf /tmp/k8s-images.txt
 
 ```
 
-![image-20220127191715356](\images\image-20220127191715356.png)
+![image-20220127191715356](\\images\image-20220127191715356.png)
 
 开启一个pod进行压测
 
@@ -4703,7 +4703,7 @@ rm -rf /tmp/k8s-images.txt
 
 自动扩容pod
 
-![image-20220127191955268](\images\image-20220127191955268.png)
+![image-20220127191955268](\\images\image-20220127191955268.png)
 
 
 
@@ -4759,7 +4759,7 @@ spec:
 
 
 
-![image-20220127193201113](\images\image-20220127193201113.png)
+![image-20220127193201113](\\images\image-20220127193201113.png)
 
 配置对象数量配额限制
 
@@ -4804,15 +4804,15 @@ defaultRequest 即 request 的
 
 以看到 prometheus 已经成功连接上了 k8s 的 apiserver
 
-![image-20220127193553791](\images\image-20220127193553791.png)
+![image-20220127193553791](\\images\image-20220127193553791.png)
 
 查看 service-discovery
 
-![image-20220127193659549](\images\image-20220127193659549.png)
+![image-20220127193659549](\\images\image-20220127193659549.png)
 
 Prometheus 自己的指标
 
-![image-20220127193801929](\images\image-20220127193801929.png)
+![image-20220127193801929](\\images\image-20220127193801929.png)
 
 prometheus 的 WEB 界面上提供了基本的查询 K8S 集群中每个 POD 的 CPU 使用情况，查询条件如下：
 
@@ -4820,7 +4820,7 @@ prometheus 的 WEB 界面上提供了基本的查询 K8S 集群中每个 POD 的
 sum by (pod_name)( rate(container_cpu_usage_seconds_total{image!="", pod_name!=""}[1m]
 ```
 
-![image-20220127194041289](\images\image-20220127194041289.png)
+![image-20220127194041289](\\images\image-20220127194041289.png)
 
 上述的查询有出现数据，说明 node-exporter 往 prometheus 中写入数据正常，接下来我们就可以部署
 grafana 组件，实现更友好的 we展示数据了
@@ -4840,11 +4840,11 @@ grafana 组件，实现更友好的 we展示数据了
 添加数据源 grafana 默认已经添加了 Prometheus 数据源，grafana 支持多种时序数据源，每种数据源都有各自
 的查询编辑器
 
-![image-20220127194652474](\images\image-20220127194652474.png)
+![image-20220127194652474](\\images\image-20220127194652474.png)
 
-![image-20220127195356789](\images\image-20220127195356789.png)
+![image-20220127195356789](\\images\image-20220127195356789.png)
 
-![image-20220127195423699](\images\image-20220127195423699.png)
+![image-20220127195423699](\\images\image-20220127195423699.png)
 
 ## 部署EFK平台
 
@@ -4868,11 +4868,11 @@ namespace/efk created
 
 ```
 
-![image-20220128174658726](\images\image-20220128174658726.png)
+![image-20220128174658726](\\images\image-20220128174658726.png)
 
-![image-20220128202932577](\images\image-20220128202932577.png)
+![image-20220128202932577](\\images\image-20220128202932577.png)
 
-![image-20220128214934643](\images\image-20220128214934643.png)
+![image-20220128214934643](\\images\image-20220128214934643.png)
 
 ### 部署 Fluentd
 
@@ -4886,7 +4886,7 @@ elasticsearch:
 
 ```
 
-![image-20220128220455163](\images\image-20220128220455163.png)
+![image-20220128220455163](\\images\image-20220128220455163.png)
 
 ### 部署 kibana
 
@@ -4927,7 +4927,7 @@ cd /data && git clone https://github.com/kubernetes/kubernetes.git
 
 ```
 
-![image-20220129100219395](\images\image-20220129100219395.png)
+![image-20220129100219395](\\images\image-20220129100219395.png)
 
 ```
 vim staging/src/k8s.io/client-go/util/cert/cert.go # kubeadm 1.14 版本之前
@@ -4958,7 +4958,7 @@ vim cmd/kubeadm/app/util/pkiutil/pki_helpers.go #
 
 ```
 
-![image-20220129102445577](\images\image-20220129102445577.png)
+![image-20220129102445577](\\images\image-20220129102445577.png)
 
 ### HA集群其余 mater 节点证书更新
 
@@ -4979,9 +4979,9 @@ done
 
 # 十一、部署高可用K8S
 
-![image-20220129180616420](\images\image-20220129180616420.png)
+![image-20220129180616420](\\images\image-20220129180616420.png)
 
-![image-20220129180731803](\images\image-20220129180731803.png)
+![image-20220129180731803](\\images\image-20220129180731803.png)
 
 Kubernetes 作为容器集群系统，通过健康检查+重启策略实现了 Pod 故障自我修复能力，通过调度算法实现将 Pod 分布式部署，监控其预期副本数，并根据 Node 失效状态自动在正常 Node 启动 Pod，实现了应用层的高可用性
 
@@ -4993,7 +4993,7 @@ Master 节点主要有三个服务 kube-apiserver、kube-controller-mansger 和 
 
 多 Master 架构图：
 
-![image-20220129181142278](\images\image-20220129181142278.png)
+![image-20220129181142278](\\images\image-20220129181142278.png)
 
 ## 1、系统初始化
 
@@ -5110,7 +5110,7 @@ systemctl status keepalived.service
 [root@k8s-master02 conf]# ip a s ens33
 ```
 
-![image-20220130150134651](\images\image-20220130150134651.png)
+![image-20220130150134651](\\images\image-20220130150134651.png)
 
 ###  部署haproxy
 
@@ -5214,7 +5214,7 @@ EOF
 netstat -tunlp | grep haproxy
 ```
 
-![image-20220130150412595](\images\image-20220130150412595.png)
+![image-20220130150412595](\\images\image-20220130150412595.png)
 
 ### 安装Docker、Kubeadm、kubectl
 
@@ -5439,11 +5439,11 @@ kubectl get cs
 kubectl get pods -n kube-system
 ```
 
-![image-20220130152245045](\images\image-20220130152245045.png)
+![image-20220130152245045](\\images\image-20220130152245045.png)
 
-![image-20220130152302312](\images\image-20220130152302312.png)
+![image-20220130152302312](\\images\image-20220130152302312.png)
 
-###  ![image-20220130163002559](\images\image-20220130163002559.png)
+###  ![image-20220130163002559](\\images\image-20220130163002559.png)
 
 ### Etcd 集群状态查看
 
@@ -5452,14 +5452,14 @@ kubectl get pods -n kube-system
 
 ```
 
-![image-20220130163535306](\images\image-20220130163535306.png)
+![image-20220130163535306](\\images\image-20220130163535306.png)
 
 ```
 [root@k8s-master02 .kube]# kubectl get endpoints kube-controller-manager --namespace=kube-system -o yaml
 
 ```
 
-![image-20220130163632206](\images\image-20220130163632206.png)
+![image-20220130163632206](\\images\image-20220130163632206.png)
 
 ```
 [root@k8s-master02 .kube]# kubectl get endpoints kube-scheduler --namespace=kube-system -o yaml
@@ -5489,7 +5489,7 @@ kubeadm join 192.168.31.200:16443 --token abcdef.0123456789abcdef \
 
 ```
 
-![image-20220130153518800](\images\image-20220130153518800.png)
+![image-20220130153518800](\\images\image-20220130153518800.png)
 
 ### 测试kubernetes集群
 
@@ -5504,7 +5504,7 @@ kubectl expose deployment nginx --port=80 --type=NodePort
 kubectl get pod,svc
 ```
 
-![image-20220130153626426](\images\image-20220130153626426.png)
+![image-20220130153626426](\\images\image-20220130153626426.png)
 
 ### 排查 k8s 集群 master 节点无法正常工作的问题
 
@@ -5552,7 +5552,7 @@ etcd 启动失败是由于 etcd 在 3 节点集群模式在启动却无法连接
 
 # 十二、通过K8S部署一个java应用
 
-![image-20220130184445828](\images\image-20220130184445828.png)
+![image-20220130184445828](\\images\image-20220130184445828.png)
 
 ### 准备好java项目打包
 
@@ -5577,7 +5577,7 @@ ENTRYPOINT ["java","-jar","01-SpringBootHelloWorld-1.5.9.RELEASE.jar", "&"]
 [root@k8s-master01 java-docekr]# docker build -t java-demo-01:latest .
 ```
 
-![image-20220130190457049](\images\image-20220130190457049.png)
+![image-20220130190457049](\\images\image-20220130190457049.png)
 
 run一下镜像测试
 
@@ -5585,7 +5585,7 @@ run一下镜像测试
 [root@k8s-master01 java-docekr]# docker run -d -p 8088:8080 java-demo-01:latest
 ```
 
-![](\images\image-20220130191326606.png)
+![](\\images\image-20220130191326606.png)
 
 上传镜像到habor
 
@@ -5638,4 +5638,4 @@ status: {}
 
 ```
 
-![image-20220130193912142](\images\image-20220130193912142.png)
+![image-20220130193912142](\\images\image-20220130193912142.png)
