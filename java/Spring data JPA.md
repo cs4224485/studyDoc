@@ -814,7 +814,7 @@ Spring Data JPA 让我们解脱了DAO层的操作，基本上所有CRUD都可以
 
 ##  Spring Data JPA的特性
 
-![spring data jpa的特性](\images\clip_image002222.jpg)
+![spring data jpa的特性](images\clip_image002222.jpg)
 
 ## Spring Data JPA 与 JPA和hibernate之间的关系
 

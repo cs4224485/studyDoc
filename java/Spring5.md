@@ -26,17 +26,17 @@
 
 ## Spring5 入门案例
 
-![image-20210626084250760](\images\image-20210626084250760.png)
+![image-20210626084250760](images\image-20210626084250760.png)
 
 ### 打开 idea 工具，创建普通 Java 工程
 
-![image-20210626084727763](\images\image-20210626084727763.png)
+![image-20210626084727763](images\image-20210626084727763.png)
 
 ### 导入 Spring5 相关 jar 包
 
-![image-20210626084812505](\images\image-20210626084812505.png)
+![image-20210626084812505](images\image-20210626084812505.png)
 
-![image-20210626084828303](\images\image-20210626084828303.png)
+![image-20210626084828303](images\image-20210626084828303.png)
 
 ### 创建普通类，在这个类创建普通方法
 
@@ -110,7 +110,7 @@ public class UserTest {
 
 ##  3、画图讲解 IOC 底层原理
 
-![image-20210626091242166](\images\image-20210626091242166.png)
+![image-20210626091242166](images\image-20210626091242166.png)
 
 ## IOC（BeanFactory 接口）
 
@@ -124,7 +124,7 @@ public class UserTest {
 
 3、ApplicationContext 接口有实现类
 
-![image-20210626091403251](\images\image-20210626091403251.png)
+![image-20210626091403251](images\image-20210626091403251.png)
 
 ## IOC 操作 Bean 管理（概念）
 
@@ -146,7 +146,7 @@ public class UserTest {
 
 ### 1、基于 xml 方式创建对象
 
-![image-20210626091649914](\images\image-20210626091649914.png)
+![image-20210626091649914](images\image-20210626091649914.png)
 
 （1）在 spring 配置文件中，使用 bean 标签，标签里面添加对应属性，就可以实现对象创建 
 
@@ -227,7 +227,7 @@ public class Orders {
 
 第一步 添加 p 名称空间在配置文件中
 
-![image-20210626092536817](D:\studyDoc\java\images\image-20210626092536817.png)
+![image-20210626092536817](images\\image-20210626092536817.png)
 
 第二步 进行属性注入，在 bean 标签里面进行操作
 
@@ -366,7 +366,7 @@ public class Emp {
 
 ### （2）第二种写法
 
-![image-20210626094454812](\images\image-20210626094454812.png)
+![image-20210626094454812](images\image-20210626094454812.png)
 
 ```xml
 <!--级联赋值-->
@@ -556,17 +556,17 @@ public void test3() {
 
  （3）使用登录例子说明 AOP
 
-![image-20210718093437598](\images\image-20210718093437598.png)
+![image-20210718093437598](images\image-20210718093437598.png)
 
 ### AOP（底层原理）
 
-![image-20210718093602624](\images\image-20210718093602624.png)
+![image-20210718093602624](images\image-20210718093602624.png)
 
 ### AOP（JDK 动态代理）
 
 1、使用 JDK 动态代理，使用 Proxy 类里面的方法创建代理对象
 
-![image-20210718093812577](\images\image-20210718093812577.png)
+![image-20210718093812577](images\image-20210718093812577.png)
 
 2、编写 JDK 动态代理代码
 
@@ -659,7 +659,7 @@ class UserDaoProxy implements InvocationHandler {
 
 3、在项目工程里面引入 AOP 相关依
 
-![image-20210718094357626](\images\image-20210718094357626.png)
+![image-20210718094357626](images\image-20210718094357626.png)
 
 4、切入点表达式 
 
@@ -717,11 +717,11 @@ http://www.springframework.org/schema/aop/spring-aop.xsd">
 
 （2）使用注解创建 User 和 UserProxy 对象
 
-![image-20210718094828057](\images\image-20210718094828057.png)
+![image-20210718094828057](images\image-20210718094828057.png)
 
 （3）在增强类上面添加注解 @Aspect
 
-![image-20210718094909787](\images\image-20210718094909787.png)
+![image-20210718094909787](images\image-20210718094909787.png)
 
 （4）在 spring 配置文件中开启生成代理对象
 
@@ -843,7 +843,7 @@ com.atguigu.spring5.aopxml.Book.buy(..))"/>
 
 ## 2、准备工作
 
-![image-20210718095602672](\images\image-20210718095602672.png)
+![image-20210718095602672](images\image-20210718095602672.png)
 
 （2）在 spring 配置文件配置数据库连接池
 
@@ -894,7 +894,7 @@ public class BookDaoImpl implements BookDao {
 
 1、对应数据库创建实体类
 
-![image-20210718100055063](\images\image-20210718100055063.png)
+![image-20210718100055063](images\image-20210718100055063.png)
 
 2、编写 service 和 dao 
 
@@ -1090,11 +1090,11 @@ bookService.batchDelete(batchArgs);
 
  （4）持久性
 
-![image-20210802193412668](\images\image-20210802193412668.png)
+![image-20210802193412668](images\image-20210802193412668.png)
 
 创建数据库表，添加记录
 
-![image-20210802193450566](\images\image-20210802193450566.png)
+![image-20210802193450566](images\image-20210802193450566.png)
 
 创建 service，搭建 dao，完成对象创建和注入关系
 
@@ -1169,11 +1169,11 @@ public class UserService {
 
 （1）提供一个接口，代表事务管理器，这个接口针对不同的框架提供不同的实现类
 
-![image-20210802193918299](\images\image-20210802193918299.png)
+![image-20210802193918299](images\image-20210802193918299.png)
 
 在 spring 配置文件配置事务管理器
 
-![image-20210802194039520](\images\image-20210802194039520.png)
+![image-20210802194039520](images\image-20210802194039520.png)
 
 在spring 配置文件，开启事务注解
 
@@ -1209,15 +1209,15 @@ http://www.springframework.org/schema/tx/spring-tx.xsd">
 
 在 service 类上面添加注解@Transactional，在这个注解里面可以配置事务相关参数
 
-![image-20210802194712452](\images\image-20210802194712452.png)
+![image-20210802194712452](images\image-20210802194712452.png)
 
 ## 4、propagation：事务传播行为
 
 多事务方法直接进行调用，这个过程中事务 是如何进行管理的
 
-![image-20210802194856816](\images\image-20210802194856816.png)
+![image-20210802194856816](images\image-20210802194856816.png)
 
-![image-20210802194934325](\images\image-20210802194934325.png)
+![image-20210802194934325](images\image-20210802194934325.png)
 
 ## 5、ioslation：事务隔离级别
 
@@ -1227,17 +1227,17 @@ http://www.springframework.org/schema/tx/spring-tx.xsd">
 
 （3）脏读：一个未提交事务读取到另一个未提交事务的数据
 
-![image-20210802195412887](\images\image-20210802195412887.png)
+![image-20210802195412887](images\image-20210802195412887.png)
 
 （4）不可重复读：一个未提交事务读取到另一提交事务修改数据
 
-![image-20210802195449733](\images\image-20210802195449733.png)
+![image-20210802195449733](images\image-20210802195449733.png)
 
 （5）虚读：一个未提交事务读取到另一提交事务添加数据 
 
 （6）解决：通过设置事务隔离级别，解决读问题
 
-![image-20210802195553134](\images\image-20210802195553134.png)
+![image-20210802195553134](images\image-20210802195553134.png)
 
 timeout：超时时间
 
@@ -1346,7 +1346,7 @@ public class TxConfig {
 
 第一步 引入 jar 包
 
-![image-20210802201356285](\images\image-20210802201356285.png)
+![image-20210802201356285](images\image-20210802201356285.png)
 
 第二步 创建 log4j2.xml 配置文件
 
@@ -1378,15 +1378,15 @@ public class TxConfig {
 
 （2）注解用在方法上面，方法返回值可以为空
 
-![image-20210802201643562](\images\image-20210802201643562.png)
+![image-20210802201643562](images\image-20210802201643562.png)
 
 （3）注解使用在方法参数里面，方法参数可以为空
 
-![image-20210802201711115](\images\image-20210802201711115.png)
+![image-20210802201711115](images\image-20210802201711115.png)
 
 （4）注解使用在属性上面，属性值可以为空
 
-![image-20210802201739869](\images\image-20210802201739869.png)
+![image-20210802201739869](images\image-20210802201739869.png)
 
 ## 4、Spring5 核心容器支持函数式风格 GenericApplicationContext
 
@@ -1412,7 +1412,7 @@ public void testGenericApplicationContext() {
 
 第一步 引入 Spring 相关针对测试依赖
 
-![image-20210802202038552](\images\image-20210802202038552.png)
+![image-20210802202038552](images\image-20210802202038552.png)
 
 第二步 创建测试类，使用注解方式完成
 
@@ -1432,7 +1432,7 @@ public void testGenericApplicationContext() {
 
 第一步 引入 JUnit5 的 jar 包
 
-![image-20210802202242181](\images\image-20210802202242181.png)
+![image-20210802202242181](images\image-20210802202242181.png)
 
 第二步 创建测试类，使用注解完成
 

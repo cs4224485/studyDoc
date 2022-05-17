@@ -758,7 +758,7 @@ public class MainConfig2  {
 
 接着按住F7键进入asSourceClasses()方法中，可以看到该方法中的String[]数组参数是null，当调用null数组的length时，自然而然就会报一个空指针异常了。
 
-![image-20210904101435300](D:\studyDoc\java\images\image-20210904101435300.png)
+![image-20210904101435300](images\image-20210904101435300.png)
 
 因此要想不报这样一个空指针异常，咱们MyImportSelector类的selectImports()方法里面就不能返回一个null值了，不妨先返回一个空数组试试，就像下面这样。
 
@@ -1250,7 +1250,7 @@ public class MyBeanPostProcessor implements BeanPostProcessor, Order {
 我们都知道spring AOP的实现原理是动态代理，最终放入容器的是代理类的对象，而不是bean本身的对象，那么Spring是什么时候做到这一步的呢？就是在AnnotationAwareAspectJAutoProxyCreator后置处理器的postProcessAfterInitialization方法中，即bean对象初始化完成之后，后置处理器会判断该bean是否注册了切面，若是，则生成代理对象注入到容器中。这一部分的关键代码是在哪儿呢？我们定位到AbstractAutoProxyCreator抽象类中的postProcessAfterInitialization方法处便能看到了，如下所示。
 
 
-![image-20210905100641162](\images\image-20210905100641162.png)
+![image-20210905100641162](images\image-20210905100641162.png)
 
 ## BeanPostProcessor的执行流程
 
@@ -1535,7 +1535,7 @@ initializeBean(beanName, exposedObject, mbd)
 
 org.springframework.context.support.ApplicationContextAwareProcessor是BeanPostProcessor接口的一个实现类，这个类的作用是可以向组件中注入IOC容器，大致的源码如下所示。
 
-![在这里插入图片描述](D:\studyDoc\java\images\bean1233.jpg)
+![在这里插入图片描述](images\bean1233.jpg)
 
 **注意：我这里的Spring版本为4.3.12.RELEASE。**
 

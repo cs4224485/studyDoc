@@ -614,7 +614,7 @@ Preparing: select * from tbl_employee where id=2 and last_name=?
 > 	在我们数据为null的时候，有些数据库可能不能识别mybatis对null的默认处理。比如Oracle（报错）；
 > 	
 > 	JdbcType OTHER：无效的类型；因为mybatis对所有的null都映射的是原生Jdbc的OTHER类型，oracle不能正确处理;
-> 	
+> 		
 > 	由于全局配置中：jdbcTypeForNull=OTHER；oracle不支持；两种办法
 > 	1、#{email,jdbcType=OTHER};
 > 	2、jdbcTypeForNull=NULL
@@ -628,7 +628,7 @@ parameterType：参数类型,可以不传，MyBatis会根据TypeHandler自动推
 
 resultType：返回值类型，别名或者全类名，如果返回的是集合，定义集合中元 素的类型。不能和resultMap同时使用
 
-![image-20200623200732639](\images\image-20200623200732639.png)
+![image-20200623200732639](images\image-20200623200732639.png)
 
 ## 4、resultMap
 
