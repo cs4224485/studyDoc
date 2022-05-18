@@ -395,7 +395,7 @@ public class Exam5 {
 
 ## JVM垃圾回收机制
 
-![image-20220330190745986](D:\studyDoc\javaimages\image-20220330190745986.png)
+![image-20220330190745986](images\image-20220330190745986.png)
 
 GC是什么(分代收集算法)
 
@@ -445,6 +445,75 @@ GC四大算法
 	与标记-清除一样，多了一个压缩的步骤，会再次扫描并向一端滑动存活对象
 	优点：没有内存碎片，可以利用bump
 	缺点: 需要移动对象的成本 耗时长
+
+
+
+## 58同城的java字符串常量池
+
+面试题Code
+
+```java
+package com.hhf.study.javase;
+
+public class StringPool58Demo {
+    public static void main(String[] args) {
+
+        String str1 = new StringBuilder("58").append("tongcheng").toString();
+        System.out.println(str1);
+        System.out.println(str1.intern());
+        System.out.println(str1 == str1.intern());
+
+        System.out.println("------------");
+
+        String str2 = new StringBuilder("ja").append("va").toString();
+        System.out.println(str2);
+        System.out.println(str2.intern());
+        System.out.println(str2 == str2.intern());
+
+
+    }
+}
+```
+
+### intern()方法
+
+![image-20220517123927911](images\image-20220517123927911.png)
+
+
+
+![image-20220517123954098](images\image-20220517123954098.png)
+
+**调用intern方法时，如果该字符串已经存在于常量池中，则将常量池中的引用直接返回；如果不存在，则在常量池中生成一个对原字符串的引用**
+
+按照代码结果，java字符串答案为false 必然是两个不同的java，那另外一个java字符串如何加载进来的? 
+
+因为：有一个初始化的java字符串(JDK出娘胎自带的)， 在加载sun.misc.Version这个类的时候进入常量池
+
+### OpenJDK8底层源码说明
+
+#### System代码解析
+
+![image-20220517124348614](images\image-20220517124348614.png)
+
+![image-20220517124426923](images\image-20220517124426923.png)
+
+#### 类加载器和rt.jar
+
+根加载器提前部署加载rt.jar
+
+![image-20220517124523499](images\image-20220517124523499.png)
+
+
+
+#### OpenJDK8源码
+
+http://openjdk.java.net/
+
+openjdk8\jdk\srclshare\classes\sun\misc
+
+#### 总结
+
+![image-20220517124639977](images\image-20220517124639977.png)
 
 # Spring框架篇
 
@@ -638,6 +707,354 @@ Mysql默认隔离级别可重复读
 
 </resultMap>
 ```
+
+## spring的aop顺序
+
+### Aop常用注解
+
+@Before 前置通知：目标方法之前执行
+
+@After 后置通知：目标方法之后执行（始终执行)
+
+@AfterReturning 返回后通知：执行方法结束前执行(异常不执行)
+
+@AfterThrowing 异常通知：出现异常时候执行
+
+@Around 环绕通知：环绕目标方法执行
+
+### spring4下的aop测试案例
+
+pom 文件
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example</groupId>
+    <artifactId>springTest</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>1.5.22.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <!-- <version>1.5.9.RELEASE</version〉 ch/qos/Logback/core/joran/spi/JoranException解决方案-->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.1.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-access</artifactId>
+            <version>1.1.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.3</version>
+        </dependency>
+
+        <!-- web+actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- SpringBoot与Redis整合依赖 -->
+        <!--
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+         -->
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+
+        <!-- jedis -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+
+        <!-- Spring Boot AOP技术-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- redisson -->
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>3.13.4</version>
+        </dependency>
+
+        <!-- 一般通用基础配置 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId><scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.junit.vintage</groupId>
+                    <artifactId>junit-vintage-engine</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+    </dependencies>
+
+</project>
+```
+
+启动类
+
+```java
+@SpringBootApplication
+public class MainApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(MainApplication.class, args);
+    }
+}
+
+```
+
+接口CalcService
+
+```java
+public interface CalcService {
+    public int div(int x, int y);
+    
+}
+
+```
+
+接口实现类CalcServiceImpl新加@Service
+
+```java
+package com.harry.spring.service;
+
+import org.springframework.stereotype.Service;
+
+@Service
+public class CalcServiceImpl implements CalcService{
+    @Override
+    public int div(int x, int y) {
+        int result = x / y;
+        System.out.println("=== CalcServiceImpl被调用， 计算结果为：" + result);
+
+        return result;
+    }
+}
+
+```
+
+新建一个切面类MyAspect并为切面类新增两个注解：
+
+```java
+package com.harry.spring.aspcet;
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.*;
+import org.springframework.stereotype.Component;
+
+@Aspect
+@Component
+public class MyAspect {
+    // 如果切入点表达式都一样的情况下，那么我们可以抽取出一个公共的切入点表达式
+
+    @Pointcut("execution(public int com.harry.spring.service.CalcServiceImpl.*(..))")
+    public void pointCut() {
+    }
+
+    @Before("pointCut()")
+    public void  beforeNotify(){
+        System.out.println("********@Before我是前置通知");
+    }
+
+    @After("pointCut()")
+    public void afterNotify() {
+        System.out.println("********@After我是后置通知");
+    }
+
+    @AfterReturning(value="pointCut()")
+    public void  afterReturning(){
+        System.out.println("********@AfterReturning我是返回后通知");
+    }
+    @AfterThrowing(value="pointCut()")
+    public void afterThrowingNotify() {
+        System.out.println("********@AfterThrowing我是异常通知");
+    }
+
+    @Around(value="pointCut()")
+    public Object around(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+        Object retvalue = null;
+        System.out.println("我是环绕通知之前AAA");
+        retvalue = proceedingJoinPoint.proceed();
+        System.out.println("我是环绕通知之后BBB");
+        return retvalue ;
+    }
+
+}
+```
+
+测试类
+
+```java
+package com.harry.spring;
+
+import com.harry.spring.service.CalcService;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringBootVersion;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.SpringVersion;
+import org.springframework.test.context.junit4.SpringRunner;
+
+@SpringBootTest
+@RunWith(SpringRunner.class)
+public class SpringAopTest {
+
+    @Autowired
+    CalcService calcService;
+
+    @Test
+    public void test01(){
+        System.out.println(String.format("Spring Verision : %s, Sring Boot Version : %s.", //
+                SpringVersion.getVersion(), SpringBootVersion.getVersion()));
+
+        calcService.div(10, 2);
+
+    }
+}
+
+```
+
+### spring4下的aop测试结果
+
+![image-20220517205520704](images\image-20220517205520704.png)
+
+
+
+修改测试类，让其抛出算术异常类：
+
+```java
+    @Test
+    public void test01(){
+        System.out.println(String.format("Spring Verision : %s, Sring Boot Version : %s.", //
+                SpringVersion.getVersion(), SpringBootVersion.getVersion()));
+
+//        calcService.div(10, 2);
+        calcService.div(10, 0);//将会抛异常
+    }
+```
+
+输出结果：
+
+![image-20220517210346837](images\image-20220517210346837.png)
+
+
+
+**小结**
+
+AOP执行顺序：
+
+- 正常情况下：@Before前置通知----->@After后置通知----->@AfterRunning正常返回
+- 异常情况下：@Before前置通知----->@After后置通知----->@AfterThrowing方法异常
+
+### spring5下的aop测试
+
+修改POM
+
+```xml
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+<!--        <version>1.5.22.RELEASE</version>-->
+        <version>2.3.3.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+```
+
+修改测试类
+
+```java
+import com.harry.spring.service.CalcService;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringBootVersion;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.SpringVersion;
+import org.springframework.test.context.junit4.SpringRunner;
+
+@SpringBootTest
+public class SpringAopTest {
+
+    @Autowired
+    CalcService calcService;
+
+    @Test
+    public void test01(){
+        System.out.println(String.format("Spring Verision : %s, Sring Boot Version : %s.", //
+                SpringVersion.getVersion(), SpringBootVersion.getVersion()));
+
+//        calcService.div(10, 2);
+        calcService.div(10, 0);//将会抛异常
+    }
+
+    @Test
+    public void testAopSpring5(){
+        System.out.println(String.format("Spring Verision : %s, Sring Boot Version : %s.", //
+                SpringVersion.getVersion(), SpringBootVersion.getVersion()));
+
+        calcService.div(10, 2);
+    }
+}
+
+```
+
+输出结果
+
+![image-20220517212114855](images\image-20220517212114855.png)
+
+异常输出
+
+![image-20220517212201047](images\image-20220517212201047.png)
 
 
 
@@ -4037,6 +4454,1271 @@ public class ProdConsumerBlockingQueueDemo {
 - synchronized：没有，要么随机，要么全部唤醒
 - ReentrantLock：用来实现分组唤醒需要唤醒的线程，可以精确唤醒，而不是像synchronized那样，要么随机，要么全部唤醒
 
+## AQS原理
+
+### 可重入锁
+
+可重入锁(又名为递归锁)
+
+可重入锁又名递归锁
+
+是指在同一个线程在外层方法获取锁的时候，再进入该线程的内层方法会自动获取锁(前提，锁对象得是同一个对象)，
+不会因为之前已经获取过还没释放而阻塞。
+
+Java中ReentrantLock和synchronized都是可重入锁，可重入锁的一个优点是可一定程度避免死锁。
+
+一个线程中的多个流程可以获取同一把锁，持有这把同步锁可以再次进入。
+
+#### 可重入锁种类
+
+隐式锁（即synchronized关键字使用的锁）默认是可重入锁
+
+```java
+package com.hhf.study.juc;
+
+/**
+ * 可重入锁:可重复可递归调用的锁，在外层使用锁之后，在内层仍然可以使用，并且不发生死锁，这样的锁就叫做可重入锁。
+ *
+ * 在一个synchronized修饰的方法或代码块的内部
+ * 调用本类的其他synchronized修饰的方法或代码块时，是永远可以得到锁的
+ */
+
+public class ReEnterLockDemo {
+
+    static Object objectLockA = new Object();
+
+    public static void m1(){
+        new Thread(() -> {
+            synchronized (objectLockA){
+                System.out.println(Thread.currentThread().getName()+"\t"+"------外层调用");
+                synchronized (objectLockA){
+                    System.out.println(Thread.currentThread().getName()+"\t"+"------中层调用");
+                    synchronized (objectLockA)
+                    {
+                        System.out.println(Thread.currentThread().getName()+"\t"+"------内层调用");
+                    }
+                }
+            }
+        },"t1").start();
+
+    }
+
+    public static void main(String[] args) {
+        m1();
+    }
+}
+ 
+```
+
+
+
+```java
+package com.hhf.study.juc;
+
+/**
+ * 可重入锁:可重复可递归调用的锁，在外层使用锁之后，在内层仍然可以使用，并且不发生死锁，这样的锁就叫做可重入锁。
+ *
+ * 在一个synchronized修饰的方法或代码块的内部
+ * 调用本类的其他synchronized修饰的方法或代码块时，是永远可以得到锁的
+ */
+
+public class ReEnterLockDemo {
+
+    public synchronized void m1(){
+        System.out.println("=====外层");
+        m2();
+    }
+
+    public synchronized void m2() {
+        System.out.println("=====中层");
+        m3();
+    }
+
+    public synchronized void m3(){
+        System.out.println("=====内层");
+    }
+
+
+    public static void main(String[] args) {
+        new ReEnterLockDemo().m1();
+    }
+}
+ 
+ 
+```
+
+#### Synchronized的重入的实现机理
+
+每个锁对象拥有一个锁计数器和一个指向持有该锁的线程的指针。
+
+当执行monitorenter时，如果目标锋对象的计数器为零，那么说明它没有被其他线程所持有，Java虚拟机会将该锁对象的持有线程设
+置为当前线程，并且将其计数器加i。
+
+在目标锁对象的计数器不为零的情况下，如果锁对象的持有线程是当前线程，那么Java虚拟机可以将其计数器加1，否则需要等待
+，直至持有线程释放该锁。
+
+当执行monitorexit时，Java虚拟机则需将锁对象的计数器减1。计数器为零代表锁已被释放。
+
+#### 显式锁（即Lock）也有ReentrantLock这样的可重入锁。
+
+```java
+package com.hhf.study.juc;
+
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+/**
+ * 可重入锁:可重复可递归调用的锁，在外层使用锁之后，在内层仍然可以使用，并且不发生死锁，这样的锁就叫做可重入锁。
+ *
+ * 在一个synchronized修饰的方法或代码块的内部
+ * 调用本类的其他synchronized修饰的方法或代码块时，是永远可以得到锁的
+ */
+
+public class ReEnterLockDemo {
+
+    static Lock lock = new ReentrantLock();
+
+    public static void main(String[] args) {
+        new Thread(() -> {
+            lock.lock();
+            //lock.lock();
+                try{
+                    System.out.println("=======外层");
+                       lock.lock();
+                       try{
+                           System.out.println("=======内层");
+                       }finally {
+                          lock.unlock();
+                       }
+                } finally {
+                    //实现加锁次数和释放次数不一样
+                    //由于加锁次数和释放次数不一样，第二个线程始终无法获取到锁，导致一直在等待。
+                    lock.unlock();
+                    //lock.unlock();    //正在情况，加锁几次就要解锁几次
+                }
+        },"t1").start();
+
+        new Thread(() -> {
+                lock.lock();
+                try{
+                    System.out.println("b thread----外层调用lock");
+                }catch (Exception e){
+                    e.printStackTrace();
+                }finally {
+                  lock.unlock();
+                }
+        },"b").start();
+
+
+    }
+}
+ 
+ 
+```
+
+### LockSupport
+
+![image-20220517131449483](images\image-20220517131449483.png)
+
+
+
+![image-20220517131655034](images\image-20220517131655034.png)
+
+线程等待唤醒机制(wait/notify)
+
+#### 3种让线程等待和唤醒的方法
+
+方式1:  使用Object中的wait()方法让线程等待， 使用Object中的notify()方法唤醒线程
+
+方式2:  使用JUC包中Condition的await()方法让线程等待，使用signal()方法唤醒线程 
+
+方式3:  LockSupport类可以阻塞当前线程以及唤醒指定被阻塞的线程
+
+#### Object类中的wait和notify方法实现线程等待和唤醒
+
+```java
+rivate static void synchronizedWaitNotify() {
+    new Thread(() -> {
+        synchronized (objectLock){
+            System.out.println(Thread.currentThread().getName()+"\t"+"------come in");
+            try {
+                objectLock.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName()+"\t"+"------被唤醒");
+        }
+    },"A").start();
+
+    new Thread(() -> {
+        synchronized (objectLock)
+        {
+            objectLock.notify();
+            System.out.println(Thread.currentThread().getName()+"\t"+"------通知");
+        }
+    },"B").start();
+}
+ 
+```
+
+异常1
+
+wait方法和notify方法，两个都去掉同步代码块
+
+```java
+package com.hhf.study.juc;
+
+/**
+ * 要求: t1线程等待3秒钟，3秒钟后t2线程唤醒t1线程继续工作
+ *  以下异常情况:
+ *   2 wait方法和notify方法，两个都去掉同步代码块后看运行效果
+ *      2.1 异常惰况
+ *        Exception in thread "t1" java.Lang.ILlegalLNonitorStateException at java.lang.Object.wait(Native Method)
+ *        Exception in thread "t2" java.lang.ILlegalWonitorStateException at java.lang.Object.notify(Native Method)
+ *
+ *      2.2 结论
+ *     Object类中的wait、notify、notifyALlL用于线程等待和唤醒的方法，都必须在synchronized内部执行（必须用到关键字synchronized)
+ *
+ */
+
+public class LockSupportDemo {
+
+    static Object objectLock = new Object();
+    public static void main(String[] args) {
+        new Thread(() -> {
+            synchronized (objectLock){
+                System.out.println(Thread.currentThread().getName()+"\t"+"------come in");
+                try {
+                    objectLock.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName()+"\t"+"------被唤醒");
+            }
+        },"A").start();
+
+        new Thread(() -> {
+            synchronized (objectLock)
+            {
+                objectLock.notify();
+                System.out.println(Thread.currentThread().getName()+"\t"+"------通知");
+            }
+        },"B").start();
+
+
+    }
+}
+ 
+```
+
+![image-20220517132053203](images\image-20220517132053203.png)
+
+异常2
+
+将notify放在wait方法前面
+
+程序无法执行，无法唤醒
+
+```java
+package com.hhf.study.juc;
+
+/**
+ * 要求: t1线程等待3秒钟，3秒钟后t2线程唤醒t1线程继续工作
+ *
+ *  3 将notify放在wait方法前先执行，t1先notify 了，3秒钟后t2线程再执行wait方法
+ *      3.1程序一直无法结柬
+ *      3.2结论
+ *      先wait后notify、notifyall方法，等待中的线程才会被唤醒，否则无法唤醒
+ *
+ */
+
+public class LockSupportDemo {
+
+    static Object objectLock = new Object();
+    public static void main(String[] args) {
+        new Thread(() -> {
+            synchronized (objectLock){
+                System.out.println(Thread.currentThread().getName()+"\t"+"------come in");
+                try {
+                    objectLock.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName()+"\t"+"------被唤醒");
+            }
+        },"A").start();
+
+        new Thread(() -> {
+            synchronized (objectLock)
+            {
+                objectLock.notify();
+                System.out.println(Thread.currentThread().getName()+"\t"+"------通知");
+            }
+        },"B").start();
+
+
+    }
+}
+ 
+```
+
+wait和notify方法必须要在同步块或者方法里面且成对出现使用， 先wait后notify才OK
+
+#### Condition接口中的await后signal方法实现线程的等待和唤醒
+
+```java
+package com.hhf.study.juc;
+
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+/**
+ * 要求: t1线程等待3秒钟，3秒钟后t2线程唤醒t1线程继续工作
+ *
+ *  3 将notify放在wait方法前先执行，t1先notify 了，3秒钟后t2线程再执行wait方法
+ *      3.1程序一直无法结柬
+ *      3.2结论
+ *      先wait后notify、notifyall方法，等待中的线程才会被唤醒，否则无法唤醒
+ *
+ */
+
+public class LockSupportDemo {
+
+    static Object objectLock = new Object();
+    static Lock lock = new ReentrantLock();
+    static Condition condition = lock.newCondition();
+
+
+    public static void main(String[] args) {
+
+        new Thread(() -> {
+            lock.lock();
+            try {
+                System.out.println(Thread.currentThread().getName()+"\t"+"------come in");
+                try {
+                    condition.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println(Thread.currentThread().getName()+"\t"+"------被唤醒");
+            }finally {
+                lock.unlock();
+            }
+        },"A").start();
+
+
+        new Thread(() -> {
+            lock.lock();
+            try {
+                condition.signal();
+                System.out.println(Thread.currentThread().getName()+"\t"+"------通知");
+            }finally {
+                lock.unlock();
+            }
+        },"B").start();
+
+}
+
+    }
+```
+
+#### 传统的synchronized和Lock实现等待唤醒通知的约束
+
+线程先要获得并持有锁，必须在锁块（synchronized或lock）中，必须要先等待后唤醒，线程才能够被唤醒
+
+
+
+#### LockSupport类中的park等待和unpark唤醒
+
+通过park()和unpark(thread)方法来实现阻塞和唤醒线程的操作
+
+![image-20220517132407986](images\image-20220517132407986.png)
+
+主要方法
+
+![image-20220517132639745](images\image-20220517132639745.png)
+
+阻塞
+
+park()/park(Object blocker)
+
+![image-20220517132740394](images\image-20220517132740394.png)
+
+阻塞当前线程/阻塞传入的具体线程
+
+唤醒
+
+unpark(Thread thread)
+
+![image-20220517132911203](images\image-20220517132911203.png)
+
+代码 正常+无锁块要求
+
+```java
+/**
+  LockSupport：俗称 锁中断
+          以前的两种方式：
+                 1.以前的等待唤醒通知机制必须synchronized里面有一个wait和notify
+                2.lock里面有await和signal
+            这上面这两个都必须要持有锁才能干，
+ LockSupport它的解决的痛点
+            1。LockSupport不用持有锁块，不用加锁，程序性能好，
+            2。先后顺序，不容易导致卡死
+ */
+Thread t1 = new Thread(() -> {
+
+    System.out.println(Thread.currentThread().getName() + "\t ----begi"+System.currentTimeMillis());
+    LockSupport.park();//阻塞当前线程
+    System.out.println(Thread.currentThread().getName() + "\t ----被唤醒"+System.currentTimeMillis());
+}, "t1");
+t1.start();
+LockSupport.unpark(t1);
+System.out.println(Thread.currentThread().getName()+"\t 通知t1...");
+ 
+```
+
+之前错误的先唤醒后等待，LockSupport照样支持
+
+```java
+  Thread t1 = new Thread(() -> {
+        try { TimeUnit.SECONDS.sleep(5L); }catch (Exception e) {e.printStackTrace();}
+        System.out.println(Thread.currentThread().getName() + "\t ----begi"+System.currentTimeMillis());
+        LockSupport.park();//阻塞当前线程
+        System.out.println(Thread.currentThread().getName() + "\t ----被唤醒"+System.currentTimeMillis());
+    }, "t1");
+    t1.start();
+    try { TimeUnit.SECONDS.sleep(1); }catch (Exception e) {e.printStackTrace();}
+    LockSupport.unpark(t1);
+    System.out.println(Thread.currentThread().getName()+"\t 通知t1...");
+}
+ 
+```
+
+![image-20220517133211114](images\image-20220517133211114.png)
+
+
+
+重点说明（重要）
+
+LockSupport是用来创建锁和其他同步类的基本线程阻塞原语
+LockSupport是一个线程阻塞工具类，所有的方法都是静态方法，可以让线程在任意位置阻塞，阻塞之后也有对应的唤醒方法。归根
+结底，LockSupport调用的Unsafe中的native代码。
+
+LockSupport提供park()和unpark()方法实现阻塞线程和解除线程阻塞的过程
+LockSupport和每个使用它的线程都有一个许可(permit)关联。permit相当于1，0的开关，默认是0，
+调用一次unpark就加1变成1，
+调用一次park会消费permit，也就是将1变成o，同时park立即返回。
+如再次调用park会变成阻塞(因为permit为零了会阻塞在这里，一直到permit变为1)，这时调用unpark会把permit置为1。
+每个线程都有一个相关的permit, permit最多只有一个，重复调用unpark也不会积累凭证。
+
+形象的理解
+线程阻塞需要消耗凭证(permit)，这个凭证最多只有1个。
+
+当调用park方法时
+    *如果有凭证，则会直接消耗掉这个凭证然后正常退出;
+    *如果无凭证，就必须阻塞等待凭证可用;
+而unpark则相反，它会增加一个凭证，但凭证最多只能有1个，累加无效。
+
+为什么可以先唤醒线程后阻塞线程?
+
+因为unpark获得了一个凭证，之后再调用park方法，就可以名正言顺的凭证消费，故不会阻塞。
+
+
+
+为什么唤醒两次后阻塞两次，但最终结果还会阻塞线程?
+
+因为凭证的数量最多为1，连续调用两次unpark和调用一次unpark效果一样，只会增加一个凭证; 而调用两次park却需要消费两个凭证，证不够，不能放行。
+
+
+
+### AbstractQueuedSynchronizer之AQS
+
+抽象的队列同步器
+
+![image-20220517133925847](images\image-20220517133925847.png)
+
+是用来构建锁或者其它同步器组件的重量级基础框架及整个JUC体系的基石， 通过内置的FIFO队列来完成资源获取线程的排队工作，并通过一个int类变量     表示持有锁的状态
+
+AQS为什么是JUC内容中最重要的基石
+
+![image-20220517134202314](images\image-20220517134202314.png)
+
+
+
+进一步理解锁和同步器的关系
+
+锁，面向锁的使用者，定义了程序员和锁交互的使用层API，隐藏了实现细节，你调用即可。
+
+同步器，面向锁的实现者 范并简化了锁的实现，屏蔽了同步状态管理、阻塞线程排队和通知、唤醒机制等
+
+加锁会导致阻塞， 有阻塞就需要排队，实现排队必然需要有某种形式的队列来进行管理
+
+抢到资源的线程直接使用办理业务，抢占不到资源的线程的必然涉及一种排队等候机制，抢占资源失败的线程继续去等待(类似办理窗口都满了，暂时没有受理窗口的顾客只能去候客区排队等候)，仍然保留获取锁的可能且获取锁流程仍在继续(候客区的顾客也在等着叫号，轮到了再去受理窗口办理业务）。
+
+既然说到了排队等候机制，那么就一定 会有某种队列形成，这样的队列是什么数据结构呢?
+
+如果共享资源被占用，就需要一定的阻 塞等待唤醒机制来保证锁分配。这个机制主要用的是CLH队列的变体实现的，将暂时获取不到锁的线程加入到队列中，这个队列就是AQS的抽象表现。它将请求共享资源的线程封装成队列的结点(Node) ，通过CAS、自旋以及LockSuport.park()的方式，维护state变量的状态，使并发达到同步的效果。
+
+![image-20220517134447859](images\image-20220517134447859.png)
+
+### AQS初步
+
+![image-20220517134533021](images\image-20220517134533021.png)
+
+有阻塞就需要排队，实现排队必然需要队列，AQS使用一个volatile的int类型的成员变量来表示同步状态，通过内置的 FIFO队列来完成资源获取的排队工作将每条要去抢占资源的线程封装成 一个Node节点来实现锁的分配，通过CAS完成对State值的修改。
+
+![image-20220517134622583](images\image-20220517134622583.png)
+
+
+
+### AQS内部体系架构
+
+![image-20220517134723565](images\image-20220517134723565.png)
+
+
+
+![image-20220517134805912](images\image-20220517134805912.png)
+
+#### AQS的int变量
+
+AQS的同步状态State成员变量
+
+```java
+/**
+ * The synchronization state.
+ */
+private volatile int 
+```
+
+零就是没人，自由状态可以办理，大于等于1，有人占用窗口，等着去
+
+AQS的CLH队列
+
+CLH队列（三个大牛的名字组成），为一个双向队列
+
+![image-20220517135001622](images\image-20220517135001622.png)
+
+有阻塞就需要排队，实现排队必然需要队列 state变量+CLH双端Node队
+
+
+
+#### 内部类Node（Node类在AQS类内部）
+
+Node的int变量，Node的等待状态waitState成员变量 volatile int waitStatus
+
+等候区其它顾客(其它线程)的等待状态，队列中每个排队的个体就是一个Node.
+
+#### Node此类的讲解
+
+内部结构
+
+![image-20220517135235612](images\image-20220517135235612.png)
+
+![image-20220517135311180](images\image-20220517135311180.png)
+
+
+
+### AQS同步队列的基本结构
+
+![image-20220517135359123](images\image-20220517135359123.png)
+
+AQS底层是怎么排队的？ 是用LockSupport.pork()来进行排队的
+
+### ReentrantLock开始解读AQS
+
+#### AQS源码解读案例图示
+
+![image-20220517135603931](images\image-20220517135603931.png)
+
+code
+
+```java
+package com.hhf.study.juc;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class AQSDemo {
+    public static void main(String[] args) {
+
+        ReentrantLock lock = new ReentrantLock();
+
+        //带入一个银行办理业务的案例来模拟我们的AQS如何进行线程的管理和通知唤醒机制
+
+        //3个线程模拟3个来银行网点，受理窗口办理业务的顾客
+
+        //A顾客就是第一个顾客，此时受理窗口没有任何人，A可以直接去办理
+        new Thread(() -> {
+                lock.lock();
+                try{
+                    System.out.println("-----A thread come in");
+
+                    try { TimeUnit.MINUTES.sleep(20); }catch (Exception e) {e.printStackTrace();}
+                }finally {
+                    lock.unlock();
+                }
+        },"A").start();
+
+        //第二个顾客，第二个线程---》由于受理业务的窗口只有一个(只能一个线程持有锁)，此时B只能等待，
+        //进入候客区
+        new Thread(() -> {
+            lock.lock();
+            try{
+                System.out.println("-----B thread come in");
+            }finally {
+                lock.unlock();
+            }
+        },"B").start();
+
+        //第三个顾客，第三个线程---》由于受理业务的窗口只有一个(只能一个线程持有锁)，此时C只能等待，
+        //进入候客区
+        new Thread(() -> {
+            lock.lock();
+            try{
+                System.out.println("-----C thread come in");
+            }finally {
+                lock.unlock();
+            }
+        },"C").start();
+    }
+}
+ 
+```
+
+Lock接口的实现类，基本都是通过【聚合】了一个【队列同步器】的子类完成线程访问控制的
+
+#### ReentrantLock原理
+
+![image-20220517165313713](images\image-20220517165313713.png)
+
+
+
+从最简单的lock方法开始看看公平和非公平
+
+![image-20220517170613990](images\image-20220517170613990.png)
+
+##### 非公平锁
+
+![image-20220517165615953](images\image-20220517165615953.png)
+
+
+
+![image-20220517165801537](images\image-20220517165801537.png)
+
+
+
+##### 公平锁
+
+![image-20220517170000158](images\image-20220517170000158.png)
+
+程序初始状态方便理解图
+
+![image-20220517170812818](images\image-20220517170812818.png)
+
+启动程序，首先是运行线程A，ReentrantLock默认是选用非公平锁。
+
+```java
+public class ReentrantLock implements Lock, java.io.Serializable {
+    
+    ...
+        
+    * Acquires the lock.
+    public void lock() {
+        sync.lock();//<------------------------注意，我们从这里入手,一开始将线程A的
+    }
+    
+    abstract static class Sync extends AbstractQueuedSynchronizer {
+        
+        ...
+
+        //被NonfairSync的tryAcquire()调用
+        final boolean nonfairTryAcquire(int acquires) {
+            final Thread current = Thread.currentThread();
+            int c = getState();
+            if (c == 0) {
+                if (compareAndSetState(0, acquires)) {
+                    setExclusiveOwnerThread(current);
+                    return true;
+                }
+            }
+            else if (current == getExclusiveOwnerThread()) {
+                int nextc = c + acquires;
+                if (nextc < 0) // overflow
+                    throw new Error("Maximum lock count exceeded");
+                setState(nextc);
+                return true;
+            }
+            return false;
+        }
+        ...
+
+    }
+    
+    
+	//非公平锁
+	static final class NonfairSync extends Sync {
+        private static final long serialVersionUID = 7316153563782823691L;
+
+        /**
+         * Performs lock.  Try immediate barge, backing up to normal
+         * acquire on failure.
+         */
+        final void lock() {//<----线程A的lock.lock()调用该方法
+            if (compareAndSetState(0, 1))//AbstractQueuedSynchronizer的方法,刚开始这方法返回true
+                setExclusiveOwnerThread(Thread.currentThread());//设置独占的所有者线程，显然一开始是线程A
+            else
+                acquire(1);//稍后紧接着的线程B将会调用该方法。
+        }
+
+        //acquire()将会间接调用该方法
+        protected final boolean tryAcquire(int acquires) {
+            return nonfairTryAcquire(acquires);//调用父类Sync的nonfairTryAcquire()
+        }
+        
+
+        
+    }
+    
+    ...
+}
+```
+
+线程A开始办业务了。
+
+![image-20220517170951958](images\image-20220517170951958.png)
+
+轮到线程B运行
+
+```java
+public class ReentrantLock implements Lock, java.io.Serializable {
+    
+    ...
+        
+    * Acquires the lock.
+    public void lock() {
+        sync.lock();//<------------------------注意，我们从这里入手,线程B的执行这
+    }
+    
+	//非公平锁
+	static final class NonfairSync extends Sync {
+        private static final long serialVersionUID = 7316153563782823691L;
+
+        /**
+         * Performs lock.  Try immediate barge, backing up to normal
+         * acquire on failure.
+         */
+        final void lock() {//<-------------------------线程B的lock.lock()调用该方法
+            if (compareAndSetState(0, 1))//这是预定线程A还在工作，这里返回false
+                setExclusiveOwnerThread(Thread.currentThread());//
+            else
+                acquire(1);//线程B将会调用该方法，该方法在AbstractQueuedSynchronizer，
+            			   //它会调用本类的tryAcquire()方法
+        }
+
+        //acquire()将会间接调用该方法
+        protected final boolean tryAcquire(int acquires) {
+            return nonfairTryAcquire(acquires);//调用父类Sync的nonfairTryAcquire()
+        }
+    }
+
+    //非公平锁与公平锁的公共父类
+     * Base of synchronization control for this lock. Subclassed
+    abstract static class Sync extends AbstractQueuedSynchronizer {
+    
+        //acquire()将会间接调用该方法
+    	...
+        final boolean nonfairTryAcquire(int acquires) {
+            final Thread current = Thread.currentThread();//这里是线程B
+            int c = getState();//线程A还在工作，c=>1
+            if (c == 0) {//false
+                if (compareAndSetState(0, acquires)) {
+                    setExclusiveOwnerThread(current);
+                    return true;
+                }
+            }
+            else if (current == getExclusiveOwnerThread()) {//(线程B == 线程A) => false
+                int nextc = c + acquires;//+1
+                if (nextc < 0) // overflow
+                    throw new Error("Maximum lock count exceeded");
+                setState(nextc);
+                return true;
+            }
+            return false;//最终返回false
+        } 
+        ...
+    
+    }
+    
+    ...
+}
+
+```
+
+```java
+public abstract class AbstractQueuedSynchronizer
+    extends AbstractOwnableSynchronizer
+    implements java.io.Serializable {
+
+	...
+
+     * Acquires in exclusive mode, ignoring interrupts.  Implemented
+    public final void acquire(int arg) {
+        if (!tryAcquire(arg) &&//线程B调用非公平锁的tryAcquire(), 最终返回false，加上!取反,也就是true,也就是还要执行下面两行语句
+            acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
+            selfInterrupt();
+    }
+    
+    ...
+}
+
+```
+
+另外
+
+假设线程B，C还没启动，正在工作线程A重新尝试获得锁，也就是调用lock.lock()多一次
+
+```java
+    //非公平锁与公平锁的公共父类fa
+     * Base of synchronization control for this lock. Subclassed
+    abstract static class Sync extends AbstractQueuedSynchronizer {
+    
+    	...
+        final boolean nonfairTryAcquire(int acquires) {
+            final Thread current = Thread.currentThread();//这里是线程A
+            int c = getState();//线程A还在工作，c=>1；如果线程A恰好运行到在这工作完了，c=>0，这时它又要申请锁的话
+            if (c == 0) {//线程A正在工作为false;如果线程A恰好工作完，c=>0，这时它又要申请锁的话,则为true
+                if (compareAndSetState(0, acquires)) {//线程A重新获得锁
+                    setExclusiveOwnerThread(current);//这里相当于NonfairSync.lock()另一重设置吧！
+                    return true;
+                }
+            }
+            else if (current == getExclusiveOwnerThread()) {//(线程A == 线程A) => true
+                int nextc = c + acquires;//1+1=>nextc=2
+                if (nextc < 0) // overflow
+                    throw new Error("Maximum lock count exceeded");
+                setState(nextc);//state=2,说明要unlock多两次吧（现在盲猜）
+                return true;//返回true
+            }
+            return false;
+        } 
+        ...
+    
+    }
+
+```
+
+
+
+```java
+public abstract class AbstractQueuedSynchronizer
+    extends AbstractOwnableSynchronizer
+    implements java.io.Serializable {
+
+	...
+
+     * Acquires in exclusive mode, ignoring interrupts.  Implemented
+    public final void acquire(int arg) {
+        if (!tryAcquire(arg) &&//线程B调用非公平锁的tryAcquire(), 最终返回false，加上!,也就是true,也就是还要执行下面两行语句
+            acquireQueued(addWaiter(Node.EXCLUSIVE), arg))//线程B加入等待队列
+            selfInterrupt();
+    }
+    
+    private Node addWaiter(Node mode) {
+        Node node = new Node(Thread.currentThread(), mode);
+        // Try the fast path of enq; backup to full enq on failure
+        Node pred = tail;
+        if (pred != null) {//根据上面一句注释，本语句块的意义是将新节点快速添加至队尾
+            node.prev = pred;
+            if (compareAndSetTail(pred, node)) {
+                pred.next = node;
+                return node;
+            }
+        }
+        enq(node);//快速添加至队尾失败，则用这方法调用（可能链表为空，才调用该方法）
+        return node;
+    }
+    
+    //Inserts node into queue, initializing if necessary.
+    private Node enq(final Node node) {
+        for (;;) {
+            Node t = tail;
+            if (t == null) { // Must initialize
+                if (compareAndSetHead(new Node()))//插入一个哨兵节点（或称傀儡节点）
+                    tail = head;
+            } else {
+                node.prev = t;
+                if (compareAndSetTail(t, node)) {//真正插入我们需要的节点，也就是包含线程B引用的节点
+                    t.next = node;
+                    return t;
+                }
+            }
+        }
+    }
+    
+    //CAS head field. Used only by enq.
+    private final boolean compareAndSetHead(Node update) {
+        return unsafe.compareAndSwapObject(this, headOffset, null, update);
+    }
+
+    //CAS tail field. Used only by enq.
+    private final boolean compareAndSetTail(Node expect, Node update) {
+        return unsafe.compareAndSwapObject(this, tailOffset, expect, update);
+    }
+
+    
+    ...
+}
+
+```
+
+![image-20220517173039268](images\image-20220517173039268.png)
+
+线程B加入等待队列。
+
+线程A依然工作，线程C如线程B那样炮制加入等待队列。
+
+![image-20220517173544169](images\image-20220517173544169.png)
+
+双向链表中，第一个节点为虚节点(也叫哨兵节点)，其实并不存储任何信息，只是占位。真正的第一个有数据的节点，是从第二个节点开始的。
+
+```java
+ final boolean acquireQueued(final Node node, int arg) {
+        boolean failed = true;
+        try {
+            boolean interrupted = false;
+            for (;;) {
+                final Node p = node.predecessor();//1.返回前一节点，对与线程B来说，p也就是傀儡节点
+				//p==head为true，tryAcquire()方法说明请转至 #21_AQS源码深度解读03
+                //假设线程A正在工作,现在线程B只能等待，所以tryAcquire(arg)返回false，下面的if语块不执行
+                //
+                //第二次循环，假设线程A继续正在工作，下面的if语块还是不执行
+                if (p == head && tryAcquire(arg)) {
+                    setHead(node);
+                    p.next = null; // help GC
+                    failed = false;
+                    return interrupted;
+                }
+                //请移步到2.处的shouldParkAfterFailedAcquire()解说。第一次返回false, 下一次（第二次）循环
+                //第二次循环，shouldParkAfterFailedAcquire()返回true，执行parkAndCheckInterrupt()
+                if (shouldParkAfterFailedAcquire(p, node) && 
+                    //4. 
+                    parkAndCheckInterrupt())
+                    interrupted = true;
+            }
+        } finally {
+            if (failed)
+                cancelAcquire(node);
+        }
+    }
+
+```
+
+```java
+static final class Node {
+
+        ...
+        //1.返回前一节点
+        final Node predecessor() throws NullPointerException {
+            Node p = prev;
+            if (p == null)
+                throw new NullPointerException();
+            else
+                return p;
+        }
+        
+        ...
+
+    }
+    
+    //2. 
+    private static boolean shouldParkAfterFailedAcquire(Node pred, Node node) {
+        int ws = pred.waitStatus;//此时pred指向傀儡节点，它的waitStatus为0
+        //Node.SIGNAL为-1，跳过
+        //第二次调用，ws为-1，条件成立，返回true
+        if (ws == Node.SIGNAL)//-1
+            /*
+             * This node has already set status asking a release
+             * to signal it, so it can safely park.
+             */
+            return true;
+        if (ws > 0) {//跳过
+            /*
+             * Predecessor was cancelled. Skip over predecessors and
+             * indicate retry.
+             */
+            do {
+                node.prev = pred = pred.prev;
+            } while (pred.waitStatus > 0);
+            pred.next = node;
+        } else {
+            /*
+             * waitStatus must be 0 or PROPAGATE.  Indicate that we
+             * need a signal, but don't park yet.  Caller will need to
+             * retry to make sure it cannot acquire before parking.
+             */
+            //3. 傀儡节点的WaitStatus设置为-1//下图红圈
+            compareAndSetWaitStatus(pred, ws, Node.SIGNAL);
+        }
+        return false;//第一次返回
+    }
+    
+    /**
+     * CAS waitStatus field of a node.
+     */
+    //3.
+    private static final boolean compareAndSetWaitStatus(Node node,
+                                                         int expect,
+                                                         int update) {
+        return unsafe.compareAndSwapInt(node, waitStatusOffset,
+                                        expect, update);
+    }
+    
+    /**
+     * Convenience method to park and then check if interrupted
+     *
+     * @return {@code true} if interrupted
+     */
+    //4.
+    private final boolean parkAndCheckInterrupt() {
+        //前段章节讲述的LockSupport，this指的是NonfairSync对象，
+        //这意味着真正阻塞线程B，同样地阻塞了线程C
+        LockSupport.park(this);//线程B,C在此处暂停了运行<-------------------------
+        return Thread.interrupted();
+    }
+
+```
+
+![image-20220517173730814](images\image-20220517173730814.png)
+
+
+
+图中的傀儡节点的waitStatus由0变为-1（Node.SIGNAL）。
+
+
+
+##### 接下来讨论ReentrantLock.unLock()方法。假设线程A工作结束，调用unLock()，释放锁占用。
+
+```java
+public class ReentrantLock implements Lock, java.io.Serializable {
+    
+    private final Sync sync;
+
+    abstract static class Sync extends AbstractQueuedSynchronizer {
+        
+        ...
+        //2.unlock()间接调用本方法，releases传入1
+        protected final boolean tryRelease(int releases) {
+            //3.
+            int c = getState() - releases;//c为0
+            //4.
+            if (Thread.currentThread() != getExclusiveOwnerThread())
+                throw new IllegalMonitorStateException();
+            boolean free = false;
+            if (c == 0) {//c为0，条件为ture，执行if语句块
+                free = true;
+                //5.
+                setExclusiveOwnerThread(null);
+            }
+            //6.
+            setState(c);
+            return free;//最后返回true
+        }
+    	...
+    
+    }
+
+```
+
+```java
+static final class NonfairSync extends Sync {...}
+    
+    public ReentrantLock() {
+        sync = new NonfairSync();//我们使用的非公平锁
+    }
+    					//注意！注意！注意！
+    public void unlock() {//<----------从这开始，假设线程A工作结束，调用unLock()，释放锁占用
+        //1.
+        sync.release(1);//在AbstractQueuedSynchronizer类定义
+    }
+    
+```
+
+```java
+public abstract class AbstractQueuedSynchronizer
+    extends AbstractOwnableSynchronizer
+    implements java.io.Serializable {
+
+    ...
+    //1.
+    public final boolean release(int arg) {
+        //2.
+        if (tryRelease(arg)) {//该方法看子类NonfairSync实现，最后返回true
+            Node h = head;//返回傀儡节点
+            if (h != null && h.waitStatus != 0)//傀儡节点非空，且状态为-1，条件为true，执行if语句
+                //7.
+                unparkSuccessor(h);
+            return true;
+        }
+        return false;//返回true,false都无所谓了，unlock方法只是简单调用release方法，对返回结果没要求
+    }
+    
+    /**
+     * The synchronization state.
+     */
+    private volatile int state;
+
+    //3.
+    protected final int getState() {
+        return state;
+    }
+
+    //6.
+    protected final void setState(int newState) {
+        state = newState;
+    }
+    
+    //7. Wakes up node's successor, if one exists.
+    //传入傀儡节点
+    private void unparkSuccessor(Node node) {
+        /*
+         * If status is negative (i.e., possibly needing signal) try
+         * to clear in anticipation of signalling.  It is OK if this
+         * fails or if status is changed by waiting thread.
+         */
+        int ws = node.waitStatus;//傀儡节点waitStatus为-1
+        if (ws < 0)//ws为-1，条件成立，执行if语块
+            compareAndSetWaitStatus(node, ws, 0);//8.将傀儡节点waitStatus由-1变为0
+
+        /*
+         * Thread to unpark is held in successor, which is normally
+         * just the next node.  But if cancelled or apparently null,
+         * traverse backwards from tail to find the actual
+         * non-cancelled successor.
+         */
+        Node s = node.next;//傀儡节点的下一节点,也就是带有线程B的节点
+        if (s == null || s.waitStatus > 0) {//s非空，s.waitStatus非0，条件为false，不执行if语块
+            s = null;
+            for (Node t = tail; t != null && t != node; t = t.prev)
+                if (t.waitStatus <= 0)
+                    s = t;
+        }
+        if (s != null)//s非空，条件为true，不执行if语块
+            LockSupport.unpark(s.thread);//唤醒线程B。运行到这里，线程A的工作基本告一段落了。
+    }
+    
+    //8.
+    private static final boolean compareAndSetWaitStatus(Node node,
+                                                         int expect,
+                                                         int update) {
+        return unsafe.compareAndSwapInt(node, waitStatusOffset,
+                                        expect, update);
+    }
+    
+    
+}
+
+```
+
+```java
+public abstract class AbstractOwnableSynchronizer
+    implements java.io.Serializable {
+
+    ...
+
+    protected AbstractOwnableSynchronizer() { }
+
+    private transient Thread exclusiveOwnerThread;
+
+    //5.
+    protected final void setExclusiveOwnerThread(Thread thread) {
+        exclusiveOwnerThread = thread;
+    }
+    
+    //4.
+    protected final Thread getExclusiveOwnerThread() {
+        return exclusiveOwnerThread;
+    }
+}
+
+```
+
+线程A结束工作，调用unlock()的tryRelease()后的状态，state由1变为0，exclusiveOwnerThread由线程A变为null。
+
+![image-20220517195001024](images\image-20220517195001024.png)
+
+线程B被唤醒，即从原先park()的方法继续运行
+
+```java
+public abstract class AbstractQueuedSynchronizer
+    extends AbstractOwnableSynchronizer
+    implements java.io.Serializable {
+
+     private final boolean parkAndCheckInterrupt() {
+        LockSupport.park(this);//线程B从阻塞到非阻塞，继续执行
+        return Thread.interrupted();//线程B没有被中断，返回false
+    }
+    
+	...
+ 
+    //Acquires in exclusive uninterruptible mode for thread already inqueue. 
+    //Used by condition wait methods as well as acquire.
+    //
+    //return true if interrupted while waiting
+    final boolean acquireQueued(final Node node, int arg) {
+        boolean failed = true;
+        try {
+            boolean interrupted = false;
+            for (;;) {
+                final Node p = node.predecessor();//线程B所在的节点的前一节点是傀儡节点
+                //傀儡节点是头节点，tryAcquire()的说明请移步至#21_AQS源码深度解读03
+                //tryAcquire()返回true,线程B成功上位
+                if (p == head && tryAcquire(arg)) {
+                    setHead(node);//1.将附带线程B的节点的变成新的傀儡节点
+                    p.next = null; // help GC//置空原傀儡指针与新的傀儡节点之间的前后驱指针，方便GC回收
+                    failed = false;
+                    return interrupted;//返回false，跳到2.acquire()
+                }
+               
+                if (shouldParkAfterFailedAcquire(p, node) && 
+                    //唤醒线程B继续工作，parkAndCheckInterrupt()返回false
+                    //if语块不执行，跳到下一循环
+                    parkAndCheckInterrupt())//<---------------------------------唤醒线程在这里继续运行
+                    interrupted = true;
+            }
+        } finally {
+            if (failed)
+                cancelAcquire(node);
+        }
+    }
+    
+    //1. 
+    private void setHead(Node node) {
+        head = node;
+        node.thread = null;
+        node.prev = null;
+    }
+    
+    //2.
+    * Acquires in exclusive mode, ignoring interrupts.  Implemented
+    public final void acquire(int arg) {
+        if (!tryAcquire(arg) &&
+            //acquireQueued()返回fasle,条件为false，if语块不执行，acquire()返回
+            //也就是说，线程B成功获得锁，可以展开线程B自己的工作了。
+            acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
+            selfInterrupt();//
+    }
+    
+}
+
+```
+
+最后，线程B上位成功。
+
+![image-20220517195314131](images\image-20220517195314131.png)
+
+
+
 
 
 # JVM篇
@@ -5685,6 +7367,340 @@ AOF: 以日志的形式来记录每个写操作，将Redis执行过的所有写�
 
 1. aof文件的大小太大，就算有重写机制，但重写所造成的阻塞问题是不可避免的
 2. aof文件恢复速度慢
+
+## redis基本使用
+
+- 安装redis6.0.16
+- redis传统五大数据类型的落地应用
+- 知道分布式锁吗？有哪些实现方案？你谈谈对redis分布式锁的理解，删key的时候有什么问题?
+- redis缓存过期淘汰策略
+- redis的LRU算法简介
+
+
+
+安装redis6.0.16：
+
+- [Redis官网](https://redis.io/)
+- [Redis中文网](http://www.redis.cn/)
+- 安全Bug按照官网提示，升级成为6.016
+  - 进入Redis命令行，输入`info`，返回关于Redis服务器的各种信息（包括版本号）和统计数值。
+
+这里下载官网的二进制包进行编译安装
+
+Linux中安装了新版本的Redis 6，安装过程中的一些问题记录一下。下图是安装时的错误信息。
+
+![image-20220518223417160](images\image-20220518223417160.png)
+
+
+
+新版本的Redis在编译的时候使用的是c11，但是我的Linux系统中的版本是4.8，相对来说比较老。所以接下来就是升级之旅了。
+
+![image-20220518223507489](images\image-20220518223507489.png)
+
+
+
+安装gcc套装：依次执行以下命令
+
+yum install cpp
+yum install binutils
+yum install glibc
+yum install glibc-kernheaders
+yum install glibc-common
+yum install glibc-devel
+yum install gcc
+yum install make
+
+升级gcc
+
+yum -y install centos-release-scl
+yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
+scl enable devtoolset-9 bash
+
+![image-20220518223921717](images\image-20220518223921717.png)
+
+```shell
+[root@MiWiFi-R4AC-srv soft]# tar zxvf redis-6.0.16.tar.gz
+[root@MiWiFi-R4AC-srv soft]# cd redis-6.0.16/
+[root@MiWiFi-R4AC-srv redis-6.0.16]# make
+
+[root@MiWiFi-R4AC-srv redis-6.0.16]# make install
+cd src && make install
+make[1]: Entering directory `/soft/redis-6.0.16/src'
+
+Hint: It's a good idea to run 'make test' ;)
+
+    INSTALL install
+    INSTALL install
+    INSTALL install
+    INSTALL install
+    INSTALL install
+make[1]: Leaving directory `/soft/redis-6.0.16/src'
+
+```
+
+![image-20220518224914496](images\image-20220518224914496.png)
+
+打开cli
+
+```
+[root@MiWiFi-R4AC-srv redis-stack-server-6.2.2-v3]# ./bin/redis-cli
+```
+
+![image-20220518224957642](images\image-20220518224957642.png)
+
+### redis传统五大基本类型的落地应用
+
+官网：http://www.redis.cn/commands.html
+
+8大类型
+
+![image-20220518225745646](images\image-20220518225745646.png)
+
+
+
+备注：命令不区分大小写，而key是区分大小写的。 help @类型名词
+
+#### string
+
+最常用
+
+- SET key value
+- GET key
+
+
+
+同时设置/获取多个键值
+
+- MSET key value [key value…]
+- MGET key [key…]
+
+数值增减
+
+- 递增数字 INCR key（可以不用预先设置key的数值。如果预先设置key但值不是数字，则会报错)
+- 增加指定的整数 INCRBY key increment
+- 递减数值 DECR key
+- 减少指定的整数 DECRBY key decrement
+
+获取字符串长度
+
+- STRLEN key
+
+分布式锁
+
+SETNX key value
+SET key value [EX seconds] [PX milliseconds] [NX|XX]
+EX：key在多少秒之后过期
+PX：key在多少毫秒之后过期
+NX：当key不存在的时候，才创建key，效果等同于setnx
+XX：当key存在的时候，覆盖key
+
+应用场景
+
+- 商品编号、订单号采用INCR命令生成
+- 是否喜欢的文章
+
+![image-20220518230717479](images\image-20220518230717479.png)
+
+![image-20220518230801724](images\image-20220518230801724.png)
+
+
+
+#### hash类型使用场景
+
+Redis的Hash类型相当于Java中Map<String, Map<Object, Object>>
+
+一次设置一个字段值 HSET key field value
+
+一次获取一个字段值 HGET key field
+
+一次设置多个字段值 HMSET key field value [field value …]
+
+一次获取多个字段值 HMGET key field [field …]
+
+获取所有字段值 HGETALL key
+
+获取某个key内的全部数量 HLEN
+
+删除一个key HDEL
+
+应用场景 - 购物车早期，当前小中厂可用
+
+​	新增商品 hset shopcar:uid1024 334488 1
+​	新增商品 hset shopcar:uid1024 334477 1
+​	增加商品数量 hincrby shopcar:uid1024 334477 1
+​	商品总数 hlen shopcar:uid1024
+​	全部选择 hgetall shopcar:uid1024
+
+![image-20220518231103443](images\image-20220518231103443.png)
+
+#### list类型使用场景
+
+向列表左边添加元素 LPUSH key value [value …]
+
+向列表右边添加元素 RPUSH key value [value …]
+
+查看列表 LRANGE key start stop
+
+获取列表中元素的个数 LLEN key
+
+应用场景 - 微信文章订阅公众号
+
+#### set类型使用场景
+
+添加元素 SADD key member [member …]
+
+删除元素 SREM key member [member …]
+
+获取集合中的所有元素 SMEMBERS key
+
+判断元素是否在集合中 SISMEMBER key member
+
+获取集合中的元素个数 SCARD key
+
+从集合中随机弹出一个元素，元素不删除 SRANDMEMBER key [数字]
+
+从集合中随机弹出一个元素，出一个删一个 SPOP key[数字]
+
+集合运算
+
+集合的差集运算A - B
+属于A但不属于B的元素构成的集合
+SDIFF key [key …]
+
+集合的交集运算A ∩ B
+属于A同时也属于B的共同拥有的元素构成的集合
+SINTER key [key …]
+
+集合的并集运算A U B
+属于A或者属于B的元素合并后的集合
+SUNION key [key …]
+
+##### 微信抽奖小程序
+
+![image-20220518231439084](images\image-20220518231439084.png)
+
+##### 微信朋友圈点赞
+
+![image-20220518231631337](images\image-20220518231631337.png)
+
+##### 微博好友关注社交关系
+
+![image-20220518231713568](images\image-20220518231713568.png)
+
+![image-20220518231748083](images\image-20220518231748083.png)
+
+
+
+
+
+
+
+##### QQ内推可能认识的人
+
+![image-20220518231833544](images\image-20220518231833544.png)
+
+#### zset类型使用场景
+
+向有序集合中加入一个元素和该元素的分数
+
+添加元素 ZADD key score member [score member …]
+
+按照元素分数从小到大的顺序返回索引从start到stop之间的所有元素 ZRANGE key start stop [WITHSCORES]
+
+获取元素的分数 ZSCORE key member
+
+删除元素 ZREM key member [member …]
+
+获取指定分数范围的元素 ZRANGEBYSCORE key min max [WITHSCORES] [LIMIT offset count]
+
+增加某个元素的分数 ZINCRBY key increment member
+
+获取集合中元素的数量 ZCARD key
+
+获得指定分数范围内的元素个数 ZCOUNT key min max
+
+按照排名范围删除元素 ZREMRANGEBYRANK key start stop
+
+获取元素的排名
+
+​	从小到大 ZRANK key member
+
+​	从大到小 ZREVRANK key member
+
+应用场景
+
+根据商品销售对商品进行排序显示
+
+![image-20220518232632123](images\image-20220518232632123.png)
+
+抖音热搜
+
+![image-20220518232707289](images\image-20220518232707289.png)
+
+
+
+# 算法
+
+## 两数求和
+
+![image-20220517124847482](images\image-20220517124847482.png)
+
+
+
+暴力解法
+
+通过双重循环遍历数组中所有元素的两两组合，当出现符合的和时返回两个元素的下标
+
+```java
+public class TowSum01 {
+
+    public static void main(String[] args) {
+        int[] nums = {2, 7, 11, 16};
+        int target = 18;
+        int [] result = new int[2];
+        for (int i = 0; i < nums.length; i++){
+            for (int j = i+1; j < nums.length; j++){
+                if (target - nums[j] == nums[i]){
+                    result[0] = i;
+                    result[1] = j;
+                }
+            }
+        }
+
+        System.out.println(result[0]);
+        System.out.println(result[1]);
+
+    }
+}
+```
+
+哈希（更优解法）
+
+```java
+
+import java.util.HashMap;
+
+public class TowSum02 {
+    public static void main(String[] args) {
+        int[] nums = new int[]{2,7,11,16};
+        int target = 18;
+        int[] result = new int[2];
+        HashMap<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < nums.length; i++) {
+            if (map.containsKey(target - nums[i])){
+                result[0] = map.get(target - nums[i]);
+                result[1] = i;
+            }
+            map.put(nums[i], i);
+        }
+        System.out.println(result[0]);
+        System.out.println(result[1]);
+    }
+}
+
+```
+
+
 
 
 
