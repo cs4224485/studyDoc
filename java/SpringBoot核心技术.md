@@ -201,7 +201,7 @@ public @interface EnableAutoConfiguration {
 
 ​		会给容器中导入非常多的自动配置类（xxxAutoConfiguration）；就是给容器中导入这个场景需要的所有组件，并配置好这些组件；		
 
-![image-20200427162708751](\images\自动配置类.png)
+![image-20200427162708751](images\自动配置类.png)
 
 有了自动配置类，免去了我们手动编写配置注入功能组件等的工作；
 
@@ -896,7 +896,7 @@ public class HelloWorld {
 
 图示；
 
-![concrete-bindings](\images\SLF4j.png)
+![concrete-bindings](images\SLF4j.png)
 
 每一个日志的实现框架都有自己的配置文件。使用slf4j以后，**配置文件还是做成日志实现框架自己本身的配置文件；**
 
@@ -904,7 +904,7 @@ public class HelloWorld {
 
 系统a（slf4j+logback）: Spring（commons-logging）、Hibernate（jboss-logging）、MyBatis、xxxx
 
-统一日志记录，即使是别的框架和我一起统一使用slf4j进行输出？![日志](\images\日志.png)
+统一日志记录，即使是别的框架和我一起统一使用slf4j进行输出？![日志](images\日志.png)
 
 **如何让系统中所有的日志都统一到slf4j；**
 
@@ -932,7 +932,7 @@ SpringBoot使用它来做日志功能：
 ```
 底层依赖关系
 
-![image-20200429183208410](\images\image-20200429183208410.png)
+![image-20200429183208410](images\image-20200429183208410.png)
 
 总结：
 

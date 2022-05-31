@@ -3431,7 +3431,7 @@ AnnotationAwareAspectJAutoProxyCreator
 
 接下来，我们来看看容器刷新是怎么做的？我们继续跟进方法调用栈，如下图所示，可以看到现在是定位到了AbstractApplicationContext抽象类的refresh()方法中。
 
-![image-20210913192157421](\images\image-20210913192157421.png)
+![image-20210913192157421](images\image-20210913192157421.png)
 
 ![image-20210913192244077](images\image-20210913192244077.png)
 
@@ -3668,7 +3668,7 @@ registerBeanPostProcessors(beanFactory);
 
 这个方法一定要引起注意，它跟我们之前经常讲到的后置处理器中的方法是有区别的。看一下BeanPostProcessor接口的源码，如下图所示，它里面有一个postProcessbeforeInitialization()方法。
 
-![image-20210914195404145](\images\image-20210914195404145.png)
+![image-20210914195404145](images\image-20210914195404145.png)
 
 而现在这个方法是叫postProcessBeforeInstantiation
 
@@ -3982,7 +3982,7 @@ AnnotationAwareAspectJAutoProxyCreator作为后置处理器，它的第一个作
 
 ​	紧接着再来判断当前bean是否是基础类型，或者是否是切面（即标注了@Aspect注解的）。这儿是怎样来判断的，之前我已经详细地讲过了，故略过。
 
-们重点要关注的内容其实是下面这个叫getAdvicesAndAdvisorsForBean的方法。
+重点要关注的内容其实是下面这个叫getAdvicesAndAdvisorsForBean的方法。
 
 ![image-20210917203511852](images\image-20210917203511852.png)
 
@@ -4212,7 +4212,7 @@ MethodInterceptor[] interceptors = registry.getInterceptors(advisor);
 
 让程序运行到下一个断点，可以看到现在传递过来的是第三个Advisor，该Advisor持有的增强器是AspectJAfterReturningAdvice，即返回通知。
 
-![image-20210922202603001](\images\image-20210922202603001.png)
+![image-20210922202603001](images\image-20210922202603001.png)
 
 让程序往下运行，发现程序并不会进入到第一个if判断语句中，说明拿到的第三个增强器（即AspectJAfterReturningAdvice）并不是MethodInterceptor这种类型。也就是说有些通知方法是实现了MethodInterceptor接口的，也有些不是。 如果不是的话，那么该怎么办呢？这时，就要使用到增强器的适配器了。
 

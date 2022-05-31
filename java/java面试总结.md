@@ -515,6 +515,42 @@ openjdk8\jdk\srclshare\classes\sun\misc
 
 ![image-20220517124639977](images\image-20220517124639977.png)
 
+
+
+## == 与 equals(重要)
+
+== : 它的作用是判断两个对象的地址是不是相等。即，判断两个对象是不是同一个对象。(基本数据类型==比较的是值，引用数据类型==比较的是内存地址)
+	equals() : 它的作用也是判断两个对象是否相等。但它一般有两种使用情况：
+		情况 1：类没有覆盖 equals() 方法。则通过 equals() 比较该类的两个对象时，等价于通过“==”比较这两个对象。
+		情况 2：类覆盖了 equals() 方法。一般，我们都覆盖 equals() 方法来两个对象的内容相等；若它们的内容相等，则返回 true (即，认为这两个对象相等)。
+		String 中的 equals 方法是被重写过的，因为 object 的 equals 方法是比较的对象的内存地址，而 String 的 equals 方法比较的是对象的值。
+		当创建 String 类型的对象时，虚拟机会在常量池中查找有没有已经存在的值和要创建的值相同的对象，如果有就把它赋给当前引用。如果没有就在常量池中重新创建一个 String 对象。
+
+## hashCode 与 equals（重要）
+
+面试官可能会问你：“你重写过 hashcode 和 equals 么，为什么重写 equals时必须重写 hashCode 方法？”
+	hashCode() 的作用是获取哈希码，也称为散列码；它实际上是返回一个 int 整数。这个哈希码的作用是确定该对象在哈希表中的索引位置。hashCode() 定义在 JDK 的 Object.java 中，这就意味着 Java 中的任何类都包含有 hashCode() 函数。
+		散列表存储的是键值对(key-value)，它的特点是：能根据“键”快速的检索出对应的“值”。这其中就利用到了散列码！（可以快速找到所需要的对象）
+
+为什么要有 hashCode
+		我们以“HashSet 如何检查重复”为例子来说明为什么要有 hashCode：
+			当你把对象加入 HashSet 时，HashSet 会先计算对象的 hashcode 值来判断对象加入的位置，同时也会与其他已经加入的对象的 hashcode 值作比较，
+			如果没有相符的 hashcode，HashSet 会假设对象没有重复出现。但是如果发现有相同 hashcode 值的对象，这时会调用 equals（）方法来检查 hashcode 相等的对象是否真的相同。
+			如果两者相同，HashSet 就不会让其加入操作成功。如果不同的话，就会重新散列到其他位置。（摘自我的 Java 启蒙书《Headfirst java》第二版）。这样我们就大大减少了 equals 
+
+hashCode（）与 equals（）的相关规定
+		如果两个对象相等，则 hashcode 一定也是相同的
+		两个对象相等,对两个对象分别调用 equals 方法都返回 true
+		两个对象有相同的 hashcode 值，它们也不一定是相等的
+		因此，equals 方法被覆盖过，则 hashCode 方法也必须被覆盖
+		hashCode() 的默认行为是对堆上的对象产生独特值。如果没有重写hashCode()，则该 class 的两个对象无论如何都不会相等（即使这两个对象指向相同的数据）
+
+
+
+
+
+
+
 # Spring框架篇
 
 ## SpringBean的作用域
@@ -667,7 +703,7 @@ Mysql默认隔离级别可重复读
 > ​	10）DispatcherServlet 根据 View 进行渲染视图（即将模型数据填充至视图中）。
 > ​	11）DispatcherServlet 响应用户
 
-![image-20200531110743497](D:/studyDoc/java/images/image-20200531110743497.png)
+![image-20200531110743497](images/image-20200531110743497.png)
 
 ## MyBatis中当实体类中的属性名和表中的字段名不一样该怎么办
 
@@ -7639,6 +7675,1356 @@ SUNION key [key …]
 
 
 
+## redis分布式锁
+
+常见的面试题：
+
+Redis除了拿来做缓存，你还见过基于Redis的什么用法？
+Redis做分布式锁的时候有需要注意的问题？
+如果是Redis是单点部署的，会带来什么问题？那你准备怎么解决单点问题呢？
+集群模式下，比如主从模式，有没有什么问题呢？
+那你简单的介绍一下Redlock吧？你简历上写redisson，你谈谈。
+Redis分布式锁如何续期？看门狗知道吗？
+
+#### boot整合redis搭建超卖程序
+
+使用场景：多个服务间 + 保证同一时刻内 + 同一用户只能有一个请求（防止关键业务出现数据冲突和并发错误）
+
+建两个Module：boot_redis01，boot_redis02
+
+##### pom.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.6.7</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.harry.redisTest</groupId>
+    <artifactId>bootRedis01</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>bootRedis01</name>
+    <description>bootRedis01</description>
+    <properties>
+        <java.version>1.8</java.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- web+actuator -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- SpringBoot与Redis整合依赖 -->
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+
+        <!-- jedis -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+
+        <!-- Spring Boot AOP技术-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- redisson -->
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>3.13.4</version>
+        </dependency>
+
+        <!-- 一般通用基础配置 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+
+```
+
+##### Properties
+
+```properties
+server.port=1111
+
+#=========================redis相关配香========================
+#Redis数据库索引（默认方0）
+spring.redis.database=0
+#Redis服务器地址
+spring.redis.host=192.168.31.96
+#Redis服务器连接端口
+spring.redis.port=6379
+#Redis服务器连接密码（默认为空）
+spring.redis.password=
+#连接池最大连接数（使用负值表示没有限制）默认8
+spring.redis.lettuce.pool.max-active=8
+#连接池最大阻塞等待时间（使用负值表示没有限制）默认-1
+spring.redis.lettuce.pool.max-wait=-1
+#连接池中的最大空闲连接默认8
+spring.redis.lettuce.pool.max-idle=8
+#连接池中的最小空闲连接默犬认0
+spring.redis.lettuce.pool.min-idle=0
+
+```
+
+##### 主启动类
+
+```java
+package com.harry.redistest;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class BootRedis01Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run(BootRedis01Application.class, args);
+    }
+
+}
+
+```
+
+##### redis配置类
+
+```java
+package com.harry.redistest.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+import java.io.Serializable;
+
+@Configuration
+public class RedisConfig {
+    @Bean
+    public RedisTemplate<String, Serializable> redisTemplate(LettuceConnectionFactory connectionFactory) {
+        RedisTemplate<String, Serializable> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(connectionFactory);
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        return redisTemplate;
+    }
+
+}
+
+```
+
+##### controller
+
+```java
+package com.harry.redistest.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class GoodController {
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Value("${server.port}")
+    private String serverPort;
+
+    @GetMapping("/buy_goods")
+    public String buyGoods() {
+        String result = stringRedisTemplate.opsForValue().get("goods:001");
+        int goodsNumber = result == null ? 0 : Integer.parseInt(result);
+        if (goodsNumber >0 ){
+            int realNumber = goodsNumber -1;
+            stringRedisTemplate.opsForValue().set("goods:001", String.valueOf(realNumber));
+            System.out.println("成功买到商品，库存还剩下: "+ realNumber + " 件" + "\t服务提供端口" + serverPort);
+            return "成功买到商品，库存还剩下:" + realNumber + " 件" + "\t服务提供端口" + serverPort;
+        }else{
+            System.out.println("商品已经售完/活动结束/调用超时,欢迎下次光临" + "\t服务提供端口" + serverPort);
+        }
+        return "商品已经售完/活动结束/调用超时,欢迎下次光临" + "\t服务提供端口" + serverPort;
+    }
+}
+
+```
+
+测试
+
+- redis：`set goods:001 100`
+- 浏览器：http://localhost:1111/buy_goods
+
+注意如果连不上redis可以设置一下把protect-mode属性设置no
+
+boot_redis02拷贝boot_redis01
+
+
+
+#### redis分布式锁01
+
+VM层面的加锁，单机版的锁
+
+- synchronized
+- ReentraLock
+
+使用synchronized进行加锁
+
+```java
+    @GetMapping("/buy_goods")
+    public String buyGoods() {
+        synchronized(this){
+            String result = stringRedisTemplate.opsForValue().get("goods:001");
+            int goodsNumber = result == null ? 0 : Integer.parseInt(result);
+            if (goodsNumber >0 ){
+                int realNumber = goodsNumber -1;
+                stringRedisTemplate.opsForValue().set("goods:001", String.valueOf(realNumber));
+                System.out.println("成功买到商品，库存还剩下: "+ realNumber + " 件" + "\t服务提供端口" + serverPort);
+                return "成功买到商品，库存还剩下:" + realNumber + " 件" + "\t服务提供端口" + serverPort;
+            }else{
+                System.out.println("商品已经售完/活动结束/调用超时,欢迎下次光临" + "\t服务提供端口" + serverPort);
+            }
+            return "商品已经售完/活动结束/调用超时,欢迎下次光临" + "\t服务提供端口" + serverPort;
+        }
+        
+    }
+```
+
+ReentraLock加锁 可以使用trylock方法 设置一个超时时间
+
+```java
+package com.harry.redistest.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+@RestController
+public class GoodController {
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Value("${server.port}")
+    private String serverPort;
+
+    private final Lock lock = new ReentrantLock();
+    @GetMapping("/buy_goods")
+    public String buyGoods() {
+
+           if(lock.tryLock()){
+               try {
+                   String result = stringRedisTemplate.opsForValue().get("goods:001");
+                   int goodsNumber = result == null ? 0 : Integer.parseInt(result);
+                   if (goodsNumber >0 ){
+                       int realNumber = goodsNumber -1;
+                       stringRedisTemplate.opsForValue().set("goods:001", String.valueOf(realNumber));
+                       System.out.println("成功买到商品，库存还剩下: "+ realNumber + " 件" + "\t服务提供端口" + serverPort);
+                       return "成功买到商品，库存还剩下:" + realNumber + " 件" + "\t服务提供端口" + serverPort;
+                   }
+               }finally{
+                       lock.unlock();
+                   }
+           }else{
+               System.out.println("商品已经售完/活动结束/调用超时,欢迎下次光临" + "\t服务提供端口" + serverPort);
+           }
+           return "商品已经售完/活动结束/调用超时,欢迎下次光临" + "\t服务提供端口" + serverPort;
+    }
+}
+
+```
+
+#### redis分布式锁02
+
+分布式部署后，单机锁还是出现超卖现象，需要分布式锁
+
+![image-20220519165722390](images\image-20220519165722390.png)
+
+Nginx配置文件修改内容
+
+```nginx
+upstream myserver{
+    server 192.168.31.12:1111;
+    server 192.168.31.12:2222;
+}
+
+server {
+    listen       80;
+    server_name  localhost;
+
+    #charset koi8-r;
+
+    #access_log  logs/host.access.log  main;
+
+    location / {
+        # 负责用到的配置
+        proxy_pass  http://myserver;
+        root   html;
+        index  index.html index.htm;
+    }
+
+    #error_page  404              /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+    	root   html;
+    }
+}
+
+```
+
+启动两个微服务：1111，2222 服务提供端口在1111，2222两者之间横跳
+
+这里使用docker 启动了一个nginx
+
+首先创建了一个config目录，然后创建一个nginx-redis.conf配置
+
+![image-20220519173438463](images\image-20220519173438463.png)
+
+启动docker
+
+```
+ docker run -p 8081:80 --name nginx --privileged=true -v /config/:/etc/nginx/conf.d nginx
+```
+
+测试
+
+![image-20220519173613515](images\image-20220519173613515.png)
+
+`set goods:001 100`，恢复到100   100个线程同时访问
+
+![image-20220519174929164](images\image-20220519174929164.png)
+
+![image-20220519175946982](images\image-20220519175946982.png)
+
+nginx会负载到两个微服务上，这样会出现重复消费的问题
+
+![image-20220519175846715](images\image-20220519175846715.png)
+
+![image-20220519175919955](images\image-20220519175919955.png)
+
+这就是所谓分布式部署后出现超卖现象。
+
+Redis具有极高的性能，且其命令对分布式锁支持友好，借助SET命令即可实现加锁处理。
+
+![image-20220519180101272](images\image-20220519180101272.png)
+
+
+
+修改为3.0版
+
+```java
+package com.harry.redistesst.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+@RestController
+public class GoodController {
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Value("${server.port}")
+    private String serverPort;
+
+    public static final String REDIS_LOOK_KEY = "lockhhf";
+
+    @GetMapping("/buy_goods")
+    public String buyGoods() {
+        String value = UUID.randomUUID().toString() + Thread.currentThread().getName();
+        // 等价于 setnx
+        Boolean lockFlag = stringRedisTemplate.opsForValue().setIfAbsent(REDIS_LOOK_KEY, value);
+        if (!lockFlag){
+            return "抢锁失败";
+        }
+        String result = stringRedisTemplate.opsForValue().get("goods:001");
+        int goodsNumber = result == null ? 0 : Integer.parseInt(result);
+        if (goodsNumber >0 ){
+            int realNumber = goodsNumber -1;
+            stringRedisTemplate.opsForValue().set("goods:001", String.valueOf(realNumber));
+            System.out.println("成功买到商品，库存还剩下: "+ realNumber + " 件" + "\t服务提供端口" + serverPort);
+            return "成功买到商品，库存还剩下:" + realNumber + " 件" + "\t服务提供端口" + serverPort;
+        }else{
+            System.out.println("商品已经售罄/活动结束/调用超时，欢迎下次光临"+"\t 服务器端口: "+serverPort);
+        }
+
+        return "商品已经售完/活动结束/调用超时,欢迎下次光临" + "\t服务提供端口" + serverPort;
+    }
+}
+
+```
+
+#### redis分布式锁03
+
+出异常的话，可能无法释放锁， 必须要在代码层面finally释放锁 
+
+加锁解锁，lock/unlock必须同时出现并保证调用， 修改为4.0版
+
+```java
+package com.harry.redistest.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
+
+@RestController
+public class GoodController {
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Value("${server.port}")
+    private String serverPort;
+
+    public static final String REDIS_LOCK_KEY = "lockhhf";
+
+    @GetMapping("/buy_goods")
+    public String buyGoods() {
+        String value = UUID.randomUUID().toString() + Thread.currentThread().getName();
+        try {
+
+            // 等价于 setnx
+            Boolean lockFlag = stringRedisTemplate.opsForValue().setIfAbsent(REDIS_LOCK_KEY, value);
+            if (!lockFlag){
+                return "抢锁失败";
+            }
+            String result = stringRedisTemplate.opsForValue().get("goods:001");
+            int goodsNumber = result == null ? 0 : Integer.parseInt(result);
+            if (goodsNumber >0 ){
+                int realNumber = goodsNumber -1;
+                stringRedisTemplate.opsForValue().set("goods:001", String.valueOf(realNumber));
+                System.out.println("成功买到商品，库存还剩下: "+ realNumber + " 件" + "\t服务提供端口" + serverPort);
+                return "成功买到商品，库存还剩下:" + realNumber + " 件" + "\t服务提供端口" + serverPort;
+            }else{
+                System.out.println("商品已经售罄/活动结束/调用超时，欢迎下次光临"+"\t 服务器端口: "+serverPort);
+            }
+        }finally{
+            //释放锁
+            stringRedisTemplate.delete(REDIS_LOCK_KEY);
+        }
+
+
+        return "商品已经售完/活动结束/调用超时,欢迎下次光临" + "\t服务提供端口" + serverPort;
+    }
+}
+
+```
+
+部署了微服务jar包的机器挂了，代码层面根本没有走到finally这块， 没办法保证解锁，这个key没有被删除，需要加入一个过期时间限定key
+
+#### redis分布式锁04
+
+需要对lockKey有过期时间的设定 修改为5.0版
+
+```java
+   @GetMapping("/buy_goods")
+    public String buyGoods() {
+        String value = UUID.randomUUID().toString() + Thread.currentThread().getName();
+        try {
+
+            // 等价于 setnx
+            Boolean lockFlag = stringRedisTemplate.opsForValue().setIfAbsent(REDIS_LOCK_KEY, value);
+            stringRedisTemplate.expire(REDIS_LOCK_KEY,10L, TimeUnit.SECONDS);
+            if (!lockFlag){
+                return "抢锁失败";
+            }
+            String result = stringRedisTemplate.opsForValue().get("goods:001");
+            int goodsNumber = result == null ? 0 : Integer.parseInt(result);
+            if (goodsNumber >0 ){
+                int realNumber = goodsNumber -1;
+                stringRedisTemplate.opsForValue().set("goods:001", String.valueOf(realNumber));
+                System.out.println("成功买到商品，库存还剩下: "+ realNumber + " 件" + "\t服务提供端口" + serverPort);
+                return "成功买到商品，库存还剩下:" + realNumber + " 件" + "\t服务提供端口" + serverPort;
+            }else{
+                System.out.println("商品已经售罄/活动结束/调用超时，欢迎下次光临"+"\t 服务器端口: "+serverPort);
+            }
+        }finally{
+            //释放锁
+            stringRedisTemplate.delete(REDIS_LOCK_KEY);
+        }
+
+
+        return "商品已经售完/活动结束/调用超时,欢迎下次光临" + "\t服务提供端口" + serverPort;
+    }
+```
+
+设置key+过期时间分开了，必须要合并成一行具备原子性
+
+#### redis分布式锁05
+
+修改为6.0版
+
+```java
+ @GetMapping("/buy_goods")
+    public String buyGoods() {
+        String value = UUID.randomUUID().toString() + Thread.currentThread().getName();
+        try {
+
+            // 等价于 setnx
+            //setIfAbsent() == setnx 就是如果不存在就新建，同时加上过期时间保证原子性
+            Boolean lockFlag = stringRedisTemplate.opsForValue().setIfAbsent(REDIS_LOCK_KEY, value,10L, TimeUnit.SECONDS);
+
+            if (!lockFlag){
+                return "抢锁失败";
+            }
+            String result = stringRedisTemplate.opsForValue().get("goods:001");
+            int goodsNumber = result == null ? 0 : Integer.parseInt(result);
+            if (goodsNumber >0 ){
+                int realNumber = goodsNumber -1;
+                stringRedisTemplate.opsForValue().set("goods:001", String.valueOf(realNumber));
+                System.out.println("成功买到商品，库存还剩下: "+ realNumber + " 件" + "\t服务提供端口" + serverPort);
+                return "成功买到商品，库存还剩下:" + realNumber + " 件" + "\t服务提供端口" + serverPort;
+            }else{
+                System.out.println("商品已经售罄/活动结束/调用超时，欢迎下次光临"+"\t 服务器端口: "+serverPort);
+            }
+        }finally{
+            //释放锁
+            stringRedisTemplate.delete(REDIS_LOCK_KEY);
+        }
+
+
+        return "商品已经售完/活动结束/调用超时,欢迎下次光临" + "\t服务提供端口" + serverPort;
+    }
+```
+
+#### redis分布式锁06
+
+张冠李戴，删除了别人的锁
+
+![image-20220519183312494](images\image-20220519183312494.png)
+
+只能自己删除自己的，不许动别人的 修改为7.0版
+
+```java
+ @GetMapping("/buy_goods")
+    public String buyGoods() {
+        String value = UUID.randomUUID().toString() + Thread.currentThread().getName();
+        try {
+
+            // 等价于 setnx
+            //setIfAbsent() == setnx 就是如果不存在就新建，同时加上过期时间保证原子性
+            Boolean lockFlag = stringRedisTemplate.opsForValue().setIfAbsent(REDIS_LOCK_KEY, value,10L, TimeUnit.SECONDS);
+
+            if (!lockFlag){
+                return "抢锁失败";
+            }
+            String result = stringRedisTemplate.opsForValue().get("goods:001");
+            int goodsNumber = result == null ? 0 : Integer.parseInt(result);
+            if (goodsNumber >0 ){
+                int realNumber = goodsNumber -1;
+                stringRedisTemplate.opsForValue().set("goods:001", String.valueOf(realNumber));
+                System.out.println("成功买到商品，库存还剩下: "+ realNumber + " 件" + "\t服务提供端口" + serverPort);
+                return "成功买到商品，库存还剩下:" + realNumber + " 件" + "\t服务提供端口" + serverPort;
+            }else{
+                System.out.println("商品已经售罄/活动结束/调用超时，欢迎下次光临"+"\t 服务器端口: "+serverPort);
+            }
+        }finally{
+            //释放锁
+            if(stringRedisTemplate.opsForValue().get(REDIS_LOCK_KEY) == value){
+                stringRedisTemplate.delete(REDIS_LOCK_KEY);
+            }
+        }
+
+
+        return "商品已经售完/活动结束/调用超时,欢迎下次光临" + "\t服务提供端口" + serverPort;
+    }
+```
+
+#### redis分布式锁07
+
+问题：finally块的判断+del删除操作不是原子性的
+
+##### 用Lua脚本
+
+Redis可以通过eval命令保证代码执行的原子性
+
+RedisUtils
+
+```java
+public class RedisUtils {
+    private  static JedisPool jedisPool;
+
+    static{
+        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+        jedisPoolConfig.setMaxIdle(20);
+        jedisPoolConfig.setMaxIdle(10);
+        jedisPool = new JedisPool(jedisPoolConfig, "ip", 6379, 100000);
+    }
+    public static Jedis getJedis() throws Exception {
+        if (jedisPool != null){
+            return jedisPool.getResource();
+        }
+        throw new Exception("Jedispool is not ok");
+    }
+}
+
+```
+
+修改后的代码
+
+```java
+package com.harry.redistest.controller;
+
+import com.harry.redistest.util.RedisUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+import redis.clients.jedis.Jedis;
+
+import java.util.Collections;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+@RestController
+public class GoodController {
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Value("${server.port}")
+    private String serverPort;
+
+    public static final String REDIS_LOCK_KEY = "lockhhf";
+
+    @GetMapping("/buy_goods")
+    public String buyGoods() throws Exception {
+        String value = UUID.randomUUID().toString() + Thread.currentThread().getName();
+        try {
+
+            // 等价于 setnx
+            //setIfAbsent() == setnx 就是如果不存在就新建，同时加上过期时间保证原子性
+            Boolean lockFlag = stringRedisTemplate.opsForValue().setIfAbsent(REDIS_LOCK_KEY, value,10L, TimeUnit.SECONDS);
+
+            if (!lockFlag){
+                return "抢锁失败";
+            }
+            String result = stringRedisTemplate.opsForValue().get("goods:001");
+            int goodsNumber = result == null ? 0 : Integer.parseInt(result);
+            if (goodsNumber >0 ){
+                int realNumber = goodsNumber -1;
+                stringRedisTemplate.opsForValue().set("goods:001", String.valueOf(realNumber));
+                System.out.println("成功买到商品，库存还剩下: "+ realNumber + " 件" + "\t服务提供端口" + serverPort);
+                return "成功买到商品，库存还剩下:" + realNumber + " 件" + "\t服务提供端口" + serverPort;
+            }else{
+                System.out.println("商品已经售罄/活动结束/调用超时，欢迎下次光临"+"\t 服务器端口: "+serverPort);
+            }
+        }finally{
+            //释放锁
+            try (Jedis jedis = RedisUtils.getJedis()) {
+                String script = "if redis.call('get', KEYS[1]) == ARGV[1]" + "then "
+                        + "return redis.call('del', KEYS[1])" + "else " + "  return 0 " + "end";
+                Object result = jedis.eval(script, Collections.singletonList(REDIS_LOCK_KEY), Collections.singletonList(value));
+                if ("1".equals(result.toString())) {
+                    System.out.println("------del REDIS_LOCK_KEY success");
+                } else {
+                    System.out.println("------del REDIS_LOCK_KEY error");
+                }
+            }
+
+        }
+        return "商品已经售完/活动结束/调用超时,欢迎下次光临" + "\t服务提供端口" + serverPort;
+    }
+}
+
+```
+
+##### 用redis自身的事务
+
+![image-20220519190259071](images\image-20220519190259071.png)
+
+
+
+修改代码
+
+```java
+    @GetMapping("/buy_goods")
+    public String buyGoods() throws Exception {
+        String value = UUID.randomUUID().toString() + Thread.currentThread().getName();
+        try {
+
+            // 等价于 setnx
+            //setIfAbsent() == setnx 就是如果不存在就新建，同时加上过期时间保证原子性
+            Boolean lockFlag = stringRedisTemplate.opsForValue().setIfAbsent(REDIS_LOCK_KEY, value,10L, TimeUnit.SECONDS);
+
+            if (!lockFlag){
+                return "抢锁失败";
+            }
+            String result = stringRedisTemplate.opsForValue().get("goods:001");
+            int goodsNumber = result == null ? 0 : Integer.parseInt(result);
+            if (goodsNumber >0 ){
+                int realNumber = goodsNumber -1;
+                stringRedisTemplate.opsForValue().set("goods:001", String.valueOf(realNumber));
+                System.out.println("成功买到商品，库存还剩下: "+ realNumber + " 件" + "\t服务提供端口" + serverPort);
+                return "成功买到商品，库存还剩下:" + realNumber + " 件" + "\t服务提供端口" + serverPort;
+            }else{
+                System.out.println("商品已经售罄/活动结束/调用超时，欢迎下次光临"+"\t 服务器端口: "+serverPort);
+            }
+        }finally{
+            //释放锁
+            while(true){
+                // 加事务乐观锁
+                stringRedisTemplate.watch(REDIS_LOCK_KEY);
+                if (value.equalsIgnoreCase(stringRedisTemplate.opsForValue().get(REDIS_LOCK_KEY))){
+                    stringRedisTemplate.setEnableTransactionSupport(true);
+                    stringRedisTemplate.multi();
+                    stringRedisTemplate.delete(REDIS_LOCK_KEY);
+                    List<Object> list = stringRedisTemplate.exec();
+                    if (list == null){
+                        // 如果等于null 就是没有删除，删除失败，再回去while循环那里重新执行删除
+                        continue;
+                    }
+                    //如果删除成功，释放监控器 并且break 跳出当前循环
+                    stringRedisTemplate.unwatch();
+                    break;
+                }
+            }
+
+        }
+        return "商品已经售完/活动结束/调用超时,欢迎下次光临" + "\t服务提供端口" + serverPort;
+    }
+```
+
+#### redis分布式锁08
+
+确保redisLock过期时间大于业务执行时间的问题，Redis分布式锁如何续期?
+
+集群+CAP对比zookeeper，对比Zookeeper，重点 
+
+##### Redis
+
+ap：redis异步复制造成的锁丢失， 比如:主节点没来的及把刚刚set进来这条数据给从节点，就挂了。此时如果集群模式下，就得上Redisson来解决
+
+Zookeeper- cp
+
+#### redis分布式锁09
+
+redis集群环境下，我们自己写的也不OK, 直接上RedLock之Redisson落地实现
+
+##### RedisConfig
+
+```java
+@Configuration
+public class RedisConfig {
+
+    @Value("${spring.redis.host}")
+    private String redisHost;
+
+    @Bean
+    public RedisTemplate<String, Serializable> redisTemplate(LettuceConnectionFactory connectionFactory) {
+        RedisTemplate<String, Serializable> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(connectionFactory);
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        return redisTemplate;
+    }
+
+    @Bean
+    public Redisson redisson(){
+        Config config = new Config();
+        config.useSingleServer().setAddress("redis://"+redisHost+":6379").setDatabase(0);
+        return (Redisson) Redisson.create(config);
+    }
+}
+
+```
+
+业务代码修改为9.0版
+
+```java
+package com.harry.redistest.controller;
+
+import com.harry.redistest.util.RedisUtils;
+import org.redisson.Redisson;
+import org.redisson.api.RLock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+@RestController
+public class GoodController {
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Value("${server.port}")
+    private String serverPort;
+
+    public static final String REDIS_LOCK_KEY = "lockhhf";
+
+    @Autowired
+    private Redisson redisson;
+
+    @GetMapping("/buy_goods")
+    public String buyGoods() throws Exception {
+        String value = UUID.randomUUID().toString() + Thread.currentThread().getName();
+        RLock redissonLock = redisson.getLock(REDIS_LOCK_KEY);
+        redissonLock.lock();
+        try {
+
+            // 等价于 setnx
+            //setIfAbsent() == setnx 就是如果不存在就新建，同时加上过期时间保证原子性
+            Boolean lockFlag = stringRedisTemplate.opsForValue().setIfAbsent(REDIS_LOCK_KEY, value,10L, TimeUnit.SECONDS);
+
+            if (!lockFlag){
+                return "抢锁失败";
+            }
+            String result = stringRedisTemplate.opsForValue().get("goods:001");
+            int goodsNumber = result == null ? 0 : Integer.parseInt(result);
+            if (goodsNumber >0 ){
+                int realNumber = goodsNumber -1;
+                stringRedisTemplate.opsForValue().set("goods:001", String.valueOf(realNumber));
+                System.out.println("成功买到商品，库存还剩下: "+ realNumber + " 件" + "\t服务提供端口" + serverPort);
+                return "成功买到商品，库存还剩下:" + realNumber + " 件" + "\t服务提供端口" + serverPort;
+            }else{
+                System.out.println("商品已经售罄/活动结束/调用超时，欢迎下次光临"+"\t 服务器端口: "+serverPort);
+            }
+            return "商品已经售完/活动结束/调用超时,欢迎下次光临" + "\t服务提供端口" + serverPort;
+        }finally{
+            //释放锁
+            redissonLock.unlock();
+        }
+   
+    }
+}
+
+```
+
+#### redis分布式锁10
+
+9.0版bug及完善到9.1
+
+```
+IllegalMonitorStateException: attempt to unlock lock，not loked by current thread by node id:da6385f-81a5-4e6c-b8c0
+```
+
+出现这个错误的原因：是在并发多的时候就可能会遇到这种错误，可能会被重新抢占
+
+不见得当前这个锁的状态还是在锁定，并且本线程持有
+
+```java
+@RestController
+public class GoodController {
+
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
+
+    @Value("${server.port}")
+    private String serverPort;
+
+    public static final String REDIS_LOCK_KEY = "lockhhf";
+
+    @Autowired
+    private Redisson redisson;
+
+    @GetMapping("/buy_goods")
+    public String buyGoods() throws Exception {
+        String value = UUID.randomUUID().toString() + Thread.currentThread().getName();
+        RLock redissonLock = redisson.getLock(REDIS_LOCK_KEY);
+        redissonLock.lock();
+        try {
+
+            // 等价于 setnx
+            //setIfAbsent() == setnx 就是如果不存在就新建，同时加上过期时间保证原子性
+            Boolean lockFlag = stringRedisTemplate.opsForValue().setIfAbsent(REDIS_LOCK_KEY, value,10L, TimeUnit.SECONDS);
+
+            if (!lockFlag){
+                return "抢锁失败";
+            }
+            String result = stringRedisTemplate.opsForValue().get("goods:001");
+            int goodsNumber = result == null ? 0 : Integer.parseInt(result);
+            if (goodsNumber >0 ){
+                int realNumber = goodsNumber -1;
+                stringRedisTemplate.opsForValue().set("goods:001", String.valueOf(realNumber));
+                System.out.println("成功买到商品，库存还剩下: "+ realNumber + " 件" + "\t服务提供端口" + serverPort);
+                return "成功买到商品，库存还剩下:" + realNumber + " 件" + "\t服务提供端口" + serverPort;
+            }else{
+                System.out.println("商品已经售罄/活动结束/调用超时，欢迎下次光临"+"\t 服务器端口: "+serverPort);
+            }
+            return "商品已经售完/活动结束/调用超时,欢迎下次光临" + "\t服务提供端口" + serverPort;
+        }finally{
+            //释放锁
+            //还在持有锁的状态，并且是当前线程持有的锁再解锁
+            if (redissonLock.isLocked() && redissonLock.isHeldByCurrentThread()){
+                redissonLock.unlock();
+            }
+            
+        }
+
+    }
+}
+
+```
+
+#### redis分布式锁总结回顾
+
+synchronized单机版oK，上分布式
+
+nginx分布式微服务单机锁不行
+
+取消单机锁，上Redis分布式锁setnx
+
+只加了锁，没有释放锁，出异常的话，可能无法释放锁,必须要在代码层面finally释放锁
+
+宕机了，部署了微服务代码层面根本没有走到finally这块，没办法保证解锁，这个key没有被删除，
+需要有lockKey的过期时间设定
+
+为redis的分布式锁key，增加过期时间，此外，还必须要setnx+过期时间必须同一行
+
+必须规定只能自己删除自己的锁,你不能把别人的锁删除了，防止张冠李戴，1删2，2删3
+
+Redis集群环境下，我们自己写的也不oK直接上RedLock之Redisson落地实现
+
+## redis内存调整
+
+- 生产上你们你们的redis内存设置多少？
+- 如何配置、修改redis的内存大小
+- 如果内存满了你怎么办？
+- redis清理内存的方式？定期删除和惰性删除了解过吗
+- redis缓存淘汰策略
+- redis的LRU了解过吗？可否手写一个LRU算法
+
+**查看Redis最大占用内存**
+
+配置文件redis.conf的maxmemory参数，maxmemory是bytes字节类型，注意转换。
+
+**redis默认内存多少可以用？**
+
+如果不设置最大内存大小或者设置最大内存大小为0，在64位操作系统下不限制内存大小，在32位操作系统下最多使用3GB内存
+
+**一般生产上你如何配置？**
+
+一般推荐Redis设置内存为最大物理内存的四分之三
+
+**如何修改redis内存设置**
+
+- 修改配置文件redis.conf的maxmemory参数，如：`maxmemory 104857600`
+- 通过命令修改
+  - config set maxmemory 1024
+  - config get maxmemory
+
+**什么命令查看redis内存使用情况?**
+
+### redis打满内存OOM
+
+真要打满了会怎么样？如果Redis内存使用超出了设置的最大值会怎样?
+
+我改改配置，故意把最大值设为1个
+
+![image-20220520192146968](images\image-20220520192146968.png)
+
+没有加上过期时间就会导致数据写满maxmemory为了避免类似情况，引出下一节内存淘汰策略
+
+### redis内存淘汰策略
+
+**redis过期键的删除策略**
+
+如果一个键是过期的，那它到了过期时间之后是不是马上就从内存中被被删除呢？
+
+如果回答yes，你自己走还是面试官送你？
+
+如果不是，那过期后到底什么时候被删除呢？？是个什么操作？
+
+#### **三种不同的删除策略**
+
+- 定时删除 - 总结：对CPU不友好，用处理器性能换取存储空间（拿时间换空间）
+- 惰性删除 - 总结：对memory不友好，用存储空间换取处理器性能（拿空间换时间）
+- 上面两种方案都走极端 - 定期删除 - 定期抽样key，判断是否过期（存在漏网之鱼）
+
+##### 定时删除
+
+Redis不可能时时刻刻遍历所有被设置了生存时间的key，来检测数据是否已经到达过期时间，然后对它进行删除。
+
+立即删除能保证内存中数据的最大新鲜度，因为它保证过期键值会在过期后马上被删除，其所占用的内存也会随之释放。但是立即删除对cpu是最不友好的。因为删除操作会占用cpu的时间，如果刚好碰上了cpu很忙的时候，比如正在做交集或排序等计算的时候，就会给cpu造成额外的压力，让CPU心累，时时需要删除，忙死。
+
+这会产生大量的性能消耗，同时也会影响数据的读取操作。
+
+##### 惰性删除
+
+数据到达过期时间，不做处理。等下次访问该数据时，
+
+如果未过期，返回数据；
+
+发现已过期，删除，返回不存在。
+
+惰性删除策略的缺点是，它对内存是最不友好的。
+
+如果一个键已经过期，而这个键又仍然保留在数据库中，那么只要这个过期键不被删除，它所占用的内存就不会释放。
+
+在使用惰性删除策略时，如果数据库中有非常多的过期键，而这些过期键又恰好没有被访问到的话，那么它们也许永远也不会被删除（除非用户手动执行FLUSHDB），我们甚至可以将这种情况看作是一种内存泄漏 – 无用的垃圾数据占用了大量的内存，而服务器却不会自己去释放它们，这对于运行状态非常依赖于内存的Redis服务器来说，肯定不是一个好消息。
+
+##### 定期删除
+
+定期删除策略是前两种策略的折中：
+
+定期删除策略每隔一段时间执行一次删除过期键操作，并通过限制删除操作执行的时长和频率来减少删除操作对CPU时间的影响。
+
+周期性轮询Redis库中的时效性数据，来用随机抽取的策略，利用过期数据占比的方式控制删除频度
+
+特点1：CPU性能占用设置有峰值，检测频度可自定义设置
+
+特点2：内存压力不是很大，长期占用内存的冷数据会被持续清理
+
+总结：周期性抽查存储空间（随机抽查，重点抽查）
+
+举例：
+
+redis默认每个100ms检查，是否有过期的key，有过期key则删除。注意：redis不是每隔100ms将所有的key检查一次而是随机抽取进行检查(如果每隔100ms，全部key进行检查，redis直接进去ICU)。因此，如果只采用定期删除策略，会导致很多key到时间没有删除。
+
+定期删除策略的难点是确定删除操作执行的时长和频率:如果删除操作执行得太频繁，或者执行的时间太长，定期删除策略就会退化成定时删除策略，以至于将CPU时间过多地消耗在删除过期键上面。如果删除操作执行得太少，或者执行的时间太短，定期删除策略又会和惰性删除束略一样，出现浪费内存的情况。因此，如果采用定期删除策略的话，服务器必须根据情况，合理地设置删除操作的执行时长和执行频率。
+
+**上述步骤都过堂了，还有漏洞吗？**
+
+1. 定期删除时，从来没有被抽查到
+2. 惰性删除时，也从来没有被点中使用过
+
+上述2步骤====>大量过期的key堆积在内存中，导致redis内存空间紧张或者很快耗尽
+
+必须要有一个更好的兜底方案
+
+内存淘汰策略登场（Redis 6.0.8版本）
+
+noeviction：不会驱逐任何key
+volatile-lfu：对所有设置了过期时间的key使用LFU算法进行删除
+volatile-Iru：对所有设置了过期时间的key使用LRU算法进行删除
+volatile-random：对所有设置了过期时间的key随机删除
+volatile-ttl：删除马上要过期的key
+allkeys-lfu：对所有key使用LFU算法进行删除
+allkeys-Iru：对所有key使用LRU算法进行删除
+allkeys-random：对所有key随机删除
+
+**上面总结**
+
+- 2*4得8
+- 2个维度
+  - 过期键中筛选
+  - 所有键中筛选
+- 4个方面
+  - LRU
+  - LFU
+  - random
+  - ttl（Time To Live）
+- 8个选项
+
+
+
+如何配置，修改
+
+- 命令
+  - config set maxmemory-policy noeviction
+  - config get maxmemory
+- 配置文件 - 配置文件redis.conf的maxmemory-policy参数
+
+![image-20220520192957273](images\image-20220520192957273.png)
+
+
+
+## lru算法简介
+
+LRU是Least Recently Used的缩写，即最近最少使用，是一种常用的页面置换算法，选择最近最久未使用的数据予以淘汰。
+
+![image-20220520193113066](images\image-20220520193113066.png)
+
+### lru的思想
+
+设计思想
+
+所谓缓存，必须要有读+写两个操作，按照命中率的思路考虑，写操作+读操作时间复杂度都需要为O(1)
+
+特性要求
+	必须要有顺序之分，一区分最近使用的和很久没有使用的数据排序。
+
+​	写和读操作一次搞定。
+
+​	如果容量(坑位)满了要删除最不长用的数据，每次新访问还要把新的数据插入到队头(按照业务你自己设定左右那一边是队头)
+
+
+查找快、插入快、删除快，且还需要先后排序---------->什么样的数据结构可以满足这个问题？
+
+你是否可以在O(1)时间复杂度内完成这两种操作？
+
+如果一次就可以找到，你觉得什么数据结构最合适？
+
+答案：LRU的算法核心是哈希链表
+
+编码手写如何实现LRU
+
+本质就是HashMap + DoubleLinkedList
+
+时间复杂度是O(1)，哈希表+双向链表的结合体
+
+### 巧用LinkedHashMap完成lru算法
+
+```java
+public class LRUCache<K,V> extends  LinkedHashMap<K,V>{
+    private int capacity;
+
+    public LRUCache(int capacity) {
+        super(capacity, 0.75f, true);
+        this.capacity = capacity;
+    }
+
+    @Override
+    protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+        return super.size() > capacity;
+    }
+
+    public static void main(String[] args) {
+        LRUCache<Integer, String> lruCacheDemo = new LRUCache(3);
+        lruCacheDemo .put(1, "a");
+        lruCacheDemo .put(2, "b");
+        lruCacheDemo .put(3, "c");
+        System.out.println(lruCacheDemo.keySet());
+
+        lruCacheDemo.put(4,"d");
+        System.out.println(lruCacheDemo.keySet());
+
+        lruCacheDemo.put(3,"c");
+        System.out.println(lruCacheDemo.keySet());
+        lruCacheDemo.put(3,"c");
+        System.out.println(lruCacheDemo.keySet());
+        lruCacheDemo.put(3,"c");
+        System.out.println(lruCacheDemo.keySet());
+        lruCacheDemo.put(5,"x");
+        System.out.println(lruCacheDemo.keySet());
+
+    }
+
+}
+
+```
+
+super(capacity, 0.75f, true); 为true的执行结果
+
+![image-20220520195742876](images\image-20220520195742876.png)
+
+```
+super(capacity, 0.75f, false);
+```
+
+![image-20220520195829777](images\image-20220520195829777.png)
+
+
+
+### 手写LRU
+
+哈希表 + 双向链表
+
+```java
+package com.offer.code;
+
+import java.util.HashMap;
+import java.util.Map;
+
+
+public class LRUCacheDemo {
+    // map负责查找， 构建一个虚拟的双向链表， 它里面安装的就是一个个Node节点作为数据载体
+    // 1. 构造一个node节点作为数据载体
+    class Node<K,V>{
+        K key;
+        V value;
+        Node<K,V> prev;
+        Node<K,V> next;
+
+        public Node(){
+            this.prev = this.next = null;
+        }
+        public Node(K key, V value){
+            this.key = key;
+            this.value = value;
+            this.prev = this.next = null;
+        }
+    }
+    // 2 构建一个虚拟的双向链表 里面安放的就是我们的Node
+    class DoubleLinkedList<K,V>{
+        Node<K,V> head;
+        Node<K,V> tail;
+
+        public DoubleLinkedList(){
+            this.head = new Node<>();
+            this.tail = new Node<>();
+            this.head.next = tail;
+            this.tail.prev = head;
+        }
+
+        //3 添加到头
+        public void addHead(Node<K,V> node){
+            node.next = head.next;
+            node.prev = head;
+            head.next.prev = node;
+            head.next = node;
+        }
+
+        //4 删除节点
+        public void removeNode(Node<K,V> node){
+            node.next.prev = node.prev;
+            node.prev.next = node.next;
+            node.prev = null;
+            node.next = null;
+        }
+
+        //5 获得最后一个节点
+        public Node<K, V> getLast(){
+             return tail.prev;
+        }
+
+    }
+
+    private int cacheSize;
+    Map<Integer,Node<Integer, Integer>> map;
+    DoubleLinkedList<Integer, Integer> doubleLinkedList;
+
+    public LRUCacheDemo(int cacheSize) {
+        // 坑位
+        this.cacheSize = cacheSize;
+        map = new HashMap<>();
+        doubleLinkedList = new DoubleLinkedList<>();
+    }
+    public int get(int key) {
+        if (!map.containsKey(key)){
+            return -1;
+        }
+        Node<Integer, Integer> node = map.get(key);
+        doubleLinkedList.removeNode(node);
+        doubleLinkedList.addHead(node);
+        return node.value;
+    }
+
+    public void put(int key, int value){
+        if (map.containsKey(key)){
+            // update
+            Node<Integer, Integer> node = map.get(key);
+            node.value = value;
+            map.put(key, node);
+        }else{
+            if (map.size() == cacheSize){
+                //  坑满了
+                Node<Integer, Integer> lastNode = doubleLinkedList.getLast();
+                map.remove(lastNode.key);
+                doubleLinkedList.removeNode(lastNode);
+            }
+            // 新增一个
+            Node<Integer, Integer> node = new Node<>(key, value);
+            map.put(key, node);
+            doubleLinkedList.addHead(node);
+        }
+    }
+
+    public static void main(String[] args) {
+        LRUCacheDemo lruCacheDemo = new LRUCacheDemo(3);
+
+        lruCacheDemo.put(1,1);
+        lruCacheDemo.put(2,2);
+        lruCacheDemo.put(3,3);
+        System.out.println(lruCacheDemo.map.keySet());
+
+        lruCacheDemo.put(4,1);
+        System.out.println(lruCacheDemo.map.keySet());
+
+        lruCacheDemo.put(3,1);
+        System.out.println(lruCacheDemo.map.keySet());
+        lruCacheDemo.put(3,1);
+        System.out.println(lruCacheDemo.map.keySet());
+        lruCacheDemo.put(3,1);
+        System.out.println(lruCacheDemo.map.keySet());
+        lruCacheDemo.put(5,1);
+        System.out.println(lruCacheDemo.map.keySet());
+
+    }
+
+}
+
+```
+
+
+
+
+
 # 算法
 
 ## 两数求和
@@ -7699,6 +9085,8 @@ public class TowSum02 {
 }
 
 ```
+
+
 
 
 

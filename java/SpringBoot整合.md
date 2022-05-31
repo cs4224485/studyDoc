@@ -38,7 +38,7 @@ Cache接口下Spring提供了各种xxxCache的实现；如RedisCache，EhCacheCa
 
 ​	2、从缓存中读取之前缓存存储的数据
 
-![image-20200510110720572](\images\image-20200510110720572.png)
+![image-20200510110720572](images\image-20200510110720572.png)
 
 几个重要概念&缓存注解
 
@@ -52,7 +52,7 @@ Cache接口下Spring提供了各种xxxCache的实现；如RedisCache，EhCacheCa
 | **keyGenerator**   | **缓存数据时**key生成策略                                    |
 | **serialize**      | **缓存数据时**value序列化策略                                |
 
-![image-20200510110720572](\images\capture_20200510111050851.bmp)
+![image-20200510110720572](images\capture_20200510111050851.bmp)
 
 **Cache** **SpEL** **available metadata**
 
@@ -544,7 +544,7 @@ public Department getDeptById(Integer id){
 
 **异步处理**
 
-![image-20200512105219224](\images\image-20200512105219224.png)
+![image-20200512105219224](images\image-20200512105219224.png)
 
 **应用解耦**
 
@@ -644,7 +644,7 @@ Exchange 和Queue的绑定可以是多对多的关系。
 
 表示消息队列服务器实体
 
-![image-20200512141502272](\images\image-20200512141502272.png)
+![image-20200512141502272](images\image-20200512141502272.png)
 
 ## 3、RabbitMQ运行机制
 
@@ -692,11 +692,11 @@ Exchange分发消息时根据类型的不同分发策略有区别，目前共四
 
 队列中获取消息
 
-![image-20200512150625500](\images\image-20200512150625500.png)
+![image-20200512150625500](images\image-20200512150625500.png)
 
 类型为fandout类型的Exchange发现消息所以的队列都能够收到
 
-![image-20200512150804614](\images\image-20200512150804614.png)
+![image-20200512150804614](images\image-20200512150804614.png)
 
 ## 5、SpringBoot整合RabbitMQ
 
@@ -893,7 +893,7 @@ Elasticsearch是一个分布式搜索服务，提供Restful API，底层基于Lu
 
 ​	–属性-列
 
-![image-20200513100956764](\images\image-20200513100956764.png)
+![image-20200513100956764](images\image-20200513100956764.png)
 
 ## 2、ElasticSearch的一些常用操作
 
@@ -901,7 +901,7 @@ Elasticsearch是一个分布式搜索服务，提供Restful API，底层基于Lu
 
 新建 Index，可以直接向 Elastic 服务器发出 PUT 请求。下面的例子是新建一个名叫harry.cai的 Index。
 
-![image-20200513160209532](\images\image-20200513160209532.png)
+![image-20200513160209532](images\image-20200513160209532.png)
 
 服务器返回一个 JSON 对象，里面的`acknowledged`字段表示操作成功。
 

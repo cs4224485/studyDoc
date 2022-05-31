@@ -211,7 +211,7 @@ https://docs.spring.io/spring-boot/docs/current/reference/html/using-spring-boot
   - 引入了哪些场景这个场景的自动配置才会开启
   - SpringBoot所有的自动配置功能都在 spring-boot-autoconfigure 包里面
 
-- 
+  
 
 ## 2 容器功能
 
@@ -1638,7 +1638,7 @@ args[i] = findProvidedArgument(parameter, providedArgs);
 
 ![image-20220505120010889](images\image-20220505120010889.png)
 
-### 挨个判断所有参数解析器那个支持解析这个参数
+### 挨个判断所有参数解析器哪个支持解析这个参数
 
 ![image-20220505120949314](images\image-20220505120949314.png)
 

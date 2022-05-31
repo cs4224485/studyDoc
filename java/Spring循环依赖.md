@@ -467,7 +467,7 @@ sharedInstance = getSingleton(beanName, () -> {
 
 ![image-20220517231526104](images\image-20220517231526104.png)
 
-执行到 singeltonFactory.getObject()方法会执行之前穿进来的lamba表达式 里面方法会执行createBean
+执行到 singeltonFactory.getObject()方法会执行之前传进来的lamba表达式 里面方法会执行createBean
 
 ![image-20220518001136465](images\image-20220518001136465.png)
 
@@ -551,7 +551,7 @@ beanB获取beanA
 
 ![image-20220518211123290](C:\Users\cs1\AppData\Roaming\Typora\typora-user-images\image-20220518211123290.png)
 
-这里就或取到了bean a对象， 但是这个的a应该这是被实例化了 并没有进行属性赋值后面还会走到populateBean（beanA）
+这里就获取到了bean a对象， 但是这个的a应该这是被实例化了 并没有进行属性赋值后面还会走到populateBean（beanA）
 
 ![image-20220518211542215](images\image-20220518211542215.png)
 
