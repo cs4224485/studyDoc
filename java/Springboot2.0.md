@@ -2683,7 +2683,7 @@ FileCopyUtils。实现文件流的拷贝
       @ExceptionHandler({ArithmeticException.class, NullPointerException.class})
       public String handleException(Exception e){
           log.error("异常是：{}", e);
-          // 试图地址
+          // 视图地址
           return "login";
       }
   }
@@ -2720,7 +2720,7 @@ FileCopyUtils。实现文件流的拷贝
   - 你的异常没有任何人能处理。tomcat底层 response.sendError。error请求就会转给controller
   - **basicErrorController 要去的页面地址是** **ErrorViewResolver**  
 
-- 
+  
 
 ### 异常处理自动配置原理
 

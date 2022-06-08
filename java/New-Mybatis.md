@@ -256,7 +256,7 @@ MyBatis 的配置文件包含了影响 MyBatis 行为甚深的 设置（settings
 
 这是 MyBatis 中极为重要的调整设置，它们会改变 MyBatis 的运行时行为。
 
-![image-20200621101616348](\images\image-20200621101616348.png)
+![image-20200621101616348](images\image-20200621101616348.png)
 
 ```xml
 <settings>
@@ -288,13 +288,13 @@ MyBatis 的配置文件包含了影响 MyBatis 行为甚深的 设置（settings
 ```
 值得注意的是，MyBatis已经为许多常见的 Java 类型内建 了相应的类型别名。它们都是大小写不敏感的，我们在起 别名的时候千万不要占用已有的别名。
 
-![image-20200621102039441](\images\image-20200621102039441.png)
+![image-20200621102039441](images\image-20200621102039441.png)
 
 ## 4、typeHandlers类型处理器
 
 无论是 MyBatis 在预处理语句（PreparedStatement）中 设置一个参数时，还是从结果集中取出一个值时， 都会 用类型处理器将获取的值以合适的方式转换成 Java 类型。
 
-![image-20200621102139771](\images\image-20200621102139771.png)
+![image-20200621102139771](images\image-20200621102139771.png)
 
 ## 5、plugins插件
 
@@ -432,7 +432,7 @@ select – 映射查询语句
 
 ## 1、insert、update、delete元素
 
-![image-20200621115504779](\images\image-20200621115504779.png)
+![image-20200621115504779](images\image-20200621115504779.png)
 
 ### 插入语句
 
@@ -614,7 +614,7 @@ Preparing: select * from tbl_employee where id=2 and last_name=?
 > 	在我们数据为null的时候，有些数据库可能不能识别mybatis对null的默认处理。比如Oracle（报错）；
 > 	
 > 	JdbcType OTHER：无效的类型；因为mybatis对所有的null都映射的是原生Jdbc的OTHER类型，oracle不能正确处理;
-> 		
+> 				
 > 	由于全局配置中：jdbcTypeForNull=OTHER；oracle不支持；两种办法
 > 	1、#{email,jdbcType=OTHER};
 > 	2、jdbcTypeForNull=NULL
@@ -1398,7 +1398,7 @@ public static void main(String[] args) throws Exception {
 
 [^一个MappedStatement代表一个增删改查标签的详细信息]: 
 
-![image-20200819203856342](\images\image-20200819203856342.png)
+![image-20200819203856342](images\image-20200819203856342.png)
 
 Configuration对象保存了所有配置文件的详细信息
 

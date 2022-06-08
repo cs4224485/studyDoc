@@ -216,7 +216,7 @@ select * from user;
 show variables like '%char%';
 ```
 
-![image-20201222201907513](\images\image-20201222201907513.png)
+![image-20201222201907513](images\image-20201222201907513.png)
 
 ### mysql 的安装位置
 
@@ -465,7 +465,7 @@ Cache和Buffer：查询缓存
 show engines;
 ```
 
-![image-20201222204146954](\images\image-20201222204146954.png)
+![image-20201222204146954](images\image-20201222204146954.png)
 
 查看 mysql 默认的存储引擎
 
@@ -505,7 +505,7 @@ show variables like '%storage_engine%';
 
 SQL书写顺序
 
-![image-20201222204826492](\images\image-20201222204826492.png)
+![image-20201222204826492](images\image-20201222204826492.png)
 
 ### MySQL 实际执行 SQL 顺序
 
@@ -513,15 +513,15 @@ SQL书写顺序
 
 2. 下面是经常出现的查询顺序：
 
-   ![image-20201222205016773](\images\image-20201222205016773.png)
+   ![image-20201222205016773](images\image-20201222205016773.png)
 
 总结：mysql 从 FROM 开始执行~
 
-![image-20201222205045248](\images\image-20201222205045248.png)
+![image-20201222205045248](images\image-20201222205045248.png)
 
 ### JOIN 连接查询
 
-![image-20201222205811221](\images\image-20201222205811221.png)
+![image-20201222205811221](images\image-20201222205811221.png)
 
 > **建表 SQL**
 
@@ -793,7 +793,7 @@ mysql> select * from tbl_emp e left join tbl_dept d on e.deptId = d.id where d.i
    - 左边是数据表，一共有两列七条记录，最左边的十六进制数字是数据记录的物理地址
    - 为了加快col2的查找，可以维护一个右边所示的二叉查找树，**每个节点分别包含索引键值和一个指向对应数据记录物理地址的指针**，这样就可以运用二叉查找在一定的复杂度内获取到相应数据，从而快速的检索出符合条件的记录。
 
-![image-20201223200231529](\images\image-20201223200231529.png)
+![image-20201223200231529](images\image-20201223200231529.png)
 
 ### 索引优劣势
 
@@ -882,7 +882,7 @@ mysql> show index from tbl_emp;
 2. 通过磁盘块 1的 P2 指针的磁盘地址把磁盘块 3 由磁盘加载到内存， 发生第二次 IO， 29 在 26 和 30 之间， 锁定磁盘块 3 的 P2 指针
 3. 通过指针加载磁盘块 8 到内存， 发生第三次 IO， 同时内存中做二分查找找到 29， 结束查询， 总计三次 IO。
 
-![image-20201223201418414](\images\image-20201223201418414.png)
+![image-20201223201418414](images\image-20201223201418414.png)
 
 ### B+tree 索引
 
@@ -907,7 +907,7 @@ B-树的关键字（数据项）和记录是放在一起的； B+树的非叶子
 1. B+树的磁盘读写代价更低：B+树的内部结点并没有指向关键字具体信息的指针。 因此其内部结点相对 B 树更小。 如果把所有同一内部结点的关键字存放在同一盘块中， 那么盘块所能容纳的关键字数量也越多。 一次性读入内存中的需要查找的关键字也就越多。 相对来说 IO 读写次数也就降低了。
 2. B+树的查询效率更加稳定：由于非终结点并不是最终指向文件内容的结点， 而只是叶子结点中关键字的索引。 所以任何关键字的查找必须走一条从根结点到叶子结点的路。 所有关键字查询的路径长度相同， 导致每一个数据的查询效率相当。
 
-![image-20201223202317262](\images\image-20201223202317262.png)
+![image-20201223202317262](images\image-20201223202317262.png)
 
 ## 5、何时需要创建索引
 
@@ -993,15 +993,15 @@ id 取值的三种情况：
 
 **id相同**，执行顺序由上至下
 
-![image-20201223203833397](\images\image-20201223203833397.png)
+![image-20201223203833397](images\image-20201223203833397.png)
 
 **id不同**，如果是子查询，id的序号会递增，**id值越大优先级越高，越先被执行**
 
-![image-20201223203946541](\images\image-20201223203946541.png)
+![image-20201223203946541](images\image-20201223203946541.png)
 
 **id相同不同**，同时存在：id如果相同，可以认为是一组，从上往下顺序执行；在所有组中，id值越大，优先级越高，越先执行；衍生=DERIVED
 
-![image-20201223204008601](\images\image-20201223204008601.png)
+![image-20201223204008601](images\image-20201223204008601.png)
 
 > **select_type：查询的类型，主要用于区别普通查询、联合查询、子查询等复杂查询**
 
@@ -1041,27 +1041,27 @@ xplain
 1. system：表只有一行记录（等于系统表），这是const类型的特例，平时不会出现，这个也可以忽略不计
 2. const：表示通过索引一次就找到了，const用于比较primary key或者unique索引。因为只匹配一行数据，所以很快。如将主键置于where列表中，MySQL就能将该查询转换为一个常量
 
-![image-20201223205152246](\images\image-20201223205152246.png)
+![image-20201223205152246](images\image-20201223205152246.png)
 
 3. eq_ref：唯一性索引，对于每个索引键，表中只有一条记录与之匹配，常见于主键或唯一索引扫描
 
-![image-20201223205226999](\images\image-20201223205226999.png)
+![image-20201223205226999](images\image-20201223205226999.png)
 
 4. ref：非唯一索引扫描，返回匹配某个单独值的所有行。本质上也是一种索引访问，它返回所有匹配某个单独值的行，然而，它可能会找到多个符合条件的行，所以他应该属于查找和扫描的混合体
 
-![image-20201223205258170](\images\image-20201223205258170.png)
+![image-20201223205258170](images\image-20201223205258170.png)
 
 5. **range**：只检索给定范围的行，使用一个索引来选择行。key列显示使用了哪个索引一般就是在你的where语句中出现了`between`、`<`、`>`、`in`等的查询这种范围扫描索引扫描比全表扫描要好，因为他**只需要开始索引的某一点，而结束于另一点，不用扫描全部索引**
 
-![image-20201223205334597](\images\image-20201223205334597.png)
+![image-20201223205334597](images\image-20201223205334597.png)
 
 6. **index**：Full Index Scan，index与ALL区别为index类型**只遍历索引树**。这通常比ALL快，因为索引文件通常比数据文件小。（也就是说**虽然all和index都是读全表，但index是从索引中读取的，而all是从硬盘数据库文件中读的**）
 
-![image-20201223205515648](\images\image-20201223205515648.png)
+![image-20201223205515648](images\image-20201223205515648.png)
 
 7. **all**：FullTable Scan，**将遍历全表以找到匹配的行（全表扫描）**
 
-![image-20201223205540495](\images\image-20201223205540495.png)
+![image-20201223205540495](images\image-20201223205540495.png)
 
 8. 备注：一般来说，得保证查询只是达到range级别，最好达到ref
 
@@ -1075,27 +1075,27 @@ xplain
 1. **实际**使用的索引，如果为null，则没有使用索引
 2. **若查询中使用了覆盖索引，则该索引仅出现在key列表中**
 
-![image-20201223205648982](\images\image-20201223205648982.png)
+![image-20201223205648982](images\image-20201223205648982.png)
 
 > **key_len**
 
 1. **表示索引中使用的字节数**，可通过该列计算查询中使用的索引的长度。在不损失精确性的情况下，长度越短越好
 2. key_len显示的值为**索引最大可能长度**，并非实际使用长度，即key_len是根据表定义计算而得，不是通过表内检索出的
 
-![image-20201223205724958](\images\image-20201223205724958.png)
+![image-20201223205724958](images\image-20201223205724958.png)
 
 > **ref**
 
 1. **显示索引哪一列被使用了**，如果可能的话，最好是一个常数。哪些列或常量被用于查找索引列上的值
 2. 由key_len可知t1表的索引idx_col1_col2被充分使用，t1表的col1匹配t2表的col1，t1表的col2匹配了一个常量，即’ac’
 
-![image-20201223210425860](\images\image-20201223210425860.png)
+![image-20201223210425860](images\image-20201223210425860.png)
 
 > **rows**
 
 根据表统计信息及索引选用情况，大致估算出找到所需的记录所需要读取的行数
 
-![image-20201223210502446](\images\image-20201223210502446.png)
+![image-20201223210502446](images\image-20201223210502446.png)
 
 > **Extra：包含不适合在其他列中显示但十分重要的额外信息**
 
@@ -1107,7 +1107,7 @@ xplain
 - 示例中第一个查询只使用了 col1 和 col3，原有索引派不上用场，所以进行了外部文件排序
 - 示例中第二个查询使用了 col1、col2 和 col3，原有索引派上用场，无需进行文件排序
 
-![image-20201223210550353](\images\image-20201223210550353.png)
+![image-20201223210550353](images\image-20201223210550353.png)
 
 **Using temporary（创建临时表）：**
 
@@ -1116,7 +1116,7 @@ xplain
 - 示例中第一个查询只使用了 col1，原有索引派不上用场，所以创建了临时表进行分组
 - 示例中第二个查询使用了 col1、col2，原有索引派上用场，无需创建临时表
 
-![image-20201223211036773](\images\image-20201223211036773.png)
+![image-20201223211036773](images\image-20201223211036773.png)
 
 **Using index（覆盖索引）：**
 
@@ -1124,7 +1124,7 @@ xplain
 - 如果同时出现using where，表明索引被用来执行索引键值的查找
 - 如果没有同时出现using where，表明索引用来读取数据而非执行查找动作
 
-![image-20201223211157691](\images\image-20201223211157691.png)
+![image-20201223211157691](images\image-20201223211157691.png)
 
 **覆盖索引（Covering Index），也说为索引覆盖**
 
@@ -1150,7 +1150,7 @@ distinct：优化distinct，在找到第一匹配的元组后即停止找同样�
 4. 第四行（执行顺序1）：select_type为union，说明第四个select是union里的第二个select，最先执行【`select name, id from t2`】
 5. 第五行（执行顺序5）：代表从union的临时表中读取行的阶段，table列的<union1, 4>表示用第一个和第四个select的结果进行union操作。【两个结果进行uinion操作】
 
-![image-20201223212540854](\images\image-20201223212540854.png)
+![image-20201223212540854](images\image-20201223212540854.png)
 
 ## 4、索引优化
 
@@ -1217,11 +1217,11 @@ mysql> SELECT id, author_id FROM article WHERE category_id = 1 AND comments > 1 
 mysql> SHOW INDEX FROM article;
 ```
 
-![image-20201225110209345](\images\image-20201225110209345.png)
+![image-20201225110209345](images\image-20201225110209345.png)
 
 使用 explain 分析 SQL 语句的执行效率：`EXPLAIN SELECT id, author_id FROM article WHERE category_id = 1 AND comments > 1 ORDER BY views DESC LIMIT 1;`
 
-![image-20201225110514327](\images\image-20201225110514327.png)
+![image-20201225110514327](images\image-20201225110514327.png)
 
 结论：
 
@@ -1245,7 +1245,7 @@ mysql> create index idx_article_ccv on article(category_id, comments, views);
 mysql> SHOW INDEX FROM article;
 ```
 
-![image-20201225110723111](\images\image-20201225110723111.png)
+![image-20201225110723111](images\image-20201225110723111.png)
 
 再次执行查询：type变成了range，这是可以忍受的。但是extra里使用Using filesort仍是无法接受的。
 
@@ -1253,7 +1253,7 @@ mysql> SHOW INDEX FROM article;
 EXPLAIN SELECT id, author_id FROM article WHERE category_id = 1 AND comments > 1 ORDER BY views DESC LIMIT 1;
 ```
 
-![image-20201225110834404](\images\image-20201225110834404.png)
+![image-20201225110834404](images\image-20201225110834404.png)
 
 - 分析：
   - 但是我们已经建立了索引，为啥没用呢？
@@ -1261,7 +1261,7 @@ EXPLAIN SELECT id, author_id FROM article WHERE category_id = 1 AND comments > 1
   - 当comments字段在联合索引里处于中间位置时，**因为`comments>1`条件是一个范围值**（所谓 range），MySQL 无法利用索引再对后面的views部分进行检索，即 **range 类型查询字段后面的索引无效**。
 - 将查询条件中的 `comments > 1` 改为 `comments = 1` ，发现 Use filesort 神奇地消失了，从这点可以验证：范围后的索引会导致索引失效
 
-![image-20201225111057261](\images\image-20201225111057261.png)
+![image-20201225111057261](images\image-20201225111057261.png)
 
 **删除索引**
 
@@ -1273,7 +1273,7 @@ DROP INDEX idx_article_ccv ON article;
 
 删除刚才创建的 idx_article_ccv 索引
 
-![image-20201225111159511](\images\image-20201225111159511.png)
+![image-20201225111159511](images\image-20201225111159511.png)
 
 **再次创建索引**
 
@@ -1286,11 +1286,11 @@ create index idx_article_ccv on article(category_id, views);
 
 由于 range 后（`comments > 1`）的索引会失效，这次我们建立索引时，直接抛弃 comments 列，先利用 category_id 和 views 的联合索引查询所需要的数据，再从其中取出 `comments > 1` 的数据（我觉着应该是这样的）
 
-![image-20201225111351118](\images\image-20201225111351118.png)
+![image-20201225111351118](images\image-20201225111351118.png)
 
 再次执行查询：可以看到，type变为了ref，Extra中的Using filesort也消失了，结果非常理想
 
-![image-20201225111442391](\images\image-20201225111442391.png)
+![image-20201225111442391](images\image-20201225111442391.png)
 
 为了不影响之后的测试，删除该表的 idx_article_ccv 索引
 
@@ -1467,7 +1467,7 @@ mysql> SELECT * FROM class LEFT JOIN book ON class.card = book.card LEFT JOIN ph
 30 rows in set (0.00 sec)
 ```
 
-![image-20201225112221951](\images\image-20201225112221951.png)
+![image-20201225112221951](images\image-20201225112221951.png)
 
 结论：
 
@@ -1482,11 +1482,11 @@ mysql> SELECT * FROM class LEFT JOIN book ON class.card = book.card LEFT JOIN ph
 ALTER TABLE book ADD INDEX Y (card);
 ```
 
-![image-20201225112526945](\images\image-20201225112526945.png)
+![image-20201225112526945](images\image-20201225112526945.png)
 
 测试结果：可以看到第二行的type变为了ref，rows也变成了优化比较明显。
 
-![image-20201225112606072](\images\image-20201225112606072.png)
+![image-20201225112606072](images\image-20201225112606072.png)
 
 分析：
 
@@ -1509,11 +1509,11 @@ ALTER TABLE class ADD INDEX X(card);
 
 再次执行左连接，凉凉~~~
 
-![image-20201225114308302](\images\image-20201225114308302.png)
+![image-20201225114308302](images\image-20201225114308302.png)
 
 别怕，我们来执行右连接：可以看到第二行的type变为了ref，rows也变成了优化比较明显。
 
-![image-20201225114354825](\images\image-20201225114354825.png)
+![image-20201225114354825](images\image-20201225114354825.png)
 
 分析：
 
@@ -1637,7 +1637,7 @@ mysql> SELECT * FROM class LEFT JOIN book ON class.card = book.card LEFT JOIN ph
 
 使用 explain 分析 SQL 指令：
 
-![image-20201225114614612](\images\image-20201225114614612.png)结论：
+![image-20201225114614612](images\image-20201225114614612.png)结论：
 
 - **type 有All ，rows 为表数据总行数，说明 class、 book 和 phone 表都进行了全表检索**
 - Extra 中 Using join buffer ，表明连接过程中使用了 join 缓冲区
@@ -1655,7 +1655,7 @@ ALTER TABLE phone ADD INDEX Z (card);
 
 执行查询：后2行的type都是ref，且总rows优化很好，效果不错。因此索引最好设置在需要经常查询的字段中。
 
-![image-20201225114815970](\images\image-20201225114815970.png)
+![image-20201225114815970](images\image-20201225114815970.png)
 
 > **Join 语句优化的结论**
 
@@ -1705,7 +1705,7 @@ mysql> select * from staffs;
 
 staffs 表中的复合索引：name、age、pos
 
-![image-20201225115109536](\images\image-20201225115109536.png)
+![image-20201225115109536](images\image-20201225115109536.png)
 
 ### 索引失效准则
 
@@ -1729,48 +1729,48 @@ staffs 表中的复合索引：name、age、pos
 - key = index_staffs_nameAgePos 表明索引生效
 - ref = const ：这个常量就是查询时的 ‘July’ 字符串常量
 
-![image-20201225115208477](\images\image-20201225115208477.png)
+![image-20201225115208477](images\image-20201225115208477.png)
 
 带头大哥 name 带上小弟 age
 
 - key = index_staffs_nameAgePos 表明索引生效
 - ref = const,const：两个常量分别为 ‘July’ 和 23
 
-![image-20201225115243730](\images\image-20201225115243730.png)
+![image-20201225115243730](images\image-20201225115243730.png)
 
 带头大哥 name 带上小弟 age ，小弟 age 带上小小弟 pos
 
 - key = index_staffs_nameAgePos 表明索引生效
 - ref = const,const,const ：三个常量分别为 ‘July’、23 和 ‘dev’
 
-![image-20201225115355143](\images\image-20201225115355143.png)
+![image-20201225115355143](images\image-20201225115355143.png)
 
 带头大哥 name 挂了
 
 - key = NULL 说明索引失效
 - ref = null 表示 ref 也失效
 
-![image-20201225115902922](\images\image-20201225115902922.png)
+![image-20201225115902922](images\image-20201225115902922.png)
 
 带头大哥 name 没挂，小弟 age 跑了
 
 - key = index_staffs_nameAgePos 说明索引没有失效
 - ref = const 表明只使用了一个常量，即第二个常量（pos = ‘dev’）没有生效
 
-![image-20201225115955387](\images\image-20201225115955387.png)
+![image-20201225115955387](images\image-20201225115955387.png)
 
 > **在索引列上进行计算，会导致索引失效，进而转向全表扫描**
 
 不对带头大哥 name 进行任何操作：key = index_staffs_nameAgePos 表明索引生效
 
-![image-20201225120049455](\images\image-20201225120049455.png)
+![image-20201225120049455](images\image-20201225120049455.png)
 
 对带头大哥 name 进行操作：使用 LEFT 函数截取子串
 
 - key = NULL 表明索引生效
 - type = ALL 表明进行了全表扫描
 
-![image-20201225120140878](\images\image-20201225120140878.png)
+![image-20201225120140878](images\image-20201225120140878.png)
 
 > **范围之后全失效**
 
@@ -1779,7 +1779,7 @@ staffs 表中的复合索引：name、age、pos
 - type = ref 表示非唯一索引扫描，SQL 语句将返回匹配某个单独值的所有行。
 - key_len = 140 表明表示索引中使用的字节数
 
-![image-20201225120229160](\images\image-20201225120229160.png)
+![image-20201225120229160](images\image-20201225120229160.png)
 
 将 age 改为范围匹配
 
@@ -1787,21 +1787,21 @@ staffs 表中的复合索引：name、age、pos
 - key = index_staffs_nameAgePos 表示索引并没有失效
 - key_len = 78 ，ref = NULL 均表明范围搜索使其后面的索引均失效
 
-![image-20201225120305546](\images\image-20201225120305546.png)
+![image-20201225120305546](images\image-20201225120305546.png)
 
 > **尽量使用覆盖索引（只访问索引的查询（索引列和查询列一致）），减少 `select \*`**
 
 `SELECT *` 的写法
 
-![image-20201225120405659](\images\image-20201225120405659.png)
+![image-20201225120405659](images\image-20201225120405659.png)
 
 盖索引的写法：Extra = Using where; Using index ，Using index 表示使用索引列进行查询，将大大提高查询的效率
 
-![image-20201225120445802](\images\image-20201225120445802.png)
+![image-20201225120445802](images\image-20201225120445802.png)
 
 覆盖索引中包含 range 条件：type = ref 并且 Extra = Using where; Using index ，虽然在查询条件中使用了 范围搜索，但是由于我们只需要查找索引列，所以无需进行全表扫描
 
-![image-20201225120518865](\images\image-20201225120518865.png)
+![image-20201225120518865](images\image-20201225120518865.png)
 
 > **mysql在使用不等于（!=或者<>）的时候无法使用索引会导致全表扫描**
 
@@ -1810,30 +1810,30 @@ staffs 表中的复合索引：name、age、pos
 - key = null 表示索引失效
 - rows = 3 表示进行了全表扫描
 
-![image-20201225120647190](\images\image-20201225120647190.png)
+![image-20201225120647190](images\image-20201225120647190.png)
 
 > **is null，is not null 也无法使用索引**
 
 is null，is not null 会导致索引失效：key = null 表示索引失效
 
-![image-20201225120739524](\images\image-20201225120739524.png)
+![image-20201225120739524](images\image-20201225120739524.png)
 
 > **like % 写最右**
 
 staffs 表的索引关系
 
-![image-20201225120925982](\images\image-20201225120925982.png)
+![image-20201225120925982](images\image-20201225120925982.png)
 
 like % 写在左边的情况
 
 - type = All ，rows = 3 表示进行了全表扫描
 - key = null 表示索引失效
 
-![image-20201225121013557](\images\image-20201225121013557.png)
+![image-20201225121013557](images\image-20201225121013557.png)
 
 like % 写在右边的情况：key = index_staffs_nameAgePos 表示索引未失效
 
-![image-20201225121128715](\images\image-20201225121128715.png)
+![image-20201225121128715](images\image-20201225121128715.png)
 
 > **解决【like ‘%str%’ 】索引失效的问题：覆盖索引**
 
@@ -1881,7 +1881,7 @@ mysql> select * from tbl_user;
 CREATE INDEX idx_user_nameAge ON tbl_user(name, age);
 ```
 
-![image-20201225121426461](\images\image-20201225121426461.png)
+![image-20201225121426461](images\image-20201225121426461.png)
 
 **测试覆盖索引**
 
@@ -1909,19 +1909,19 @@ EXPLAIN SELECT id, name, age, email FROM tbl_user WHERE NAME LIKE '%aa%';
 
 正常操作，索引没有失效
 
-![image-20201225121757285](\images\image-20201225121757285.png)
+![image-20201225121757285](images\image-20201225121757285.png)
 
-![image-20201225121836037](\images\image-20201225121836037.png)
+![image-20201225121836037](images\image-20201225121836037.png)
 
 如果字符串忘记写 ‘’ ，那么 mysql 会为我们进行隐式的类型转换，但凡进行了类型转换，索引都会失效
 
-![image-20201225121919393](\images\image-20201225121919393.png)
+![image-20201225121919393](images\image-20201225121919393.png)
 
 > **少用or，用它连接时会索引失效**
 
 使用 or 连接，会导致索引失效
 
-![image-20201225122004545](\images\image-20201225122004545.png)
+![image-20201225122004545](images\image-20201225122004545.png)
 
 ## 6、索引优化面试题
 
@@ -1966,82 +1966,82 @@ mysql> select * from test03;
 5 rows in set (0.00 sec)
 ```
 
-![image-20210113195431263](\images\image-20210113195431263.png)
+![image-20210113195431263](images\image-20210113195431263.png)
 
 > **问题：我们创建了复合索引idx_test03_c1234，根据以下SQL分析下索引使用情况？**
 
 - `EXPLAIN SELECT * FROM test03 WHERE c1='a1' AND c2='a2' AND c3='a3' AND c4='a4';`
 - 即全值匹配
 
-![image-20210113195519864](\images\image-20210113195519864.png)
+![image-20210113195519864](images\image-20210113195519864.png)
 
 - `EXPLAIN SELECT * FROM test03 WHERE c4='a4' AND c3='a3' AND c2='a2' AND c1='a1';`
 - mysql 优化器进行了优化，所以我们的索引都生效了
 
-![image-20210113195558464](\images\image-20210113195558464.png)
+![image-20210113195558464](images\image-20210113195558464.png)
 
 - `EXPLAIN SELECT * FROM test03 WHERE c1='a1' AND c2='a2' AND c3>'a3' AND c4='a4';`
 - c3 列使用了索引进行排序，并没有进行查找，导致 c4 无法用索引进行查找
 
-![image-20210113195737263](\images\image-20210113195737263.png)
+![image-20210113195737263](images\image-20210113195737263.png)
 
 - `EXPLAIN SELECT * FROM test03 WHERE c1='a1' AND c2='a2' AND c4>'a4' AND c3='a3';`
 - mysql 优化器进行了优化，所以我们的索引都生效了，在 c4 时进行了范围搜索
 
-![image-20210113195822212](\images\image-20210113195822212.png)
+![image-20210113195822212](images\image-20210113195822212.png)
 
 - `EXPLAIN SELECT * FROM test03 WHERE c1='a1' AND c2='a2' AND c4='a4' ORDER BY c3;`
 - c3 列将索引用于排序，而不是查找，c4 列没有用到索引
 
-![image-20210113195919771](\images\image-20210113195919771.png)
+![image-20210113195919771](images\image-20210113195919771.png)
 
 - `EXPLAIN SELECT * FROM test03 WHERE c1='a1' AND c2='a2' ORDER BY c3;`
 - 那不就和上面一样的嘛~~~，c4 列都没有用到索引
 
-![image-20210113202351956](\images\image-20210113202351956.png)
+![image-20210113202351956](images\image-20210113202351956.png)
 
 - `EXPLAIN SELECT * FROM test03 WHERE c1='a1' AND c2='a2' ORDER BY c4;`
 - 因为索引建立的顺序和使用的顺序不一致，导致 mysql 动用了文件排序
 - 看到 Using filesort 就要知道：此句 SQL 必须优化
 
-![image-20210113202514456](\images\image-20210113202514456.png)
+![image-20210113202514456](images\image-20210113202514456.png)
 
 - `EXPLAIN SELECT * FROM test03 WHERE c1='a1' AND c5='a5' ORDER BY c2, c3;`
 
 - 只用 c1 一个字段索引，但是c2、c3用于排序，无filesort
 
-  ![image-20210113203101764](\images\image-20210113203101764.png)
+  ![image-20210113203101764](images\image-20210113203101764.png)
 
 - `EXPLAIN SELECT * FROM test03 WHERE c1='a1' AND c5='a5' ORDER BY c3, c2;`
 - 出现了filesort，我们建的索引是1234，它没有按照顺序来，32颠倒了
 
-![image-20210113203244413](\images\image-20210113203244413.png)
+![image-20210113203244413](images\image-20210113203244413.png)
 
 - `EXPLAIN SELECT * FROM test03 WHERE c1='a1' AND c2='a2' ORDER BY c2, c3;`
 - 用c1、c2两个字段索引，但是c2、c3用于排序，无filesort
 
-![image-20210113203358934](D:\studyDoc\java\images\image-20210113203358934.png)
+![image-20210113203358934](images\image-20210113203358934.png)
 
 - `EXPLAIN SELECT * FROM test03 WHERE c1='a1' AND c2='a2' AND c5='a5' ORDER BY c2, c3;`
 - 和 c5 这个坑爹货没啥关系
 
-![image-20210113203947467](\images\image-20210113203947467.png)
+![image-20210113203947467](images\image-20210113203947467.png)
 
 - `EXPLAIN SELECT * FROM test03 WHERE c1='a1' AND c2='a2' AND c5='a5' ORDER BY c3, c2;`
 - 注意查询条件 c2=‘a2’ ，我都把 c2 查出来了（c2 为常量），我还给它排序作甚，所以没有产生 filesort
 
-![image-20210113204118029](\images\image-20210113204118029.png)
+![image-20210113204118029](images\image-20210113204118029.png)
 
 - `EXPLAIN SELECT * FROM test03 WHERE c1='a1' AND c4='a4' GROUP BY c2, c3;`
 - 顺序为 1 2 3 ，没有产生文件排序
 
-![image-20210113204210643](\images\image-20210113204210643.png)
+![image-20210113204210643](images\image-20210113204210643.png)
 
 - `EXPLAIN SELECT * FROM test03 WHERE c1='a1' AND c4='a4' GROUP BY c3, c2;`
 - group by 表面上叫分组，分组之前必排序，group by 和 order by 在索引上的问题基本是一样的
 - Using temporary; Using filesort 两个都有
 
-![image-20210113204256233](\images\image-20210113204256233.png)
+![image-20210113204256233](images\image-20210113204256233.png)
 
 结论：
 
@@ -2061,7 +2061,7 @@ mysql> select * from test03;
 
 - like 后面以常量开头，比如 like ‘kk%’ 和 like ‘k%kk%’ ，可以理解为就是常量
 
-![image-20210113204347692](\images\image-20210113204347692.png)
+![image-20210113204347692](images\image-20210113204347692.png)
 
 > **索引优化的总结**
 
@@ -2099,7 +2099,7 @@ VAR 引号不可丢， SQL 优化有诀窍。
 3. EXISTS子查询的实际执行过程可能经过了优化而不是我们理解上的逐条对比，如果担忧效率问题，可进行实际检验以确定是否有效率问题。
 4. EXISTS子查询往往也可以用条件表达式、其他子查询或者JOIN来替代，何种最优需要具体问题具体分析
 
-![image-20210114202645165](\images\image-20210114202645165.png)
+![image-20210114202645165](images\image-20210114202645165.png)
 
 **结论：**
 
@@ -2214,39 +2214,39 @@ mysql> select * from tblA;
 
 - tbl 中的索引
 
-![image-20210114202953795](\images\image-20210114202953795.png)
+![image-20210114202953795](images\image-20210114202953795.png)
 
 **CASE1：能使用索引进行排序的情况**
 
 - 只有带头大哥 age
 
-![image-20210114203041820](\images\image-20210114203041820.png)
+![image-20210114203041820](images\image-20210114203041820.png)
 
-![image-20210114203335371](\images\image-20210114203335371.png)
+![image-20210114203335371](images\image-20210114203335371.png)
 
 - 带头大哥 age + 小弟 birth
 
-![image-20210114203416430](\images\image-20210114203416430.png)
+![image-20210114203416430](images\image-20210114203416430.png)
 
 - mysql 默认升序排列，全升序或者全降序，都扛得住
 
-![image-20210114203536218](\images\image-20210114203536218.png)
+![image-20210114203536218](images\image-20210114203536218.png)
 
-![image-20210114203607989](\images\image-20210114203607989.png)
+![image-20210114203607989](images\image-20210114203607989.png)
 
 **CASE2：不能使用索引进行排序的情况**
 
 - 带头大哥 age 挂了
 
-![image-20210114203647744](\images\image-20210114203647744.png)
+![image-20210114203647744](images\image-20210114203647744.png)
 
 - 小弟 birth 居然敢在带头大哥 age 前面
 
-![image-20210114203724628](\images\image-20210114203724628.png)
+![image-20210114203724628](images\image-20210114203724628.png)
 
 - mysql 默认升序排列，如果全升序或者全降序，都 ok ，但是一升一降 mysql 就扛不住了
 
-![image-20210114203807865](\images\image-20210114203807865.png)
+![image-20210114203807865](images\image-20210114203807865.png)
 
 **结论**
 
@@ -2274,7 +2274,7 @@ mysql> select * from tblA;
 
 > **Order By 排序索引优化的总结**
 
-![image-20210114203912854](\images\image-20210114203912854.png)
+![image-20210114203912854](images\image-20210114203912854.png)
 
 ## 3、GROUP BY 优化
 
@@ -3272,7 +3272,7 @@ mysql> select * from mylock;
    - 表共享读锁（Table Read Lock）
    - 表独占写锁（Table Write Lock）
 
-![image-20210118202335571](\images\image-20210118202335571.png)
+![image-20210118202335571](images\image-20210118202335571.png)
 
 结论：结合上表，所以对MyISAM表进行操作，会有以下情况：
 
@@ -3331,7 +3331,7 @@ mysql> show status like 'table%';
 1. **原子性**（Atomicity）：事务是一个原子操作单元，其对数据的修改，要么全都执行，要么全都不执行。
 2. **一致性**（Consistent）：在事务开始和完成时，数据都必须保持一致状态。这意味着所有相关的数据规则都必须应用于事务的修改，以保持数据的完整性；事务结束时，所有的内部数据结构（如B树索引或双向链表）也都必须是正确的。
 3. **隔离性**（Isolation）：数据库系统提供一定的隔离机制，保证事务在不受外部并发操作影响的“独立”环境执行。这意味着事务处理过程中的中间状态对外部是不可见的，反之亦然。
-4. **持久性**（Durability）：事务院成之后，它对于数据的修改是永久性的，即使出现系统故障也能够保持
+4. **持久性**（Durability）：事务完成之后，它对于数据的修改是永久性的，即使出现系统故障也能够保持
 
 **并发事务处理带来的问题**
 
@@ -3633,7 +3633,7 @@ mysql> show status like 'innodb_row_lock%';
 2. slave将master的binary log events拷贝到它的**中继日志（relay log）**
 3. **slave重做中继日志中的事件**，将改变应用到自己的数据库中。MySQL复制是异步的且串行化的
 
-![image-20210129102506310](\images\image-20210129102506310.png)
+![image-20210129102506310](images\image-20210129102506310.png)
 
 ## 2、复制的基本原则
 
@@ -3651,7 +3651,7 @@ mysql> show status like 'innodb_row_lock%';
 
 主从都配置都在 [mysqld] 节点下，都是小写
 
-![image-20210129102604206](\images\image-20210129102604206.png)
+![image-20210129102604206](images\image-20210129102604206.png)
 
 **以下两条为必须配置**
 

@@ -21,7 +21,8 @@ RDBMS：
 	2. 结构化查询语言(SQL)  	
 	3. 数据和关系都存储在单独的表中  	
 	4. 数据操纵语言，数据定义语言  	
-	5. 严格的一致性  	6. 基础事务(ACDI属性)  
+	5. 严格的一致性  	
+	6. 基础事务(ACDI属性)  
 
 NoSQL：
 
@@ -1431,17 +1432,54 @@ SLAVEOF no one
    sentinel monitor 被监控数据库名字（自己起名字） ip port 1
    ```
 
-3. 启动哨兵模式(路径按照自己的需求进行配置)：
+3. 启动哨兵模式(路径按照自己的需求进行配置) 记得所有从机也要启动：
 
    ```shell
    redis-sentinel  /myredis/sentinel.conf
    ```
 
+sentinel.conf简约配置
+
+```
+###普通配置
+ 
+port 26379
+# 保护模式关闭，这样其他服务起就可以访问此台redis
+protected-mode no
+# 哨兵模式是否后台启动，默认no，改为yes
+daemonize yes
+pidfile /var/run/redis-sentinel.pid
+# log日志保存位置
+logfile /usr/local/redis/sentinel/redis-sentinel.log
+# 工作目录
+dir /usr/local/redis/sentinel
+ 
+###核心配置
+# 核心配置。
+# 第三个参数：哨兵名字，可自行修改。（若修改了，那后面涉及到的都得同步） 
+# 第四个参数：master主机ip地址
+# 第五个参数：redis端口号
+# 第六个参数：哨兵的数量。比如2表示，当至少有2个哨兵发现master的redis挂了，
+#               那么就将此master标记为宕机节点。
+#               这个时候就会进行故障的转移，将其中的一个从节点变为master
+sentinel monitor mymaster 192.168.217.151 6379 2
+# master中redis的密码
+sentinel auth-pass mymaster 123456
+# 哨兵从master节点宕机后，等待多少时间（毫秒），认定master不可用。
+# 默认30s，这里为了测试，改成10s
+sentinel down-after-milliseconds mymaster 10000
+# 当替换主节点后，剩余从节点重新和新master做同步的并行数量，默认为 1
+sentinel parallel-syncs mymaster 1
+# 主备切换的时间，若在3分钟内没有切换成功，换另一个从节点切换
+sentinel failover-timeout mymaster 18000
+
+```
+
 注意：
 
 1. 当master挂掉后，会通过选票进行选出下一个master。而且只有使用了sentinel.conf启动的才能开启选票
 
-2. 当原来的master后来后，很不幸变成了slave。
+2. 当原来的master后来恢复后，很不幸变成了slave。
 
 #### 复制原理
 

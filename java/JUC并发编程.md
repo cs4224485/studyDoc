@@ -313,7 +313,7 @@ public void test5(){
 
 ### 为什么需要 join 
 
-下面的代码执行，打印 r 是什么？
+下面的代码执行，打印的是什么？
 
 ```java
 static int r = 0;
@@ -7372,6 +7372,8 @@ t3 进入 sync.releaseShared(1) 中，调用 tryReleaseShared(1) 让计数减一
 ![image-20211217155709994](images\image-20211217155709994.png)
 
 之后 t4 在 acquireQueued 中 parkAndCheckInterrupt 处恢复运行，再次 for (;;) 这次自己是老二，并且没有其他 竞争，tryAcquire(1) 成功，修改头结点，流程结束
+
+
 
 ![image-20211217155743013](images\image-20211217155743013.png)
 

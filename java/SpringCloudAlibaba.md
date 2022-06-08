@@ -6,13 +6,13 @@ Spring Cloud Netflix项目进入到维护模式
 
 什么是维护模式
 
-![image-20210313112946357](\images\image-20210313112946357.png)
+![image-20210313112946357](images\image-20210313112946357.png)
 
 进入维护模式意味着什么
 
-![image-20210313113023380](\images\image-20210313113023380.png)
+![image-20210313113023380](images\image-20210313113023380.png)
 
-![image-20210313113038074](\images\image-20210313113038074.png)
+![image-20210313113038074](images\image-20210313113038074.png)
 
 ## SpringCloud Alibaba的服务介绍
 
@@ -52,7 +52,7 @@ Spring Cloud Netflix项目进入到维护模式
 
 ### 各个注册中心对比
 
-![image-20210313113516507](\images\image-20210313113516507.png)
+![image-20210313113516507](images\image-20210313113516507.png)
 
 ## 安装并运行Nacos
 
@@ -174,7 +174,7 @@ public class PaymentController {
 
 #### 查看注册中心
 
-![image-20210315195603020](\images\image-20210315195603020.png)
+![image-20210315195603020](images\image-20210315195603020.png)
 
 为了下一章演示nacos集群，参考9001新建9002
 
@@ -308,13 +308,13 @@ http://localhost:83/consumer/payment/nacos/1
 
 Nacos和CAP
 
-![image-20210315202431843](\images\image-20210315202431843.png)
+![image-20210315202431843](images\image-20210315202431843.png)
 
-![image-20210315202513067](\images\image-20210315202513067.png)
+![image-20210315202513067](images\image-20210315202513067.png)
 
 Nacos支持AP和CP模式的切换
 
-![image-20210315202614750](\images\image-20210315202614750.png)
+![image-20210315202614750](images\image-20210315202614750.png)
 
 ## Nacos作为服务配置中心演示
 
@@ -559,13 +559,13 @@ public class ConfigClientController {
 
 #### 在Nacos中添加配置信息
 
-![image-20210315204101026](\images\image-20210315204101026.png)
+![image-20210315204101026](images\image-20210315204101026.png)
 
 ##### Nacos中的匹配规则
 
 Nacos中的dataid的组成格式及与SpringBoot配置文件中的匹配规则
 
-![image-20210315204131448](\images\image-20210315204131448.png)
+![image-20210315204131448](images\image-20210315204131448.png)
 
 ##### 设置DataId
 
@@ -577,11 +577,11 @@ spring.profile.active即为当前环境对应的profile，可以通过
 
 file-exetension为配置内容的数据格式，可以通过配置项speing.cloud.nacos.config.file-extension配置
 
-![image-20210315204248682](\images\image-20210315204248682.png)
+![image-20210315204248682](images\image-20210315204248682.png)
 
 http://localhost:3377/config/info
 
-![image-20210315204525351](\images\image-20210315204525351.png)
+![image-20210315204525351](images\image-20210315204525351.png)
 
 历史配置：Nacos惠济路配置文件的历史版本默认保留30天，此外还有一件回滚功能
 
@@ -591,23 +591,23 @@ http://localhost:3377/config/info
 
 多环境多项目管理
 
-![image-20210315204843407](\images\image-20210315204843407.png)
+![image-20210315204843407](images\image-20210315204843407.png)
 
 ##### Nacos的图形化管理界面
 
 配置管理
 
-![image-20210315204937921](\images\image-20210315204937921.png)
+![image-20210315204937921](images\image-20210315204937921.png)
 
 命名空间
 
-![image-20210315205006205](\images\image-20210315205006205.png)
+![image-20210315205006205](images\image-20210315205006205.png)
 
 Namespace+group+data ID三者关系？为什么这么设计？
 
-![image-20210315205031511](\images\image-20210315205031511.png)
+![image-20210315205031511](images\image-20210315205031511.png)
 
-![image-20210315205046066](\images\image-20210315205046066.png)
+![image-20210315205046066](images\image-20210315205046066.png)
 
 ### 三种方案加载配置
 
@@ -619,43 +619,43 @@ Namespace+group+data ID三者关系？为什么这么设计？
 
 ##### 新建dev配置DataID
 
-![image-20210315205240402](\images\image-20210315205240402.png)
+![image-20210315205240402](images\image-20210315205240402.png)
 
 ##### 新建test配置DataID
 
-![image-20210315205306425](\images\image-20210315205306425.png)
+![image-20210315205306425](images\image-20210315205306425.png)
 
 通过spring.profile.acvice属性就能进行多环境下配置文件的读取
 
-![image-20210315205335440](\images\image-20210315205335440.png)
+![image-20210315205335440](images\image-20210315205335440.png)
 
 #### Group方案
 
 ##### 通过Group实现环境区分
 
-![image-20210315205414407](\images\image-20210315205414407.png)
+![image-20210315205414407](images\image-20210315205414407.png)
 
 ##### 在nacos图形界面控制台上新建配置文件DataID
 
-![image-20210315205438235](\images\image-20210315205438235.png)
+![image-20210315205438235](images\image-20210315205438235.png)
 
 ##### bootstrap+application
 
 在config下增加一条group的配置即可。可配置为DEV_GROUP或TEST_GROUP
 
-![image-20210315205521844](\images\image-20210315205521844.png)
+![image-20210315205521844](images\image-20210315205521844.png)
 
 #### Namespace方案
 
 ##### 新建dev/test的Namespace
 
-![image-20210315205605764](\images\image-20210315205605764.png)
+![image-20210315205605764](images\image-20210315205605764.png)
 
 ##### 回到服务管理-服务列表查看
 
-![image-20210315205628285](\images\image-20210315205628285.png)
+![image-20210315205628285](images\image-20210315205628285.png)
 
-![image-20210315205643946](\images\image-20210315205643946.png)
+![image-20210315205643946](images\image-20210315205643946.png)
 
 ## Nacos集群和持久化配置(重要)
 
@@ -665,17 +665,17 @@ https://nacos.io/zh-cn/docs
 
 官网架构图
 
-![image-20210315205828207](\images\image-20210315205828207.png)
+![image-20210315205828207](images\image-20210315205828207.png)
 
 上图翻译
 
-![image-20210315205851872](\images\image-20210315205851872.png)
+![image-20210315205851872](images\image-20210315205851872.png)
 
 说明
 
-![image-20210315205911664](\images\image-20210315205911664.png)
+![image-20210315205911664](images\image-20210315205911664.png)
 
-![image-20210315205935597](\images\image-20210315205935597.png)
+![image-20210315205935597](images\image-20210315205935597.png)
 
 ### Nacos持久化配置解释
 
@@ -740,7 +740,7 @@ CREATE TABLE `config_info` (
 
 位置
 
-![image-20210315210246949](\images\image-20210315210246949.png)
+![image-20210315210246949](images\image-20210315210246949.png)
 
 内容
 
@@ -761,7 +761,7 @@ db.pool.config.maximumPoolSize=20
 db.pool.config.minimumIdle=2
 ```
 
-![image-20210315210307278](\images\image-20210315210307278.png)
+![image-20210315210307278](images\image-20210315210307278.png)
 
 ##### 3.Linux服务器上nacos的集群配置cluster.conf
 
@@ -769,19 +769,19 @@ db.pool.config.minimumIdle=2
 
 复制出cluster.conf
 
-![image-20210315210343352](\images\image-20210315210343352.png)
+![image-20210315210343352](images\image-20210315210343352.png)
 
-![image-20210315210402506](\images\image-20210315210402506.png)
+![image-20210315210402506](images\image-20210315210402506.png)
 
 这个IP不能写127.0.0.1，必须是Linux命令hostname -i能够识别的IP
 
-![image-20210315210427505](\images\image-20210315210427505.png)
+![image-20210315210427505](images\image-20210315210427505.png)
 
 ##### 4.编辑Nacos的启动脚本startup.sh,使他能够接受不同的启动端口
 
 /mynacos/nacos/bin 目录下有startup.sh
 
-![image-20210315210516198](\images\image-20210315210516198.png)
+![image-20210315210516198](images\image-20210315210516198.png)
 
 修改内容
 
@@ -812,11 +812,11 @@ nohup $JAVA -Dserver.port=${PORT} ${JAVA_OPT} nacos.nacos >> ${BASE_DIR}/logs/st
 echo "nacos is starting，you can check the ${BASE_DIR}/logs/start.out"
 ```
 
-![image-20210315210544262](\images\image-20210315210544262.png)
+![image-20210315210544262](images\image-20210315210544262.png)
 
-![image-20210315210555364](\images\image-20210315210555364.png)
+![image-20210315210555364](images\image-20210315210555364.png)
 
-![image-20210315210606152](\images\image-20210315210606152.png)
+![image-20210315210606152](images\image-20210315210606152.png)
 
 linux JAVA_HOME
 
@@ -829,7 +829,7 @@ export PATH=${JAVA_HOME}/bin:$PATH
 
 执行方式
 
-![image-20210315210623034](\images\image-20210315210623034.png)
+![image-20210315210623034](images\image-20210315210623034.png)
 
 ##### 5.Nginx的配置，由他作为负载均衡器
 
@@ -839,9 +839,9 @@ export PATH=${JAVA_HOME}/bin:$PATH
 [root@MiWiFi-R4AC-srv nginx-1.12.2]#  /usr/local/nginx/sbin/nginx -c /opt/nginx-1.12.2/conf/nginx.conf
 ```
 
-![image-20210315210700943](\images\image-20210315210700943.png)
+![image-20210315210700943](images\image-20210315210700943.png)
 
-![image-20210315210712066](\images\image-20210315210712066.png)
+![image-20210315210712066](images\image-20210315210712066.png)
 
 ##### 6.截至到此为止，1个nginx+3个nacos注册中心+mysql
 
@@ -855,9 +855,9 @@ linux服务器的mysql插入一条记录
 
 微服务springalibaba-provider-payment9002启动注册进nacos集群
 
-![image-20210315210821778](\images\image-20210315210821778.png)
+![image-20210315210821778](images\image-20210315210821778.png)
 
-![image-20210315210845053](\images\image-20210315210845053.png)
+![image-20210315210845053](images\image-20210315210845053.png)
 
 # 三、SpringCloud Alibaba Sentinel实现熔断与限流
 
@@ -867,17 +867,17 @@ linux服务器的mysql插入一条记录
 
 中文：https://github.com/alibaba/Sentinel/wiki/
 
-![image-20210317193109291](\images\image-20210317193109291.png)
+![image-20210317193109291](images\image-20210317193109291.png)
 
 一句话解释就是我们之前的hystrix
 
-![image-20210317193410003](\images\image-20210317193410003.png)
+![image-20210317193410003](images\image-20210317193410003.png)
 
 ## 安装Sentiel控制台
 
 sentinel组件由两部分构成
 
-![image-20210317193449645](\images\image-20210317193449645.png)
+![image-20210317193449645](images\image-20210317193449645.png)
 
 ### 安装步骤
 
@@ -1059,15 +1059,15 @@ public class FlowLimitController {
 
 Sentinel采用懒加载说明 执行一次访问 http://localhost:8401/testA    http://localhost:8401/testB
 
-![image-20210320121929878](\images\image-20210320121929878.png)
+![image-20210320121929878](images\image-20210320121929878.png)
 
 ## 流控规则
 
 ### 基本介绍
 
-![image-20210321093633892](\images\image-20210321093633892.png)
+![image-20210321093633892](images\image-20210321093633892.png)
 
-![image-20210321093713784](\images\image-20210321093713784.png)
+![image-20210321093713784](images\image-20210321093713784.png)
 
 ### 流控模式
 
@@ -1075,7 +1075,7 @@ Sentinel采用懒加载说明 执行一次访问 http://localhost:8401/testA    
 
 配置及说明
 
-![image-20210321093915375](\images\image-20210321093915375.png)
+![image-20210321093915375](images\image-20210321093915375.png)
 
 测试
 
@@ -1089,21 +1089,21 @@ Sentinel采用懒加载说明 执行一次访问 http://localhost:8401/testA    
 
 配置A
 
-![image-20210321094236987](\images\image-20210321094236987.png)
+![image-20210321094236987](images\image-20210321094236987.png)
 
 postman模拟并发密集访问testB
 
 访问B成功
 
-![image-20210321094502906](\images\image-20210321094502906.png)
+![image-20210321094502906](images\image-20210321094502906.png)
 
 postman里新建多线程集合组
 
-![image-20210321094621546](\images\image-20210321094621546.png)
+![image-20210321094621546](images\image-20210321094621546.png)
 
 大批量线程高并发访问B，导致A失效了
 
-![image-20210321094734681](\images\image-20210321094734681.png)
+![image-20210321094734681](images\image-20210321094734681.png)
 
 运行后发现testA挂了
 
@@ -1119,7 +1119,7 @@ postman里新建多线程集合组
 
 公式:阈值除以coldFactor(默认值为3)，经过预热时长后才会达到阈值
 
-![image-20210321095133703](\images\image-20210321095133703.png)
+![image-20210321095133703](images\image-20210321095133703.png)
 
 默认coldFactor为3，即请求QPS从threshold/3开始，经预热时长逐渐升至设定的QPS阈值
 
@@ -1127,7 +1127,7 @@ postman里新建多线程集合组
 
 #### WarmUp配置
 
-![image-20210321095530658](\images\image-20210321095530658.png)
+![image-20210321095530658](images\image-20210321095530658.png)
 
 多次点击http://localhost:8401/testB 刚开始不行，后续慢慢OK
 
@@ -1137,13 +1137,13 @@ postman里新建多线程集合组
 
 匀速排队，阈值必须设置为QPS
 
-![image-20210321095642705](\images\image-20210321095642705.png)
+![image-20210321095642705](images\image-20210321095642705.png)
 
 源码:com.ailibaba.csp.sentinel.slots.block.controller.RateLimiterController
 
 测试
 
-![image-20210321100027668](\images\image-20210321100027668.png)
+![image-20210321100027668](images\image-20210321100027668.png)
 
 ## 降级规则
 
@@ -1151,7 +1151,7 @@ postman里新建多线程集合组
 
 ### 基本介绍
 
-![image-20210321100428324](\images\image-20210321100428324.png)
+![image-20210321100428324](images\image-20210321100428324.png)
 
 QPS >=5且比例(秒级统计)超过阈值时，触发降级，时间窗口结束后，关闭降级
 
@@ -1161,7 +1161,7 @@ Sentinel的断路器是没有半开状态的,半开的状态系统自动去检�
 
 #### RT
 
-![image-20210321100538625](\images\image-20210321100538625.png)
+![image-20210321100538625](images\image-20210321100538625.png)
 
 测试
 
@@ -1176,17 +1176,17 @@ public String testD() throws InterruptedException {
 
 配置
 
-![image-20210321100656068](\images\image-20210321100656068.png)
+![image-20210321100656068](images\image-20210321100656068.png)
 
-![image-20210321100713465](\images\image-20210321100713465.png)
+![image-20210321100713465](images\image-20210321100713465.png)
 
 后续停止了压力测试，断路器关闭微服务恢复正常
 
 #### 异常比例
 
-![image-20210321100856842](\images\image-20210321100856842.png)
+![image-20210321100856842](images\image-20210321100856842.png)
 
-![image-20210321100907599](\images\image-20210321100907599.png)
+![image-20210321100907599](images\image-20210321100907599.png)
 
 #### 测试
 
@@ -1201,37 +1201,37 @@ public String testE() {
 
 配置
 
-![image-20210321102111807](\images\image-20210321102111807.png)
+![image-20210321102111807](images\image-20210321102111807.png)
 
 ![image-20210321102136997](images\image-20210321102136997.png)
 
 #### 异常数
 
-![image-20210321102326563](\images\image-20210321102326563.png)
+![image-20210321102326563](images\image-20210321102326563.png)
 
-![image-20210321102338630](\images\image-20210321102338630.png)
+![image-20210321102338630](images\image-20210321102338630.png)
 
 测试
 
-![image-20210321102409498](\images\image-20210321102409498.png)
+![image-20210321102409498](images\image-20210321102409498.png)
 
 ## 热点key限流
 
 ### 基本介绍
 
-![image-20210321102532905](\images\image-20210321102532905.png)
+![image-20210321102532905](images\image-20210321102532905.png)
 
 官网：https://github.com/alibaba/Sentinel/wiki/%E7%83%AD%E7%82%B9%E5%8F%82%E6%95%B0%E9%99%90%E6%B5%81
 
 ### 承上启下复习start  SentinelResource
 
-![image-20210321102653538](\images\image-20210321102653538.png)
+![image-20210321102653538](images\image-20210321102653538.png)
 
 ### 配置
 
-![image-20210321102909163](\images\image-20210321102909163.png)
+![image-20210321102909163](images\image-20210321102909163.png)
 
-![image-20210321102936928](\images\image-20210321102936928.png)
+![image-20210321102936928](images\image-20210321102936928.png)
 
 SentinelResource(value = "testHotKey")，异常打到了前台用户界面看到，不友好
 
@@ -1263,7 +1263,7 @@ http://localhost:8401/testHotKey?p2=abc  right
 
 特殊情况：超过1秒钟一个后，达到阈值1后马上被限流， 我们期望p1参数当它是某个特殊值时，它的限流值和平时不一样，假如当p1的值等于5时，它的阈值可以达到200
 
-![image-20210321104339883](\images\image-20210321104339883.png)
+![image-20210321104339883](images\image-20210321104339883.png)
 
 当p1等于5的时候，阈值变为200
 
@@ -1271,7 +1271,7 @@ http://localhost:8401/testHotKey?p2=abc  right
 
 前提条件：热点参数的注意点，参数必须是基本类型或者String
 
-![image-20210321104915736](\images\image-20210321104915736.png)
+![image-20210321104915736](images\image-20210321104915736.png)
 
 ## 系统规则
 
@@ -1279,11 +1279,11 @@ https://github.com/alibaba/Sentinel/wiki/系统自适应限流
 
 各项配置说明
 
-![image-20210321105005452](\images\image-20210321105005452.png)
+![image-20210321105005452](images\image-20210321105005452.png)
 
 配置全局QPS
 
-![image-20210321105115316](\images\image-20210321105115316.png)
+![image-20210321105115316](images\image-20210321105115316.png)
 
 不合适,使用危险,一竹竿打死一船人
 
@@ -1322,7 +1322,7 @@ public class RateLimitController {
 
 #### 配置流控规则
 
-![image-20210321105619850](\images\image-20210321105619850.png)
+![image-20210321105619850](images\image-20210321105619850.png)
 
 表示1秒钟内查询次数大于1，就跑到我们自定义的限流处，限流
 
@@ -1334,15 +1334,15 @@ public class RateLimitController {
 
 Sentinel控制台配置
 
-![image-20210321110037186](\images\image-20210321110037186.png)
+![image-20210321110037186](images\image-20210321110037186.png)
 
 疯狂点击http://localhost:8401/rateLimit/byUrl
 
-![image-20210321110100467](\images\image-20210321110100467.png)
+![image-20210321110100467](images\image-20210321110100467.png)
 
 ### 上面兜底方案面临的问题
 
-![image-20210321111043521](\images\image-20210321111043521.png)
+![image-20210321111043521](images\image-20210321111043521.png)
 
 ### 客户自定义限流处理逻辑
 
@@ -1375,13 +1375,13 @@ public CommonResult customerBlockHandler(){
 
 Sentinel控制台配置
 
-![image-20210321111322432](\images\image-20210321111322432.png)
+![image-20210321111322432](images\image-20210321111322432.png)
 
-![image-20210321111302300](\images\image-20210321111302300.png)
+![image-20210321111302300](images\image-20210321111302300.png)
 
 进一步说明图
 
-![image-20210321111354327](\images\image-20210321111354327.png)
+![image-20210321111354327](images\image-20210321111354327.png)
 
 ### 更多注解说明
 
@@ -1762,7 +1762,7 @@ feign:
 
 #### 添加Nacos业务规则配置
 
-![image-20210323211827728](\images\image-20210323211827728.png)
+![image-20210323211827728](images\image-20210323211827728.png)
 
 内容解析
 
@@ -1780,11 +1780,11 @@ feign:
 ]
 ```
 
-![image-20210323211912090](\images\image-20210323211912090.png)
+![image-20210323211912090](images\image-20210323211912090.png)
 
 #### 启动8401刷新sentinel发现业务规则变了
 
-![image-20210323211949985](\images\image-20210323211949985.png)
+![image-20210323211949985](images\image-20210323211949985.png)
 
 #### 快速访问测试接口
 
@@ -1792,7 +1792,7 @@ http://localhost:8401/rateLimit/byUrl
 
 #### 停止8401再看sentinel
 
-![image-20210323212028249](\images\image-20210323212028249.png)
+![image-20210323212028249](images\image-20210323212028249.png)
 
 #### 重新启动8401再看sentinel
 
@@ -1806,9 +1806,9 @@ http://localhost:8401/rateLimit/byUrl
 
 ### 分布式之后
 
-![image-20210329193758204](\images\image-20210329193758204.png)
+![image-20210329193758204](images\image-20210329193758204.png)
 
-![image-20210329193810575](\images\image-20210329193810575.png)
+![image-20210329193810575](images\image-20210329193810575.png)
 
 一次业务操作需要垮多个数据源或需要垮多个系统进行远程调用,就会产生分布式事务问题
 
@@ -1822,9 +1822,9 @@ Seata是一款开源的分布式事务解决方案,致力于在微服务架构�
 
 分布式事务处理过程-ID+三组件模型
 
-![image-20210329193922693](\images\image-20210329193922693.png)
+![image-20210329193922693](images\image-20210329193922693.png)
 
-![image-20210329193937681](\images\image-20210329193937681.png)
+![image-20210329193937681](images\image-20210329193937681.png)
 
 ### 三组件概念
 
@@ -1844,7 +1844,7 @@ Resource Manager(RM）：控制分支事务,负责分支注册、状态汇报,�
 
 seata的分布式交易解决方案
 
-![image-20210329194203518](\images\image-20210329194203518.png)
+![image-20210329194203518](images\image-20210329194203518.png)
 
 ## Seata-Server安装
 
@@ -1860,13 +1860,13 @@ https://seata.io/zh-cn/
 
 service模块
 
-![image-20210329194410083](\images\image-20210329194410083.png)
+![image-20210329194410083](images\image-20210329194410083.png)
 
 store模块
 
-![image-20210329194432849](\images\image-20210329194432849.png)
+![image-20210329194432849](images\image-20210329194432849.png)
 
-![image-20210329194450346](\images\image-20210329194450346.png)
+![image-20210329194450346](images\image-20210329194450346.png)
 
 ### mysql5.7数据库新建库seata
 
@@ -1931,7 +1931,7 @@ create table `lock_table` (
 
 ### 修改seata-server-0.9.0\seata\conf目录下的registry.conf目录下的registry.conf配置文件
 
-![image-20210329195410467](\images\image-20210329195410467.png)
+![image-20210329195410467](images\image-20210329195410467.png)
 
 ### 先启动Nacos端口号8848
 
@@ -1947,7 +1947,7 @@ seata-server.bat
 
 ### 分布式事务业务说明
 
-![image-20210401203202607](\images\image-20210401203202607.png)
+![image-20210401203202607](images\image-20210401203202607.png)
 
 ### 创建业务数据库
 
@@ -2032,7 +2032,7 @@ CREATE TABLE `undo_log` (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 ```
 
-![image-20210401203700215](\images\image-20210401203700215.png)
+![image-20210401203700215](images\image-20210401203700215.png)
 
 ## 订单/库存/账户业务微服务准备
 
@@ -2165,7 +2165,7 @@ mybatis:
 
 拷贝seata-server/conf目录下的file.conf
 
-![image-20210401205209465](\images\image-20210401205209465.png)
+![image-20210401205209465](images\image-20210401205209465.png)
 
 #### registry.conf
 
@@ -2507,19 +2507,19 @@ public class SeataOrderMainApp2001 {
 
 ### 下订单->减库存->扣余额->改(订单)状态
 
-![image-20210401211907730](\images\image-20210401211907730.png)
+![image-20210401211907730](images\image-20210401211907730.png)
 
 ### 正常下单
 
 http://localhost:2001/order/create?userId=1&productId=1&count=10&money=100
 
-![image-20210401211933404](\images\image-20210401211933404.png)
+![image-20210401211933404](images\image-20210401211933404.png)
 
 ### 超时异常,没加@GlobalTransactional
 
 AccountServiceImpl添加超时
 
-![image-20210401212111181](\images\image-20210401212111181.png)
+![image-20210401212111181](images\image-20210401212111181.png)
 
 故障情况
 
@@ -2533,7 +2533,7 @@ AccountServiceImpl添加超时
 
 OrderServiceImpl@GlobalTransactional
 
-![image-20210401212316789](\images\image-20210401212316789.png)
+![image-20210401212316789](images\image-20210401212316789.png)
 
 ## 一部分补充
 
@@ -2559,37 +2559,37 @@ TC通知所有RM提交/回滚资源,事务二阶段结束
 
 ### AT模式如何做到对业务的无侵入
 
-![image-20210401212457888](\images\image-20210401212457888.png)
+![image-20210401212457888](images\image-20210401212457888.png)
 
 一阶段加载
 
-![image-20210401212540318](\images\image-20210401212540318.png)
+![image-20210401212540318](images\image-20210401212540318.png)
 
-![image-20210401212601171](\images\image-20210401212601171.png)
+![image-20210401212601171](images\image-20210401212601171.png)
 
 二阶段提交
 
-![image-20210401212619469](\images\image-20210401212619469.png)
+![image-20210401212619469](images\image-20210401212619469.png)
 
 三阶段回滚
 
-![image-20210401212641507](\images\image-20210401212641507.png)
+![image-20210401212641507](images\image-20210401212641507.png)
 
-![image-20210401212656300](\images\image-20210401212656300.png)
+![image-20210401212656300](images\image-20210401212656300.png)
 
 AccountServiceImpl
 
-![image-20210401212719951](\images\image-20210401212719951.png)
+![image-20210401212719951](images\image-20210401212719951.png)
 
-![image-20210401212732623](\images\image-20210401212732623.png)
+![image-20210401212732623](images\image-20210401212732623.png)
 
 undo.log
 
-![image-20210401212800365](\images\image-20210401212800365.png)
+![image-20210401212800365](images\image-20210401212800365.png)
 
 before image
 
-![image-20210401212818457](\images\image-20210401212818457.png)
+![image-20210401212818457](images\image-20210401212818457.png)
 
-![image-20210401212845834](\images\image-20210401212845834.png)
+![image-20210401212845834](images\image-20210401212845834.png)
 

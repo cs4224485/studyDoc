@@ -146,7 +146,7 @@ https:github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.0-Release-Notes
 
 通过上面官网发现 Boot官方强烈建议你升级到2.X以上版本
 
-![image-20210227150027970](\images\image-20210227150027970.png)
+![image-20210227150027970](images\image-20210227150027970.png)
 
 ### SpringCloud版本选择
 
@@ -154,13 +154,13 @@ https:github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.0-Release-Notes
 
 Cloud命名规则
 
-![image-20210227150141505](\images\image-20210227150141505.png)
+![image-20210227150141505](images\image-20210227150141505.png)
 
 ### Springcloud和Springboot之间的依赖关系如何看
 
 https://spring.io/projects/spring-cloud#overview
 
-![image-20210227150213553](\images\image-20210227150213553.png)
+![image-20210227150213553](images\image-20210227150213553.png)
 
 # 三、微服务架构编码 构建
 
@@ -170,7 +170,7 @@ https://spring.io/projects/spring-cloud#overview
 
 #### 1.New Project
 
-![image-20210227150526556](\images\image-20210227150526556.png)
+![image-20210227150526556](images\image-20210227150526556.png)
 
 #### 2.聚合总父工程名字
 
@@ -184,11 +184,11 @@ https://spring.io/projects/spring-cloud#overview
 
 #### 6.注解生效激活
 
-![image-20210227150725615](\images\image-20210227150725615.png)
+![image-20210227150725615](images\image-20210227150725615.png)
 
 #### 7. File Type过滤
 
-![image-20210227150801751](\images\image-20210227150801751.png)
+![image-20210227150801751](images\image-20210227150801751.png)
 
 ### 父工程POM文件
 
@@ -329,7 +329,7 @@ Maven中的DependencyManagement和Dependencies
 
 ![image-20210227150947536](images\image-20210227150947536.png)
 
-![image-20210227151016281](\images\image-20210227151016281.png)
+![image-20210227151016281](images\image-20210227151016281.png)
 
 这样做的好处就是: 如果有多个子项目都引用同一样的依赖,则可以避免在每个使用的子项目里都声明一个版本号,这样想升级或切换到另一个版本时,只需在顶层父容器里更新,而不需要一个一个子项目的修改;另外如果某个子项目需要另外的一个版本,只需声明version版本 
 
@@ -618,7 +618,7 @@ http://localhost:8001/payment/get/31
 
 开启Run DashBoard
 
-![image-20210227152009187](\images\image-20210227152009187.png)
+![image-20210227152009187](images\image-20210227152009187.png)
 
 ```xml
 <component name="RunDashboard">
@@ -630,9 +630,9 @@ http://localhost:8001/payment/get/31
   </component> 
 ```
 
-![image-20210227152041878](\images\image-20210227152041878.png)
+![image-20210227152041878](images\image-20210227152041878.png)
 
-![image-20210227152101129](\images\image-20210227152101129.png)
+![image-20210227152101129](images\image-20210227152101129.png)
 
 ### 热部署Devtools
 
@@ -670,11 +670,11 @@ http://localhost:8001/payment/get/31
 
 #### 3.Enabling automatic build
 
-![image-20210227152355947](\images\image-20210227152355947.png)
+![image-20210227152355947](images\image-20210227152355947.png)
 
 ####  4.Update the value 
 
-![image-20210227152423274](\images\image-20210227152423274.png)
+![image-20210227152423274](images\image-20210227152423274.png)
 
 ### cloud-consumer-order80 微服务消费者订单Module模块
 
@@ -919,7 +919,7 @@ Eureka就像一个物业管理公司，其他微服务就像小区的住户，�
 #### 介绍
 
 - Eureka是一个基于REST的服务，用于定位服务，以实现云端中间层服务发现和故障转移。
-- Eureka主管服务注册与发现，在微服务中，以后了这两者，只需要使用服务的标识符（就是那个在每个服务的yml文件中取得服务名称），就可以访问到服务，不需要修改服务调用的配置文件
+- Eureka主管服务注册与发现，在微服务中，有了这两者，只需要使用服务的标识符（就是那个在每个服务的yml文件中取得服务名称），就可以访问到服务，不需要修改服务调用的配置文件
 - Eureka遵循AP原则（高可用，分区容错性），因为使用了自我保护机制所以保证了高可用
 
 #### 原理
@@ -928,7 +928,7 @@ Eureka就像一个物业管理公司，其他微服务就像小区的住户，�
 - 两大组件：Eureka Server（提供注册服务）、 Eureka Client（JAVA客户端，负责发送心跳）
 - 系统中的其他微服务使用Eureka客户端连接到Eureka服务端维持心跳连接（即注册）。SpringCloud的其他模块可以通过Eureka Server 来发现系统中的微服务并加以调用
 
-![image-20210227153457183](\images\image-20210227153457183.png)
+![image-20210227153457183](images\image-20210227153457183.png)
 
 ###  Eureka服务注册中心构建
 
@@ -986,7 +986,7 @@ public class EurekaApplication7001 {
 
 #### 微服务注册名配置说明
 
-![image-20210227153942649](\images\image-20210227153942649.png)
+![image-20210227153942649](images\image-20210227153942649.png)
 
 ###  向Eureka注册中心注册微服务
 
@@ -1374,21 +1374,21 @@ public class Application {
 
 效果图
 
-![image-20210227155727559](\images\image-20210227155727559.png)
+![image-20210227155727559](images\image-20210227155727559.png)
 
 ### eureka自我保护
 
 #### 故障现象
 
-![image-20210227155805293](\images\image-20210227155805293.png)
+![image-20210227155805293](images\image-20210227155805293.png)
 
 #### 导致原因
 
-![image-20210227155835647](\images\image-20210227155835647.png)
+![image-20210227155835647](images\image-20210227155835647.png)
 
-![image-20210227155848893](\images\image-20210227155848893.png)
+![image-20210227155848893](images\image-20210227155848893.png)
 
-![image-20210227155902594](\images\image-20210227155902594.png)
+![image-20210227155902594](images\image-20210227155902594.png)
 
 使用eureka.server.enable-self-preservation=false 可以禁用自我保护模式
 
@@ -1563,11 +1563,11 @@ zkServer.sh star
 
 ### 启动后出现的问题
 
-![image-20210227160451271](\images\image-20210227160451271.png)
+![image-20210227160451271](images\image-20210227160451271.png)
 
 ### 解决zookeeper版本jar包冲突问题
 
-![image-20210227160520508](\images\image-20210227160520508.png)
+![image-20210227160520508](images\image-20210227160520508.png)
 
 ### 新建cloud-consumerzk-order80
 
@@ -1710,11 +1710,11 @@ public class OrderZkController {
 
 官网：https://www.consul.io/intro/index.html
 
-![image-20210301192411149](\images\image-20210301192411149.png)
+![image-20210301192411149](images\image-20210301192411149.png)
 
-![image-20210301192450097](\images\image-20210301192450097.png)
+![image-20210301192450097](images\image-20210301192450097.png)
 
-![image-20210301192527955](\images\image-20210301192527955.png)
+![image-20210301192527955](images\image-20210301192527955.png)
 
 下载地址：https://www.consul.io/downloads.html
 
@@ -2010,11 +2010,11 @@ public class OrderConsulController {
 
 ### AP(eureka)
 
-![image-20210301211737333](\images\image-20210301211737333.png)
+![image-20210301211737333](images\image-20210301211737333.png)
 
 ### CP(Zookeeper/Consul)
 
-![image-20210301211825424](\images\image-20210301211825424.png)
+![image-20210301211825424](images\image-20210301211825424.png)
 
 # 七、Ribbon负载均衡调用
 
@@ -2032,23 +2032,23 @@ Spring Cloud Ribbon是基于Netflix Ribbon实现的一套客户端负载均衡�
 
 ### 架构说明
 
-![image-20210301212141642](\images\image-20210301212141642.png)
+![image-20210301212141642](images\image-20210301212141642.png)
 
-![image-20210301212213317](\images\image-20210301212213317.png)
+![image-20210301212213317](images\image-20210301212213317.png)
 
 #### POM文件说明
 
-![image-20210301212534147](\images\image-20210301212534147.png)
+​                        ![image-20210301212534147](images\image-20210301212534147.png)
 
 #### RestTemplate的使用
 
-![image-20210301212648105](\images\image-20210301212648105.png)
+![image-20210301212648105](images\image-20210301212648105.png)
 
 ##### getForObject方法/getForEntity方法
 
-##### ![image-20210301212719686](\images\image-20210301212719686.png)
+##### ![image-20210301212719686](images\image-20210301212719686.png)
 
-![image-20210301212738914](\images\image-20210301212738914.png)
+![image-20210301212738914](images\image-20210301212738914.png)
 
 ```java
 @GetMapping("/consumer/payment/get/{id}")
@@ -2072,7 +2072,7 @@ public CommonResult<Payment> getPaymentById2(@PathVariable("id") Long id){
 
 IRule：根据特定算法从服务列表中选取一个需要访问的服务
 
-![image-20210301213658131](\images\image-20210301213658131.png)
+![image-20210301213658131](images\image-20210301213658131.png)
 
 ####  七大方法
 
@@ -2092,7 +2092,7 @@ IRule是一个接口，七大方法是其自带的落地实现类==
 
 注意细节：
 
-![image-20210301213837075](\images\image-20210301213837075.png)
+![image-20210301213837075](images\image-20210301213837075.png)
 
 新建package com.harry.myrule
 
@@ -2124,7 +2124,7 @@ public class OrderMain80 {
 
 ### Ribbon负载均衡算法
 
-![image-20210302192119920](\images\image-20210302192119920.png)
+![image-20210302192119920](images\image-20210302192119920.png)
 
 ### 手写负载均衡算法
 
@@ -2195,7 +2195,7 @@ Feign是一个声明式WebService客户端，使用方法时定义一个接口�
 
 ### Feign和OpenFeign两者区别
 
-![image-20210304191054066](\images\image-20210304191054066.png)
+![image-20210304191054066](images\image-20210304191054066.png)
 
 ### OpenFeign使用步骤
 
@@ -2367,7 +2367,7 @@ Feign自带负载均衡配置项
 
 ### OpenFeign超时控制
 
-![image-20210304193435020](\images\image-20210304193435020.png)
+![image-20210304193435020](images\image-20210304193435020.png)
 
 超时设置,故意设置超时演示出错情况
 
@@ -2390,11 +2390,11 @@ ribbon:
 
 ### OpenFeign日志打印功能
 
-![image-20210304193604789](\images\image-20210304193604789.png)
+![image-20210304193604789](images\image-20210304193604789.png)
 
 #### 日志级别
 
-![image-20210304193634311](\images\image-20210304193634311.png)
+![image-20210304193634311](images\image-20210304193634311.png)
 
 #### 配置日志bean
 
@@ -2450,9 +2450,9 @@ logging:
 - 扇出过程中，如果某一个环节的服务出现故障或连接超时，就会导致前面的服务占用越来越多的资源，进而引起系统崩溃，就是“雪崩效应”。
 - 对于高流量的应用来说，单一的后端依赖会导致服务器所有的资源都在几秒钟内饱和。比失败更糟糕的是，这些应用程序还可能导致服务之间的延迟增加，备份队列，线程和其他系统资源紧张，导致整个系统发生更多的级联故障。
 
-![image-20210304201908291](\images\image-20210304201908291.png)
+![image-20210304201908291](images\image-20210304201908291.png)
 
-![image-20210304202022561](\images\image-20210304202022561.png)
+![image-20210304202022561](images\image-20210304202022561.png)
 
 ###  Hystrix介绍
 
@@ -2693,7 +2693,7 @@ https://jmeter.apache.org/download_jmeter.cgi
 
 开启Jmeter,来20000个并发压死8001,20000个请求都去访问paymentInfo_TimeOut服务
 
-![image-20210306103940772](\images\image-20210306103940772.png)
+![image-20210306103940772](images\image-20210306103940772.png)
 
 为什么会被卡死
 
@@ -2909,7 +2909,7 @@ public class PaymentController {
 
 要么转圈圈，要么消费端报超时错误
 
-![image-20210306110641645](\images\image-20210306110641645.png)
+![image-20210306110641645](images\image-20210306110641645.png)
 
 #### 故障和导致现象
 
@@ -3022,13 +3022,13 @@ public String paymentTimeOutFallbackMethod(@PathVariable("id") Integer id) {
 
 @DefaultProperties(defaultFallback="")
 
-![image-20210306112904343](\images\image-20210306112904343.png)
+![image-20210306112904343](images\image-20210306112904343.png)
 
 ```java
 @RestController
 @Slf4j
 @RequestMapping("/consumer")
-@DefaultProperties(defaultFallback="paymentTimeOutFallbackMethod")
+@DefaultProperties(defaultFallback="payment_Global_FallbackMethod")
 public class PaymentController {
 
     @Autowired
@@ -3151,7 +3151,7 @@ PaymentHystrixMain8001启动
 
 #### 熔断是什么
 
-![image-20210306121930732](\images\image-20210306121930732.png)
+![image-20210306121930732](images\image-20210306121930732.png)
 
 大神论文：https://martinfowler.com/bliki/CircuitBreaker.html
 
@@ -3219,7 +3219,7 @@ public String paymentCircuitBreaker(@PathVariable("id") Integer id) {
 
 ##### 大神结论
 
-![image-20210306122816911](\images\image-20210306122816911.png)
+![image-20210306122816911](images\image-20210306122816911.png)
 
 ##### 熔断类型
 
@@ -3231,13 +3231,13 @@ public String paymentCircuitBreaker(@PathVariable("id") Integer id) {
 
 ##### 官网断路器流程图
 
-![image-20210306124412440](\images\image-20210306124412440.png)
+![image-20210306124412440](images\image-20210306124412440.png)
 
-![image-20210306124451850](\images\image-20210306124451850.png)
+![image-20210306124451850](images\image-20210306124451850.png)
 
 ##### 断路器在什么情况下开始起作用
 
-![image-20210306124516540](\images\image-20210306124516540.png)
+![image-20210306124516540](images\image-20210306124516540.png)
 
 ##### 断路器开启或者关闭的条件
 
@@ -3253,27 +3253,27 @@ public String paymentCircuitBreaker(@PathVariable("id") Integer id) {
 
 ##### 断路器打开之后
 
-![image-20210306124634465](\images\image-20210306124634465.png)
+![image-20210306124634465](images\image-20210306124634465.png)
 
 ##### ALl配置
 
-![image-20210306124708379](\images\image-20210306124708379.png)
+![image-20210306124708379](images\image-20210306124708379.png)
 
-![image-20210306124742641](\images\image-20210306124742641.png)
+![image-20210306124742641](images\image-20210306124742641.png)
 
-![image-20210306124755587](\images\image-20210306124755587.png)
+![image-20210306124755587](images\image-20210306124755587.png)
 
-![image-20210306124808782](\images\image-20210306124808782.png)
+![image-20210306124808782](images\image-20210306124808782.png)
 
 #### 工作流程
 
-![image-20210308185306417](\images\image-20210308185306417.png)
+![image-20210308185306417](images\image-20210308185306417.png)
 
 ### 服务监控hystrixDashboard
 
 #### 概述
 
-![image-20210308185425991](\images\image-20210308185425991.png)
+![image-20210308185425991](images\image-20210308185425991.png)
 
 #### 新建cloud-consumer-hystrix-dashboard9001
 
@@ -3370,49 +3370,49 @@ public class PaymentHystrixMain8001 {
 
 9001监控8001http://localhost:8001/hystrix.stream
 
-![image-20210308193701623](\images\image-20210308193701623.png)
+![image-20210308193701623](images\image-20210308193701623.png)
 
 如何看?
 
 7色
 
-![image-20210308193919993](\images\image-20210308193919993.png)
+![image-20210308193919993](images\image-20210308193919993.png)
 
 1圈
 
-![image-20210308193940975](\images\image-20210308193940975.png)
+![image-20210308193940975](images\image-20210308193940975.png)
 
 1线
 
-![image-20210308194001048](\images\image-20210308194001048.png)
+![image-20210308194001048](images\image-20210308194001048.png)
 
 整图说明
 
-![image-20210308194027740](\images\image-20210308194027740.png)
+![image-20210308194027740](images\image-20210308194027740.png)
 
-![image-20210308194046695](\images\image-20210308194046695.png)
+![image-20210308194046695](images\image-20210308194046695.png)
 
-![image-20210308194112971](\images\image-20210308194112971.png)
+![image-20210308194112971](images\image-20210308194112971.png)
 
 # 十、Gateway新一代网关
 
 ### 概述
 
-![image-20210308194320342](\images\image-20210308194320342.png)
+![image-20210308194320342](images\image-20210308194320342.png)
 
-![image-20210308194334672](\images\image-20210308194334672.png)
+![image-20210308194334672](images\image-20210308194334672.png)
 
-![image-20210308194352071](\images\image-20210308194352071.png)
+![image-20210308194352071](images\image-20210308194352071.png)
 
-![image-20210308194405627](\images\image-20210308194405627.png)
+![image-20210308194405627](images\image-20210308194405627.png)
 
 SpringCloud Gateway使用的是Webflux中的reactor-netty响应
 
-![image-20210308194454120](\images\image-20210308194454120.png)
+![image-20210308194454120](images\image-20210308194454120.png)
 
 ### 微服务架构中网关在哪里
 
-![image-20210308194522915](\images\image-20210308194522915.png)
+![image-20210308194522915](images\image-20210308194522915.png)
 
 ### 有Zuul了怎么又出来gateway
 
@@ -3422,21 +3422,21 @@ SpringCloud Gateway使用的是Webflux中的reactor-netty响应
 
 2.SpringCloud Gateway具有如下特性
 
-![image-20210308194627714](\images\image-20210308194627714.png)
+![image-20210308194627714](images\image-20210308194627714.png)
 
 3.SpringCloud Gateway与Zuul的区别
 
-![image-20210308194654181](\images\image-20210308194654181.png)
+![image-20210308194654181](images\image-20210308194654181.png)
 
 #### Zuul1.x模型
 
-![image-20210308194742604](\images\image-20210308194742604.png)
+![image-20210308194742604](images\image-20210308194742604.png)
 
-![image-20210308194802500](\images\image-20210308194802500.png)
+![image-20210308194802500](images\image-20210308194802500.png)
 
 #### Gateway模型
 
-![image-20210308194854294](\images\image-20210308194854294.png)
+![image-20210308194854294](images\image-20210308194854294.png)
 
 ### 三大核心概念
 
@@ -3455,13 +3455,13 @@ SpringCloud Gateway使用的是Webflux中的reactor-netty响应
 
 #### 总结
 
-![image-20210308195020767](\images\image-20210308195020767.png)
+![image-20210308195020767](images\image-20210308195020767.png)
 
 ### Gateway工作流程
 
-![image-20210308195059531](\images\image-20210308195059531.png)
+![image-20210308195059531](images\image-20210308195059531.png)
 
-![image-20210308195112038](\images\image-20210308195112038.png)
+![image-20210308195112038](images\image-20210308195112038.png)
 
 ### 入门配置
 
@@ -3577,7 +3577,7 @@ Gateway网关路由有两种配置方式:
 
 官网案例
 
-![image-20210308201156798](\images\image-20210308201156798.png)
+![image-20210308201156798](images\image-20210308201156798.png)
 
 自己写一个，通过9527网关访问到外网的百度新闻网址
 
@@ -3648,17 +3648,17 @@ lb://serverName是spring cloud  gatway在微服务中自动为我们创建的负
 
 ##### Route Predicate Factories这个是什么
 
-![image-20210308202028308](\images\image-20210308202028308.png)
+![image-20210308202028308](images\image-20210308202028308.png)
 
 ##### 常用的Route Predicate
 
-![image-20210308202054129](\images\image-20210308202054129.png)
+![image-20210308202054129](images\image-20210308202054129.png)
 
 ###### 1.After Route Predicate 
 
-![image-20210308202127098](\images\image-20210308202127098.png)
+![image-20210308202127098](images\image-20210308202127098.png)
 
-![image-20210308202144471](\images\image-20210308202144471.png)
+![image-20210308202144471](images\image-20210308202144471.png)
 
 ###### 2.Before Route Predicate
 
@@ -3670,31 +3670,31 @@ lb://serverName是spring cloud  gatway在微服务中自动为我们创建的负
 
 ###### 4.Cookie Route Predicate
 
-![image-20210308202301457](\images\image-20210308202301457.png)
+![image-20210308202301457](images\image-20210308202301457.png)
 
 ###### 5.Header Route Predicate 
 
-![image-20210308202326264](\images\image-20210308202326264.png)
+![image-20210308202326264](images\image-20210308202326264.png)
 
-![image-20210308202357612](\images\image-20210308202357612.png)
+![image-20210308202357612](images\image-20210308202357612.png)
 
 ###### 6.Host Route Predicate
 
-![image-20210308202420209](\images\image-20210308202420209.png)
+![image-20210308202420209](images\image-20210308202420209.png)
 
 ###### 7.Method Route Predicate 
 
-![image-20210308202443840](\images\image-20210308202443840.png)
+![image-20210308202443840](images\image-20210308202443840.png)
 
 ###### 8.Path Route Predicate
 
 ###### 9.Query Route Predicate
 
-![image-20210308202525149](\images\image-20210308202525149.png)
+![image-20210308202525149](images\image-20210308202525149.png)
 
 #### Filter的使用
 
-![image-20210308202603464](\images\image-20210308202603464.png)
+![image-20210308202603464](images\image-20210308202603464.png)
 
 ##### Spring Cloud Gateway的filter
 
@@ -3704,15 +3704,15 @@ lb://serverName是spring cloud  gatway在微服务中自动为我们创建的负
 
 GatewayFilter https://cloud.spring.io/spring-cloud-static/spring-cloud-gateway/2.2.1.RELEASE/reference/html/#gatewayfilter-factories
 
-![image-20210308202701944](\images\image-20210308202701944.png)
+![image-20210308202701944](images\image-20210308202701944.png)
 
 GlobalFilter https://cloud.spring.io/spring-cloud-static/spring-cloud-gateway/2.2.1.RELEASE/reference/html/#global-filters
 
-![image-20210308202741959](\images\image-20210308202741959.png)
+![image-20210308202741959](images\image-20210308202741959.png)
 
 ##### 常用的GatewayFilter
 
-#### ![image-20210308202842789](\images\image-20210308202842789.png)
+#### ![image-20210308202842789](images\image-20210308202842789.png)
 
 ##### 自定义过滤器
 
@@ -3760,9 +3760,9 @@ public class MyLogGatewayFilter implements GlobalFilter, Ordered {
 
 ### 概述
 
-![image-20210310194052380](\images\image-20210310194052380.png)
+![image-20210310194052380](images\image-20210310194052380.png)
 
-![image-20210310194146090](\images\image-20210310194146090.png)
+![image-20210310194146090](images\image-20210310194146090.png)
 
 #### 能干嘛
 
@@ -3910,7 +3910,7 @@ http://config-3344.com:3344/master/config-dev.yml
 
 /{application}/{profile}/{/label}
 
-![image-20210310204519232](\images\image-20210310204519232.png)
+![image-20210310204519232](images\image-20210310204519232.png)
 
 ### Config客户端配置与测试
 
@@ -4064,15 +4064,15 @@ POM引入actuator监控
 
 #### 概述
 
-![image-20210310205924100](\images\image-20210310205924100.png)
+![image-20210310205924100](images\image-20210310205924100.png)
 
 Bus支持两种消息代理:RabbitMQ和Kafka
 
 作用
 
-![image-20210310205950785](\images\image-20210310205950785.png)
+![image-20210310205950785](images\image-20210310205950785.png)
 
-![image-20210310210012282](\images\image-20210310210012282.png)
+![image-20210310210012282](images\image-20210310210012282.png)
 
 #### RabbitMQ环境配置
 
@@ -4098,9 +4098,9 @@ Bus支持两种消息代理:RabbitMQ和Kafka
 
 ​	1.利用消息总线触发一个客户端/bus/refresh，从而刷新所有客户端配置
 
-![image-20210310211245507](\images\image-20210310211245507.png)2.利用消息总线触发一个服务端ConfigServer的/bus/refresh端点，从而刷新所有客户端配置
+![image-20210310211245507](images\image-20210310211245507.png)2.利用消息总线触发一个服务端ConfigServer的/bus/refresh端点，从而刷新所有客户端配置
 
-![image-20210310211326207](\images\image-20210310211326207.png)
+![image-20210310211326207](images\image-20210310211326207.png)
 
 图二的架构显然更加合适，图一不合适原因如下：
 
@@ -4242,7 +4242,7 @@ curl -X POST "http://localhost:3344/actuator/bus-refresh/config-client:3355"
 
 通知总结All
 
-![image-20210311192739384](\images\image-20210311192739384.png)
+![image-20210311192739384](images\image-20210311192739384.png)
 
 
 
@@ -4250,7 +4250,7 @@ curl -X POST "http://localhost:3344/actuator/bus-refresh/config-client:3355"
 
 #### 消息驱动概述
 
-![image-20210311193803644](\images\image-20210311193803644.png)
+![image-20210311193803644](images\image-20210311193803644.png)
 
 屏蔽底层消息中间件的差异，降低切换成本，统一消息的编程模型
 
@@ -4262,7 +4262,7 @@ Spring Cloud Stream中文指导手册：https://blog.csdn.net/qq_32734365/articl
 
 ##### 标准MQ
 
-![image-20210311193926003](\images\image-20210311193926003.png)
+![image-20210311193926003](images\image-20210311193926003.png)
 
 生产者/消费者之间靠消息媒介传递信息内容   Message
 
@@ -4272,11 +4272,11 @@ Spring Cloud Stream中文指导手册：https://blog.csdn.net/qq_32734365/articl
 
 ##### 为什么使用Cloud Stream
 
-#### ![image-20210311194110515](\images\image-20210311194110515.png)
+#### ![image-20210311194110515](images\image-20210311194110515.png)
 
-![image-20210311194126581](\images\image-20210311194126581.png)
+![image-20210311194126581](images\image-20210311194126581.png)
 
-![image-20210311194142275](\images\image-20210311194142275.png)
+![image-20210311194142275](images\image-20210311194142275.png)
 
 Stream中的消息通信方式遵循了发布-订阅模式，在RabbitMQ就是Exchange，在Kafka中就是Topic。
 
@@ -4290,7 +4290,7 @@ Source和Sink: 简单的可以理解为参照对象是Spring Cloud Stream 自身
 
 编码API和常用注解
 
-![image-20210311194408660](\images\image-20210311194408660.png)
+![image-20210311194408660](images\image-20210311194408660.png)
 
 #### 消息驱动之生产者cloud-stream-rabbitmq-provider8801
 
@@ -4558,7 +4558,7 @@ cloud-stream-rabbitmq-consumer8803 同上
 
 分组和持久化属性group 生产实际案例
 
-![image-20210313111611030](\images\image-20210313111611030.png)
+![image-20210313111611030](images\image-20210313111611030.png)
 
 同一组内会发生竞争关系，只有其中一个可以消费
 
@@ -4588,13 +4588,13 @@ group：HarryA，HarryA
 
 为什么会出现这个技术？需要解决哪些问题？
 
-![image-20210313112052478](\images\image-20210313112052478.png)
+![image-20210313112052478](images\image-20210313112052478.png)
 
 https://cloud.spring.io/spring-cloud-sleuth/reference/html/
 
 spring Cloud Sleuth提供了一套完整的服务跟踪的解决方案,在分布式系统中提供追踪解决方案并且兼容支持了zipkin
 
-![image-20210313112134802](\images\image-20210313112134802.png)
+![image-20210313112134802](images\image-20210313112134802.png)
 
 #### 搭建链路监控步骤
 
@@ -4604,7 +4604,7 @@ spring Cloud Sleuth提供了一套完整的服务跟踪的解决方案,在分布
 
 ​	 运行控制台： http://localhost:9411/zipkin/
 
-​	![image-20210313112339503](\images\image-20210313112339503.png)
+​	![image-20210313112339503](images\image-20210313112339503.png)
 
 ![image-20210313112359145](images\image-20210313112359145.png)
 
@@ -4622,5 +4622,5 @@ span：标识调用链路来源，通俗的理解span就是一次请求信息
 
 会出现以下界面
 
-![image-20210313112524509](\images\image-20210313112524509.png)
+![image-20210313112524509](images\image-20210313112524509.png)
 
