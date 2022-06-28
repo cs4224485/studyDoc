@@ -232,6 +232,8 @@ class Son extends Father{
 }
 ```
 
+![image-20220609185946766](images\image-20220609185946766.png)
+
 ## 方法的参数传递机制
 
 形参是基本数据类型：传递数据值
@@ -428,6 +430,7 @@ GC四大算法
 		1 它浪费了一半的内存空间
 		2 如果对象的存活率很高，我们可以极端一点，假设是100%存活，那么我们需要将所有对象都复制一遍，并将所有引用地址重置一遍。 复制这一工作所花费的时间，在对象存活率达到一定程度时，将会变的不可忽视
 		
+	
 		所有从以上描述可以看出，复制算法要想使用，最起码对象的存活率要非常低才行，而且最重要的是，我们必须要克服50%内存浪费
 	
 	
@@ -1137,7 +1140,7 @@ public class VolatileDemo {
 
         // 第二个线程就是我们的main线程
         while (myData.number == 0){
-            // main线程就一直再这里等待寻黄，直到number值不再等于。
+            // main线程就一直再这里等待循环，直到number值不再等于0。
 //            System.out.println("等于0");
         }
         System.out.println(Thread.currentThread().getName() + "\t mission is over");
@@ -4986,7 +4989,7 @@ AQS为什么是JUC内容中最重要的基石
 
 锁，面向锁的使用者，定义了程序员和锁交互的使用层API，隐藏了实现细节，你调用即可。
 
-同步器，面向锁的实现者 范并简化了锁的实现，屏蔽了同步状态管理、阻塞线程排队和通知、唤醒机制等
+同步器，面向锁的实现者 规范并简化了锁的实现，屏蔽了同步状态管理、阻塞线程排队和通知、唤醒机制等
 
 加锁会导致阻塞， 有阻塞就需要排队，实现排队必然需要有某种形式的队列来进行管理
 
@@ -6731,7 +6734,7 @@ GC回收时间过长时会抛出OutOfMemoryError，过长的定义是，超过�
 这个异常出现的步骤就是，我们不断的像list中插入String对象，直到启动GC回收
 
 ```java
-ublic class GCOverheadLimitDemo {
+public class GCOverheadLimitDemo {
 
     public static void main(String[] args) {
         int i = 0;
@@ -6786,7 +6789,7 @@ ByteBuffer.allocate(capability)：第一种方式是分配JVM堆内存，属于G
 
 ByteBuffer.allocteDirect(capability)：第二种方式是分配OS本地内存，不属于GC管辖范围，由于不需要内存的拷贝，所以速度相对较快
 
-但如果不断分配本地内存，堆内存很少使用，那么JVM就不需要执行GC，DirectByteBuffer对象就不会被回收，这时候怼内存充足，但本地内存可能已经使用光了，再次尝试分配本地内存就会出现OutOfMemoryError，那么程序就奔溃了。
+但如果不断分配本地内存，堆内存很少使用，那么JVM就不需要执行GC，DirectByteBuffer对象就不会被回收，这时候对内存充足，但本地内存可能已经使用光了，再次尝试分配本地内存就会出现OutOfMemoryError，那么程序就奔溃了。
 
 一句话说：本地内存不足，但是堆内存充足的时候，就会出现这个问题
 
@@ -6880,7 +6883,7 @@ ulimit -u
 
 Metaspace是方法区HotSpot中的实现，它与持久代最大的区别在于：Metaspace并不在虚拟内存中，而是使用本地内存，也即在java8中，class metadata（the virtual machines internal presentation of Java class），被存储在叫做Matespace的native memory
 
-永久代（java8后背元空间Metaspace取代了）存放了以下信息：
+永久代（java8后被元空间Metaspace取代了）存放了以下信息：
 
 - 虚拟机加载的类信息
 - 常量池
@@ -6951,7 +6954,7 @@ GC算法主要有以下几种
 - 标记清除（用于老年代）
 - 标记整理（用于老年代）
 
-因为目前为止还没有完美的收集器出现，更没有万能的收集器，只是针对具体应用最合适的收集器，进行分代收集（那个代用什么收集器）
+因为目前为止还没有完美的收集器出现，更没有万能的收集器，只是针对具体应用最合适的收集器，进行分代收集（哪个代用什么收集器）
 
 ### 四种主要的垃圾收集器
 
@@ -7095,7 +7098,7 @@ G1：UseG1GC，G1垃圾收集器
 
 ![image-20220409182455929](images\image-20220409182455929.png)
 
-ParNew收集器其实就是Serial收集器新生代的并行多线程版本，最常见的应用场景时配合老年代的CMS GC工作，其余的行为和Serial收集器完全一样，ParNew垃圾收集器在垃圾收集过程中同样也要暂停所有其他的工作线程。它是很多Java虚拟机运行在Server模式下新生代的默认垃圾收集器。
+ParNew收集器其实就是Serial收集器新生代的并行多线程版本，最常见的应用场景是配合老年代的CMS GC工作，其余的行为和Serial收集器完全一样，ParNew垃圾收集器在垃圾收集过程中同样也要暂停所有其他的工作线程。它是很多Java虚拟机运行在Server模式下新生代的默认垃圾收集器。
 
 常见对应JVM参数：-XX:+UseParNewGC 启动ParNew收集器，只影响新生代的收集，不影响老年代
 
@@ -9121,7 +9124,7 @@ uptime：系统性能命令的精简版
 
 ![image-20220410084529776](images\image-20220410084529776.png)
 
-一般vmstat工具的使用是通过两个数字参数来完成的，第一个参数是残阳的时间间隔数（单位秒），第二个参数是采样的次数
+一般vmstat工具的使用是通过两个数字参数来完成的，第一个参数是采样的时间间隔数（单位秒），第二个参数是采样的次数
 
 **procs**
 

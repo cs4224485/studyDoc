@@ -367,7 +367,7 @@ loadFactor 越趋近于1，那么 数组中存放的数据(entry)也就越多，
 
 
 
-hreshold 计算公式：capacity(数组长度默认16) * loadFactor(负载因子默认0.75)。
+threshold 计算公式：capacity(数组长度默认16) * loadFactor(负载因子默认0.75)。
 
 ​	这个值是当前已占用数组长度的最大值。当 Size >= threshold 的时候，那么就要考虑对数组的 resize(扩容)，也就是说，这个的意思就是 衡量数组是否需要扩增的一个标准。 扩容后的 HashMap 容量是之前容量的两倍。
 

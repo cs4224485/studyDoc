@@ -111,24 +111,14 @@ Pod分为自主pod和控制器管理的pod
 ##### ReplicationController & ReplicaSet & Deployment
 
 ReplicationController 用来确保容器应用的副本数始终保持在用户定义的副本数，即如果
-有容器异常退出，会自动创建新的 Pod 来替代；而如果异常多出来的容上并且
+有容器异常退出，会自动创建新的 Pod 来替代；而如果异常多出来的容上并且ReplicaSet 跟 ReplicationController 没有本质的不同，只是名字不一样，并且ReplicaSet 支持集合式的 selector
 
-
-
-ReplicaSet 跟 ReplicationController 没有本质的不同，只是名字不一样，并且
-ReplicaSet 支持集合式的 selector
-
-
-
-虽然 ReplicaSet 可以独立使用，但一般还是建议使用 Deployment 来自动管理
-ReplicaSet ，这样就无需担心跟其他机制的不兼容问题（比如 ReplicaSet 不支持
-rolling-update 但 Deployment 支持
+虽然 ReplicaSet 可以独立使用，但一般还是建议使用 Deployment 来自动管理ReplicaSet ，这样就无需担心跟其他机制的不兼容问题（比如 ReplicaSet 不支持rolling-update 但 Deployment 支持
 
 ##### Deployment（ReplicaSet）
 
 
-Deployment 为 Pod 和 ReplicaSet 提供了一个声明式定义 (declarative) 方法，用来替
-代以前的 ReplicationController 来方便的管理应用。典型的应用场景包括：
+Deployment 为 Pod 和 ReplicaSet 提供了一个声明式定义 (declarative) 方法，用来替代以前的 ReplicationController 来方便的管理应用。典型的应用场景包括：
 
 ​	定义 Deployment 来创建 Pod 和 ReplicaSet
 ​	滚动升级和回滚应用
@@ -189,7 +179,7 @@ Pod 与 Service 之间的通讯：各节点的 Iptables 规则
 
 #### 网络解决方案 Kubernetes + Flannel
 
-lannel 是 CoreOS 团队针对 Kubernetes 设计的一个网络规划服务，简单来说，它的功能是
+Flannel 是 CoreOS 团队针对 Kubernetes 设计的一个网络规划服务，简单来说，它的功能是
 让集群中的不同节点主机创建的 Docker 容器都具有全集群唯一的虚拟IP地址。而且它还能在
 这些 IP 地址之间建立一个覆盖网络（Overlay Network），通过这个覆盖网络，将数据包原封
 不动地传递到目标容器内
@@ -516,9 +506,9 @@ done
 rm -rf /tmp/image-list.txt
 ```
 
-![image-20220108115131255](D:\studyDoc\java\\images\image-20220108115131255.png)
+![image-20220108115131255](images\image-20220108115131255.png)
 
-```
+```yml
 kubeadm config print init-defaults > kubeadm-config.yaml
 # 更改后的配置文件
 apiVersion: kubeadm.k8s.io/v1beta2
@@ -668,7 +658,7 @@ wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-
 
 ![image-20220108123307568](\\images\image-20220108123307568.png)
 
-![image-20220108123400317](D:\studyDoc\java\\images\image-20220108123400317.png)
+![image-20220108123400317](images\image-20220108123400317.png)
 
 ### 【kubeadm初始化报错】failed to run Kubelet: misconfiguration: kubelet cgroup driver: "cgroupfs" is different from docker cgroup driver: "systemd" 
 
@@ -999,7 +989,7 @@ deployment.apps/nginx-deployment created
 
 ```
 
-![image-20220111193138050](\\images\image-20220111193138050.png)
+![image-20220111193138050](images\image-20220111193138050.png)
 
 ![image-20220111193218986](\\images\image-20220111193218986.png)
 
@@ -1076,8 +1066,7 @@ DownwardAPI(把外部环境中的信息输出给容器)
 ### 资源清单格式
 
 ```
-apiVersion: group/apiversion # 如果没有给定 group 名称，那么默认为 core，可以使用 kubectl api-
-versions # 获取当前 k8s 版本上所有的 apiVersion 版本信息( 每个版本可能不同 )
+apiVersion: group/apiversion # 如果没有给定 group 名称，那么默认为 core，可以使用 kubectl api-versions # 获取当前 k8s 版本上所有的 apiVersion 版本信息( 每个版本可能不同 )
 kind: #资源类别
 metadata： #资源元数据
 	name
@@ -1307,7 +1296,7 @@ pod/myapp-pod created
 [root@k8s-master01 ~]# kubectl describe pod myapp-pod
 ```
 
-![image-20220112201718483](\\images\image-20220112201718483.png)
+![image-20220112201718483](images\image-20220112201718483.png)
 
 ```
 [root@k8s-master01 ~]# kubectl log myapp-pod -c init-myservice
@@ -1661,7 +1650,7 @@ spec:
 deployment.extensions/nginx-deployment scaled
 ```
 
-![image-20220115094953414](D:\studyDoc\java\\images\image-20220115094953414.png)
+![image-20220115094953414](images\image-20220115094953414.png)
 
 更新deployment的镜像
 
@@ -1707,10 +1696,7 @@ deployment "nginx-deployment" successfully rolled out
 
 #### Deployment 更新策略
 
-Deployment 可以保证在升级时只有一定数量的 Pod 是 down 的。默认的，它会确保至少有比期望的Pod数量少
-一个是up状态（最多一个不可用）
 
-Deployment 更新策略
 Deployment 可以保证在升级时只有一定数量的 Pod 是 down 的。默认的，它会确保至少有比期望的Pod数量少
 一个是up状态（最多一个不可用）
 Deployment 同时也可以确保只创建出超过期望数量的一定数量的 Pod。默认的，它会确保最多比期望的Pod数
@@ -1758,7 +1744,7 @@ DaemonSet 确保全部（或者一些）Node 上运行一个 Pod 的副本。当
 ​	在每个 Node 上运行日志收集 daemon，例如 fluentd 、 logstash
 ​	在每个 Node 上运行监控 daemon，例如 Prometheus Node Exporter、 collectd 、Datadog 代理、New Relic 代理，或 Ganglia gmon
 
-```
+```yml
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -1959,9 +1945,7 @@ ipvs 规则并定期与 Kubernetes Service 对象和 Endpoints 对象同步 ipvs
 
 ### ClusterIP
 
-clusterIP 主要在每个 node 节点使用 iptables，将发向 clusterIP 对应端口的数据，转发到 kube-proxy 中。然
-后 kube-proxy 自己内部实现有负载均衡的方法，并可以查询到这个 service 下对应 pod 的地址和端口，进而把
-数据转发给对应的 pod 的地址和端口
+clusterIP 主要在每个 node 节点使用 iptables，将发向 clusterIP 对应端口的数据，转发到 kube-proxy 中。然后 kube-proxy 自己内部实现有负载均衡的方法，并可以查询到这个 service 下对应 pod 的地址和端口，进而把数据转发给对应的 pod 的地址和端口
 
 ![image-20220115115131697](\\images\image-20220115115131697.png)
 
@@ -2055,8 +2039,7 @@ spec:
 
 ### NodePort
 
-nodePort 的原理在于在 node 上开了一个端口，将向该端口的流量导入到 kube-proxy，然后由 kube-proxy 进
-一步到给对应的 pod
+nodePort 的原理在于在 node 上开了一个端口，将向该端口的流量导入到 kube-proxy，然后由 kube-proxy 进一步到给对应的 pod
 
 ```yml
 apiVersion: v1
@@ -2084,15 +2067,13 @@ spec:
 
 ### LoadBalancer
 
-loadBalancer 和 nodePort 其实是同一种方式。区别在于 loadBalancer 比 nodePort 多了一步，就是可以调用
-cloud provider 去创建 LB 来向节点导流
+loadBalancer 和 nodePort 其实是同一种方式。区别在于 loadBalancer 比 nodePort 多了一步，就是可以调用cloud provider 去创建 LB 来向节点导流
 
 ![image-20220116111815385](\\images\image-20220116111815385.png)
 
 ### ExternalName
 
-这种类型的 Service 通过返回 CNAME 和它的值，可以将服务映射到 externalName 字段的内容( 例如hub.harry.com )。ExternalName Service 是 Service 的特例，它没有 selector，也没有定义任何的端口和
-Endpoint。相反的，对于运行在集群外部的服务，它通过返回该外部服务的别名这种方式来提供服务
+这种类型的 Service 通过返回 CNAME 和它的值，可以将服务映射到 externalName 字段的内容( 例如hub.harry.com )。ExternalName Service 是 Service 的特例，它没有 selector，也没有定义任何的端口和Endpoint。相反的，对于运行在集群外部的服务，它通过返回该外部服务的别名这种方式来提供服务
 
 ```yml
 kind: Service
@@ -2423,9 +2404,44 @@ spec:
 [root@k8s-master01 ingress]# kubectl apply -f service-nodeport.yaml
 ```
 
+service-nodeport
+
+```yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-nginx
+  namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 443
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+
+---
+```
+
+
+
 ![image-20220117203959572](\\images\image-20220117203959572.png)
 
 ![image-20220117204353810](\\images\image-20220117204353810.png)
+
+
+
+
 
 #### Ingress HTTP 代理访问
 
@@ -2834,8 +2850,7 @@ spec:
 
 #### 通过数据卷插件使用ConfigMap
 
-在数据卷里面使用这个 ConfigMap，有不同的选项。最基本的就是将文件填入数据卷，在这个文件中，键就是文
-件名，键值就是文件内容
+在数据卷里面使用这个 ConfigMap，有不同的选项。最基本的就是将文件填入数据卷，在这个文件中，键就是文件名，键值就是文件内容
 
 ```yml
 apiVersion: v1
@@ -3108,11 +3123,9 @@ spec:
 
 ## 3、volume
 
-​    容器磁盘上的文件的生命周期是短暂的，这就使得在容器中运行重要应用时会出现一些问题。首先，当容器崩溃时，kubelet 会重启它，但是容器中的文件将丢失——容器以干净的状态（镜像最初的状态）重新启动。其次，在Pod 中同时运行多个容器时，这些容器之间通常需要共享文件。Kubernetes 中的 Volume 抽象就很好的解决了
-这些问题
+​    容器磁盘上的文件的生命周期是短暂的，这就使得在容器中运行重要应用时会出现一些问题。首先，当容器崩溃时，kubelet 会重启它，但是容器中的文件将丢失——容器以干净的状态（镜像最初的状态）重新启动。其次，在Pod 中同时运行多个容器时，这些容器之间通常需要共享文件。Kubernetes 中的 Volume 抽象就很好的解决了这些问题
 
-​    Kubernetes 中的卷有明确的寿命 —— 与封装它的 Pod 相同。所f以，卷的生命比 Pod 中的所有容器都长，当这个容器重启时数据仍然得以保存。当然，当 Pod 不再存在时，卷也将不复存在。也许更重要的是，Kubernetes
-支持多种类型的卷，Pod 可以同时使用任意数量的卷
+​    Kubernetes 中的卷有明确的寿命 —— 与封装它的 Pod 相同。所以，卷的生命比 Pod 中的所有容器都长，当这个容器重启时数据仍然得以保存。当然，当 Pod 不再存在时，卷也将不复存在。也许更重要的是，Kubernetes支持多种类型的卷，Pod 可以同时使用任意数量的卷
 
 ### 卷的类型
 
@@ -3228,8 +3241,7 @@ spec:
 
 ### PersistentVolume （PV）
 
-是由管理员设置的存储，它是群集的一部分。就像节点是集群中的资源一样，PV 也是集群中的资源。 PV 是Volume 之类的卷插件，但具有独立于使用 PV 的 Pod 的生命周期。此 API 对象包含存储实现的细节，即 NFS、
-iSCSI 或特定于云供应商的存储系统
+是由管理员设置的存储，它是群集的一部分。就像节点是集群中的资源一样，PV 也是集群中的资源。 PV 是Volume 之类的卷插件，但具有独立于使用 PV 的 Pod 的生命周期。此 API 对象包含存储实现的细节，即 NFS、iSCSI 或特定于云供应商的存储系统
 
 ### PersistentVolumeClaim （PVC）
 
@@ -3237,8 +3249,7 @@ iSCSI 或特定于云供应商的存储系统
 
 ### 静态 pv
 
-集群管理员创建一些 PV。它们带有可供群集用户使用的实际存储的细节。它们存在于 Kubernetes API 中，可用
-于消费
+集群管理员创建一些 PV。它们带有可供群集用户使用的实际存储的细节。它们存在于 Kubernetes API 中，可用于消费
 
 ### 动态PV
 
@@ -3288,8 +3299,7 @@ spec:
 
 ### PV 访问模式
 
-PersistentVolume 可以以资源提供者支持的任何方式挂载到主机上。如下表所示，供应商具有不同的功能，每个PV 的访问模式都将被设置为该卷支持的特定模式。例如，NFS 可以支持多个读/写客户端，但特定的 NFS PV 可能
-以只读方式导出到服务器上。每个 PV 都有一套自己的用来描述特定功能的访问模式
+PersistentVolume 可以以资源提供者支持的任何方式挂载到主机上。如下表所示，供应商具有不同的功能，每个PV 的访问模式都将被设置为该卷支持的特定模式。例如，NFS 可以支持多个读/写客户端，但特定的 NFS PV 可能以只读方式导出到服务器上。每个 PV 都有一套自己的用来描述特定功能的访问模式
 
 ​	ReadWriteOnce——该卷可以被单个节点以读/写模式挂载
 ​	ReadOnlyMany——该卷可以被多个节点以只读模式挂载
@@ -3779,14 +3789,13 @@ pod/affinity labeled
 
 节点亲和性，是 pod 的一种属性（偏好或硬性要求），它使 pod 被吸引到一类特定的节点。Taint 则相反，它使节点能够 排斥 一类特定的 pod
 
-aint 和 toleration 相互配合，可以用来避免 pod 被分配到不合适的节点上。每个节点上都可以应用一个或多个taint ，这表示对于那些不能容忍这些 taint 的 pod，是不会被该节点接受的。如果将 toleration 应用于 pod上，则表示这些 pod 可以（但不要求）被调度到具有匹配 taint 的节点上
+Taint 和 toleration 相互配合，可以用来避免 pod 被分配到不合适的节点上。每个节点上都可以应用一个或多个taint ，这表示对于那些不能容忍这些 taint 的 pod，是不会被该节点接受的。如果将 toleration 应用于 pod上，则表示这些 pod 可以（但不要求）被调度到具有匹配 taint 的节点上
 
 ### 污点(Taint)
 
 污点 ( Taint ) 的组成
 
-使用 kubectl taint 命令可以给某个 Node 节点设置污点，Node 被设置上污点之后就和 Pod 之间存在了一种相
-斥的关系，可以让 Node 拒绝 Pod 的调度执行，甚至将 Node 已经存在的 Pod 驱逐出去
+使用 kubectl taint 命令可以给某个 Node 节点设置污点，Node 被设置上污点之后就和 Pod 之间存在了一种相斥的关系，可以让 Node 拒绝 Pod 的调度执行，甚至将 Node 已经存在的 Pod 驱逐出去
 
 每个污点的组成如下：
 
@@ -3800,8 +3809,7 @@ key=value:effect
 >
 > PreferNoSchedule ：表示 k8s 将尽量避免将 Pod 调度到具有该污点的 Node 上
 >
-> NoExecute ：表示 k8s 将不会将 Pod 调度到具有该污点的 Node 上，同时会将 Node 上已经存在的 Pod 驱
-> 逐出去
+> NoExecute ：表示 k8s 将不会将 Pod 调度到具有该污点的 Node 上，同时会将 Node 上已经存在的 Pod 驱逐出去
 
 污点的设置、查看和去除
 
@@ -3871,9 +3879,7 @@ kubectl taint nodes Node-Name node-role.kubernetes.io/master=:PreferNoSchedule
 
 ## 机制说明
 
-Kubernetes 作为一个分布式集群的管理工具，保证集群的安全性是其一个重要的任务。API Server 是集群内部
-各个组件通信的中介，也是外部控制的入口。所以 Kubernetes 的安全机制基本就是围绕保护 API Server 来设计
-的。Kubernetes 使用了认证（Authentication）、鉴权（Authorization）、准入控制（AdmissionControl）三步来保证API Server的安全
+Kubernetes 作为一个分布式集群的管理工具，保证集群的安全性是其一个重要的任务。API Server 是集群内部各个组件通信的中介，也是外部控制的入口。所以 Kubernetes 的安全机制基本就是围绕保护 API Server 来设计的。Kubernetes 使用了认证（Authentication）、鉴权（Authorization）、准入控制（AdmissionControl）三步来保证API Server的安全
 
 ![image-20220125153045679](\\images\image-20220125153045679.png)
 
@@ -3881,9 +3887,7 @@ Kubernetes 作为一个分布式集群的管理工具，保证集群的安全性
 
 HTTP Token 认证：通过一个 Token 来识别合法用户
 
-> HTTP Token 的认证是用一个很长的特殊编码方式的并且难以被模仿的字符串 - Token 来表达客户的一
-> 种方式。Token 是一个很长的很复杂的字符串，每一个 Token 对应一个用户名存储在 API Server 能访
-> 问的文件中。当客户端发起 API 调用请求时，需要在 HTTP Header 里放入 Token
+> HTTP Token 的认证是用一个很长的特殊编码方式的并且难以被模仿的字符串 - Token 来表达客户的一种方式。Token 是一个很长的很复杂的字符串，每一个 Token 对应一个用户名存储在 API Server 能访问的文件中。当客户端发起 API 调用请求时，需要在 HTTP Header 里放入 Token
 
 HTTP Base 认证：通过 用户名+密码 的方式认证
 
@@ -3919,20 +3923,15 @@ kubectl、kubelet、kube-proxy 访问 API Server 就都需要证书进行 HTTPS 
 
 ### kubeconfig
 
-kubeconfig 文件包含集群参数（CA证书、API Server地址），客户端参数（上面生成的证书和私钥），集群
-context 信息（集群名称、用户名）。Kubenetes 组件通过启动时指定不同的 kubeconfig 文件可以切换到不同
-的集群
+kubeconfig 文件包含集群参数（CA证书、API Server地址），客户端参数（上面生成的证书和私钥），集群context 信息（集群名称、用户名）。Kubenetes 组件通过启动时指定不同的 kubeconfig 文件可以切换到不同的集群
 
 ### ServiceAccount
 
-Pod中的容器访问API Server。因为Pod的创建、销毁是动态的，所以要为它手动生成证书就不可行了。
-Kubenetes使用了Service Account解决Pod 访问API Server的认证问题
+Pod中的容器访问API Server。因为Pod的创建、销毁是动态的，所以要为它手动生成证书就不可行了。Kubenetes使用了Service Account解决Pod 访问API Server的认证问题
 
 ### Secret 与 SA 的关系
 
-Kubernetes 设计了一种资源对象叫做 Secret，分为两类，一种是用于 ServiceAccount 的 service-account-
-token， 另一种是用于保存用户自定义保密信息的 Opaque。ServiceAccount 中用到包含三个部分：Token、
-ca.crt、namespace
+Kubernetes 设计了一种资源对象叫做 Secret，分为两类，一种是用于 ServiceAccount 的 service-account-token， 另一种是用于保存用户自定义保密信息的 Opaque。ServiceAccount 中用到包含三个部分：Token、ca.crt、namespace
 
 > token是使用 API Server 私钥签名的 JWT。用于访问API Server时，Server端认证
 >
@@ -3960,20 +3959,17 @@ ca.crt、namespace
 
 ## Authorization
 
-上面认证过程，只是确认通信的双方都确认了对方是可信的，可以相互通信。而鉴权是确定请求方有哪些资源的权
-限。API Server 目前支持以下几种授权策略 （通过 API Server 的启动参数 “--authorization-mode” 设置）
+上面认证过程，只是确认通信的双方都确认了对方是可信的，可以相互通信。而鉴权是确定请求方有哪些资源的权限。API Server 目前支持以下几种授权策略 （通过 API Server 的启动参数 “--authorization-mode” 设置）
 
 > AlwaysDeny：表示拒绝所有的请求，一般用于测试
 > AlwaysAllow：允许接收所有请求，如果集群不需要授权流程，则可以采用该策略
-> ABAC（Attribute-Based Access Control）：基于属性的访问控制，表示使用用户配置的授权规则对用户
-> 请求进行匹配和控制
+> ABAC（Attribute-Based Access Control）：基于属性的访问控制，表示使用用户配置的授权规则对用户请求进行匹配和控制
 > Webbook：通过调用外部 REST 服务对用户进行授权
 > RBAC（Role-Based Access Control）：基于角色的访问控制，现行默认规则
 
 ### RBAC 授权模式
 
-BAC（Role-Based Access Control）基于角色的访问控制，在 Kubernetes 1.5 中引入，现行版本成为默认标
-准。相对其它访问控制方式，拥有以下优势：
+RBAC（Role-Based Access Control）基于角色的访问控制，在 Kubernetes 1.5 中引入，现行版本成为默认标准。相对其它访问控制方式，拥有以下优势：
 
 > 对集群中的资源和非资源均拥有完整的覆盖
 >
@@ -3983,16 +3979,11 @@ BAC（Role-Based Access Control）基于角色的访问控制，在 Kubernetes 1
 
 ### RBAC 的 API 资源对象说明
 
-RBAC 引入了 4 个新的顶级资源对象：Role、ClusterRole、RoleBinding、ClusterRoleBinding，4 种对象类型
-均可以通过 kubectl 与 API 操作
+RBAC 引入了 4 个新的顶级资源对象：Role、ClusterRole、RoleBinding、ClusterRoleBinding，4 种对象类型均可以通过 kubectl 与 API 操作
 
 ![image-20220125165304793](\\images\image-20220125165304793.png)
 
-需要注意的是 Kubenetes 并不会提供用户管理，那么 User、Group、ServiceAccount 指定的用户又是从哪里
-来的呢？ Kubenetes 组件（kubectl、kube-proxy）或是其他自定义的用户在向 CA 申请证书时，需要提供一个
-证书请求文件
-
-
+需要注意的是 Kubenetes 并不会提供用户管理，那么 User、Group、ServiceAccount 指定的用户又是从哪里来的呢？ Kubenetes 组件（kubectl、kube-proxy）或是其他自定义的用户在向 CA 申请证书时，需要提供一个证书请求文件
 
 ```json
 
@@ -4024,8 +4015,7 @@ Pod使用 ServiceAccount 认证时，service-account-token 中的 JWT 会保存 
 
 ### Role and ClusterRole
 
-在 RBAC API 中，Role 表示一组规则权限，权限只会增加(累加权限)，不存在一个资源一开始就有很多权限而通过
-RBAC 对其进行减少的操作；Role 可以定义在一个 namespace 中，如果想要跨 namespace 则可以创建ClusterRole
+在 RBAC API 中，Role 表示一组规则权限，权限只会增加(累加权限)，不存在一个资源一开始就有很多权限而通过RBAC 对其进行减少的操作；Role 可以定义在一个 namespace 中，如果想要跨 namespace 则可以创建ClusterRole
 
 ```yml
 kind: Role
@@ -4039,8 +4029,7 @@ rules:
   verbs: ["get", "watch", "list"]
 ```
 
-ClusterRole 具有与 Role 相同的权限角色控制能力，不同的是 ClusterRole 是集群级别的，ClusterRole 可以用
-于:
+ClusterRole 具有与 Role 相同的权限角色控制能力，不同的是 ClusterRole 是集群级别的，ClusterRole 可以用于:
 
 > 集群级别的资源控制( 例如 node 访问权限 )
 > 非资源型 endpoints( 例如 /healthz 访问 ）
@@ -4061,10 +4050,7 @@ rules:
 
 ### RoleBinding and ClusterRoleBinding
 
-RoloBinding 可以将角色中定义的权限授予用户或用户组，RoleBinding 包含一组权限列表(subjects)，权限列
-表中包含有不同形式的待授予权限资源类型(users, groups, or service accounts)；RoloBinding 同样包含对被
-Bind 的 Role 引用；RoleBinding 适用于某个命名空间内授权，而 ClusterRoleBinding 适用于集群范围内的授
-权
+RoloBinding 可以将角色中定义的权限授予用户或用户组，RoleBinding 包含一组权限列表(subjects)，权限列表中包含有不同形式的待授予权限资源类型(users, groups, or service accounts)；RoloBinding 同样包含对被Bind 的 Role 引用；RoleBinding 适用于某个命名空间内授权，而 ClusterRoleBinding 适用于集群范围内的授权
 
 ```yml
 kind: RoleBinding
@@ -4082,13 +4068,9 @@ roleRef:
   apiGroup: rbac.aut
 ```
 
-RoleBinding 同样可以引用 ClusterRole 来对当前 namespace 内用户、用户组或 ServiceAccount 进行授权，
-这种操作允许集群管理员在整个集群内定义一些通用的 ClusterRole，然后在不同的 namespace 中使用
-RoleBinding 来引用
+RoleBinding 同样可以引用 ClusterRole 来对当前 namespace 内用户、用户组或 ServiceAccount 进行授权，这种操作允许集群管理员在整个集群内定义一些通用的 ClusterRole，然后在不同的 namespace 中使用RoleBinding 来引用
 
-例如，以下 RoleBinding 引用了一个 ClusterRole，这个 ClusterRole 具有整个集群内对 secrets 的访问权限；
-但是其授权用户  dave  只2能访问 development 空间中的 secrets(因为 RoleBinding 定义在 development 命
-名空间)
+例如，以下 RoleBinding 引用了一个 ClusterRole，这个 ClusterRole 具有整个集群内对 secrets 的访问权限；但是其授权用户  dave  只能访问 development 空间中的 secrets(因为 RoleBinding 定义在 development 命名空间)
 
 ```yml
 # This role binding allows "dave" to read secrets in the "development" namespace.
@@ -4108,8 +4090,7 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
 ```
 
-使用 ClusterRoleBinding 可以对整个集群中的所有命名空间资源权限进行授权；以下 ClusterRoleBinding 样例
-展示了授权 manager 组内所有用户在全部命名空间中对 secrets 进行访问
+使用 ClusterRoleBinding 可以对整个集群中的所有命名空间资源权限进行授权；以下 ClusterRoleBinding 样例展示了授权 manager 组内所有用户在全部命名空间中对 secrets 进行访问
 
 ```yml
 # This cluster role binding allows anyone in the "manager" group to read secrets in any
@@ -4136,8 +4117,7 @@ Kubernetes 集群内一些资源一般以其名称字符串来表示，这些字
 GET /api/v1/namespaces/{namespace}/pods/{name}/log
 ```
 
-如果要在 RBAC 授权模型中控制这些子资源的访问权限，可以通过 / 分隔符来实现，以下是一个定义 pods 资资源
-logs 访问权限的 Role 定义样例
+如果要在 RBAC 授权模型中控制这些子资源的访问权限，可以通过 / 分隔符来实现，以下是一个定义 pods 资资源logs 访问权限的 Role 定义样例
 
 ```yml
 kind: Role
@@ -4254,8 +4234,7 @@ Switched to context "kubernetes".
 
 ## 准入控制
 
-准入控制是API Server的插件集合，通过添加不同的插件，实现额外的准入控制规则。甚至于API Server的一些主
-要的功能都需要通过 Admission Controllers 实现，比如 ServiceAccount
+准入控制是API Server的插件集合，通过添加不同的插件，实现额外的准入控制规则。甚至于API Server的一些主要的功能都需要通过 Admission Controllers 实现，比如 ServiceAccount
 
 官方文档上有一份针对不同版本的准入控制器推荐列表，其中最新的 1.14 的推荐列表是
 
@@ -4279,8 +4258,7 @@ amespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerati
 
 Helm 本质就是让 K8s 的应用管理（Deployment,Service 等 ) 可配置，能动态生成。通过动态生成 K8s 资源清单文件（deployment.yaml，service.yaml）。然后调用 Kubectl 自动执行 K8s 资源部
 
-Helm 是官方提供的类似于 YUM 的包管理器，是部署环境的流程封装。Helm 有两个重要的概念：chart 和
-release
+Helm 是官方提供的类似于 YUM 的包管理器，是部署环境的流程封装。Helm 有两个重要的概念：chart 和release
 
 > chart 是创建一个应用的信息集合，包括各种 Kubernetes 对象的配置模板、参数定义、依赖关系、文档说明等。chart 是应用部署的自包含逻辑单元。可以将 chart 想象成 apt、yum 中的软件安装包
 >
@@ -4290,8 +4268,7 @@ Helm 包含两个组件：Helm 客户端和 Tiller 服务器，如下图所示
 
 ![image-20220126134842520](\\images\image-20220126134842520.png)
 
-Helm 客户端负责 chart 和 release 的创建和管理以及和 Tiller 的交互。Tiller 服务器运行在 Kubernetes 集群
-中，它会处理 Helm 客户端的请求，与 Kubernetes API Server 交互
+Helm 客户端负责 chart 和 release 的创建和管理以及和 Tiller 的交互。Tiller 服务器运行在 Kubernetes 集群中，它会处理 Helm 客户端的请求，与 Kubernetes API Server 交互
 
 ## Helm 部署
 
@@ -4305,11 +4282,9 @@ Helm 客户端负责 chart 和 release 的创建和管理以及和 Tiller 的交
 
 ```
 
-为了安装服务端 tiller，还需要在这台机器上配置好 kubectl 工具和 kubeconfig 文件，确保 kubectl 工具可以
-在这台机器上访问 apiserver 且正常使用。 这里的 node1 节点以及配置好了 kubectl
+为了安装服务端 tiller，还需要在这台机器上配置好 kubectl 工具和 kubeconfig 文件，确保 kubectl 工具可以在这台机器上访问 apiserver 且正常使用。 这里的 node1 节点已经配置好了 kubectl
 
-因为 Kubernetes APIServer 开启了 RBAC 访问控制，所以需要创建 tiller 使用的 service account: tiller 并分
-配合适的角色给它。  这里简单起见直接分配cluster- admin 这个集群内置的 ClusterRole 给它。创建 rbac-config.yaml 文件：
+因为 Kubernetes APIServer 开启了 RBAC 访问控制，所以需要创建 tiller 使用的 service account: tiller 并分配合适的角色给它。  这里简单起见直接分配cluster- admin 这个集群内置的 ClusterRole 给它。创建 rbac-config.yaml 文件：
 
 ```yml
 apiVersion: v1
@@ -4451,8 +4426,7 @@ release "exasperated-ibex" deleted
 Rollback was a success! Happy Helming!
 ```
 
-使用 helm delete --purge RELEASE_NAME 移除所有与指定 Release 相关的 Kubernetes 资源和所有这个
-Release 的记录
+使用 helm delete --purge RELEASE_NAME 移除所有与指定 Release 相关的 Kubernetes 资源和所有这个Release 的记录
 
 ```
 helm delete --purge exasperated-ibex
@@ -4554,18 +4528,16 @@ Prometheus github 地址：https://github.com/coreos/kube-prometheus
 
 ### 组件说明
 
-> 1.MetricServer：是kubernetes集群资源使用情况的聚合器，收集数据给kubernetes集群内使用，如
-> kubectl,hpa,scheduler等。 
->
-> 2.PrometheusOperator：是一个系统监测和警报工具箱，用来存储监控数据。
->
-> 3.NodeExporter：用于各node的关键度量指标状态数据。
->
-> 4.KubeStateMetrics：收集kubernetes集群内资源对象数据，制定告警规则。 
->
-> 5.Prometheus：采用pull方式收集apiserver，scheduler，controller-manager，kubelet组件数
-> 据，通过http协议传输。
->
+> 1.MetricServer：是kubernetes集群资源使用情况的聚合器，收集数据给kubernetes集群内使用，如kubectl,hpa,scheduler等。 
+> 
+>2.PrometheusOperator：是一个系统监测和警报工具箱，用来存储监控数据。
+> 
+>3.NodeExporter：用于各node的关键度量指标状态数据。
+> 
+>4.KubeStateMetrics：收集kubernetes集群内资源对象数据，制定告警规则。 
+> 
+>5.Prometheus：采用pull方式收集apiserver，scheduler，controller-manager，kubelet组件数据，通过http协议传输。
+> 
 > 6.Grafana：是可视化数据统计和监控平台
 
 ### 构建记录
@@ -4698,7 +4670,6 @@ rm -rf /tmp/k8s-images.txt
 ```
 [root@k8s-master01 manifests]# kubectl run -i --tty load-generator --image=busybox /bin/sh
 
-
 ```
 
 自动扩容pod
@@ -4711,12 +4682,9 @@ rm -rf /tmp/k8s-images.txt
 
 ### 资源限制 - Pod
 
-Kubernetes 对资源的限制实际上是通过 cgroup 来控制的，cgroup 是容器的一组用来控制内核如何运行进程的
-相关属性集合。针对内存、CPU 和各种设备都有对应的 cgroup
+Kubernetes 对资源的限制实际上是通过 cgroup 来控制的，cgroup 是容器的一组用来控制内核如何运行进程的相关属性集合。针对内存、CPU 和各种设备都有对应的 cgroup
 
-默认情况下，Pod 运行没有 CPU 和内存的限额。 这意味着系统中的任何 Pod 将能够像执行该 Pod 所在的节点一
-样，消耗足够多的 CPU 和内存 。一般会针对某些应用的 pod 资源进行资源限制，这个资源限制是通过
-resources 的 requests 和 limits 来实现
+默认情况下，Pod 运行没有 CPU 和内存的限额。 这意味着系统中的任何 Pod 将能够像执行该 Pod 所在的节点一样，消耗足够多的 CPU 和内存 。一般会针对某些应用的 pod 资源进行资源限制，这个资源限制是通过resources 的 requests 和 limits 来实现
 
 ```yml
   spec:
@@ -4822,8 +4790,7 @@ sum by (pod_name)( rate(container_cpu_usage_seconds_total{image!="", pod_name!="
 
 ![image-20220127194041289](\\images\image-20220127194041289.png)
 
-上述的查询有出现数据，说明 node-exporter 往 prometheus 中写入数据正常，接下来我们就可以部署
-grafana 组件，实现更友好的 we展示数据了
+上述的查询有出现数据，说明 node-exporter 往 prometheus 中写入数据正常，接下来我们就可以部署grafana 组件，实现更友好的 we展示数据了
 
 ### 访问 grafanaa
 

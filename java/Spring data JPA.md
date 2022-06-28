@@ -22,7 +22,7 @@ JPA通过JDK 5.0注解描述对象－关系表的映射关系，并将运行期�
 
 JPA规范本质上就是一种ORM规范，注意不是ORM框架——因为JPA并未提供ORM实现，它只是制订了一些规范，提供了一些编程的API接口，但具体实现则由服务厂商来提供实现。      
 
-![img](\images\1232.jpg)
+![img](images\1232.jpg)
 
 JPA和Hibernate的关系就像JDBC和JDBC驱动的关系，JPA是规范，Hibernate除了作为ORM框架之外，它也是一种JPA实现。JPA怎么取代Hibernate呢？JDBC规范可以驱动底层数据库吗？答案是否定的，也就是说，如果使用JPA规范进行数据库操作，底层需要hibernate作为其实现类完成数据持久化工作。
 
@@ -40,7 +40,7 @@ http://sourceforge.net/projects/hibernate/files/hibernate-orm/5.0.7.Final/
 
 ###  传统工程导入jar包 
 
-![传统工程导入的jar包说明](\images\clip_image001.png)
+![传统工程导入的jar包说明](images\clip_image001.png)
 
 ### maven工程导入坐标
 
@@ -343,7 +343,7 @@ public @interface SequenceGenerator {
     String name();
     //属性表示生成策略用到的数据库序列名称。
     String sequenceName() default "";
-    //表示主键初识值，默认为0
+    //表示主键初始值，默认为0
     int initialValue() default 0;
     //表示每次主键值增加的大小，例如设置1，则表示每次插入新记录后自动加1，默认为50
     int allocationSize() default 50;
@@ -1242,7 +1242,7 @@ public class CustomerDaoTest {
 
 在客户的案例中，我们发现在自定义的CustomerDao中，并没有提供任何方法就可以使用其中的很多方法，那么这些方法究竟是怎么来的呢？答案很简单，对于我们自定义的Dao接口，由于继承了JpaRepository和JpaSpecificationExecutor，所以我们可以使用这两个接口的所有方法。
 
-![jpaRepository](\images\clip_image0211321312302.jpg)
+![jpaRepository](images\clip_image0211321312302.jpg)
 
 在使用Spring Data JPA时，一般实现JpaRepository和JpaSpecificationExecutor接口，这样就可以使用这些接口中定义的方法，但是这些方法都只是一些声明，没有具体的实现方式，那么在 Spring Data JPA中它又是怎么实现的呢？
 
@@ -1254,7 +1254,7 @@ public class CustomerDaoTest {
 
 ### **代理子类的实现过程**
 
-![image-20210611090837962](\images\image-20210611090837962.png)
+![image-20210611090837962](images\image-20210611090837962.png)
 
 断点执行到方法上时，我们可以发现注入的customerDao对象，本质上是通过JdkDynamicAopProxy生成的一个代理对象
 
@@ -1262,15 +1262,15 @@ public class CustomerDaoTest {
 
 当程序执行的时候，会通过JdkDynamicAopProxy的invoke方法，对customerDao对象生成动态代理对象。根据对Spring Data JPA介绍而知，要想进行findOne查询方法，最终还是会出现JPA规范的API完成操作，那么这些底层代码存在于何处呢？答案很简单，都隐藏在通过JdkDynamicAopProxy生成的动态代理对象当中，而这个动态代理对象就是SimpleJpaRepository
 
-![image-20210611091052605](\images\image-20210611091052605.png)
+![image-20210611091052605](images\image-20210611091052605.png)
 
 通过SimpleJpaRepository的源码分析，定位到了findOne方法，在此方法中，返回em.find()的返回结果，那么em又是什么呢？ 
 
-![image-20210611091129284](\images\image-20210611091129284.png)
+![image-20210611091129284](images\image-20210611091129284.png)
 
 ## Spring Data JPA完整的调用过程
 
-![image-20210611091205606](\images\image-20210611091205606.png)
+![image-20210611091205606](images\image-20210611091205606.png)
 
 # 九、Spring Data JPA的查询方式
 
@@ -1278,11 +1278,11 @@ public class CustomerDaoTest {
 
 ### 继承JpaRepository后的方法列表
 
-![image-20210611091556113](\images\image-20210611091556113.png)
+![image-20210611091556113](images\image-20210611091556113.png)
 
 ### **继承**JpaSpecificationExecutor的方法列表
 
-![image-20210611091632650](\images\image-20210611091632650.png)
+![image-20210611091632650](images\image-20210611091632650.png)
 
 ###  使用JPQL的方式查询
 
@@ -1482,7 +1482,7 @@ List<T> getContent();
 
 一对多数据库关系的建立，如下图所示 
 
- ![002](D:\studyDoc\java\images\clip_image00324323423432.jpg)
+ ![002](images\clip_image00324323423432.jpg)
 
 ###  实体类关系建立以及映射配置
 
@@ -1702,7 +1702,7 @@ public void testDelete() {
 }
 ```
 
-除操作的说明如下：
+删除操作的说明如下：
 
 **删除从表数据：可以随时任意删除。**
 
@@ -1710,7 +1710,7 @@ public void testDelete() {
 
 有从表数据
 
- 1、在默认情况下，它会把外键字段置为null，然后删除主表数据。如果在数据库的表        结构上，外键字段有非空约束，默认情况就会报错了。
+ 1、在默认情况下，它会把外键字段置为null，然后删除主表数据。如果在数据库的表  结构上，外键字段有非空约束，默认情况就会报错了。
 
  2、如果配置了放弃维护关联关系的权利，则不能删除（与外键字段是否允许为null，   没有关系）因为在删除时，它根本不会去更新从表的外键字段了。
 
@@ -1746,7 +1746,7 @@ public void testDelete() {
 
  
 
-![003](\images\clip12321321_image002.png)
+![003](images\clip12321321_image002.png)
 
 ### 实体类关系建立以及映射配置
 

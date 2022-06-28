@@ -3740,7 +3740,7 @@ public class MyLongToByteEncoder extends MessageToByteEncoder<Long> {
 
 
 
-** 服务端发数据给客户端：**服务端—>出站—>Socket通道—>入站—>客户端
+服务端发数据给客户端：服务端—>出站—>Socket通道—>入站—>客户端
 
  **客户端发数据给服务端：**客户端—>出站—>Socket通道—>入站—>服务端
 
@@ -5192,10 +5192,10 @@ unsafe.read(); //断点位置
 说明：
 
 	1.  msg 强转成 Channel ，实际上就是 NioSocketChannel 。
- 	2.  添加 NioSocketChannel 的 pipeline 的 handler ，就是我们 main 方法里面设置的 childHandler 方法里的。
- 	3.  设置 NioSocketChannel 的各种属性。
- 	4.  将该 NioSocketChannel 注册到 childGroup 中的一个 EventLoop 上，并添加一个监听器。
- 	5.  这个 childGroup 就是我们 main 方法创建的数组 workerGroup。
+	2.  添加 NioSocketChannel 的 pipeline 的 handler ，就是我们 main 方法里面设置的 childHandler 方法里的。
+	3.  设置 NioSocketChannel 的各种属性。
+	4.  将该 NioSocketChannel 注册到 childGroup 中的一个 EventLoop 上，并添加一个监听器。
+	5.  这个 childGroup 就是我们 main 方法创建的数组 workerGroup。
 
 进入 register 方法查看(步步追踪会到)
 
@@ -6393,4 +6393,6 @@ String res = service.hello("你好 dubbo~");
 收到客户端消息=你好 dubbo~
 
 ```
+
+
 

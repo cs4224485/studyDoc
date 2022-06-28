@@ -80,7 +80,7 @@ RPC接口上基本都是同步调用，整体的服务性能遵循“木桶理�
 
 ​     面向消息的中间件（message-oriented middleware）MOM能够很好的解决以上问题。是指利用高效可靠的消息传递机制与平台无关的数据交流，并基于数据通信来进行分布式系统的集成。通过提供消息传递和消息排队模型在分布式环境下提供应用解耦，弹性伸缩，冗余存储、流量削峰，异步通信，数据同步等功能。
 
-​    大致的过程是这样的：发送者把消息发送给消息服务器，消息服务器将消息存放在若干队列/主题topic中，在合适的时候，消息服务器回将消息转发给接受者。在这个过程中，发送和接收是异步的，也就是发送无需等待，而且发送者和接受者的生命周期也没有必然的关系；尤其在发布pub/订阅sub模式下，也可以完成一对多的通信，即让一个消息有多个接受者。
+​    大致的过程是这样的：发送者把消息发送给消息服务器，消息服务器将消息存放在若干队列/主题topic中，在合适的时候，消息服务器会将消息转发给接受者。在这个过程中，发送和接收是异步的，也就是发送无需等待，而且发送者和接受者的生命周期也没有必然的关系；尤其在发布pub/订阅sub模式下，也可以完成一对多的通信，即让一个消息有多个接受者。
 
 ![img](images\clip_image007.jpg)
 
@@ -463,7 +463,7 @@ public class JmsConsumerListener {
 
 #### **(2)**    **队列的特点：**
 
-![img](D:\studyDoc\java\images\clip_image014.jpg)
+![img](images\clip_image014.jpg)
 
 #### **(3)**   **消息消费情况**
 
@@ -595,7 +595,7 @@ topic有多个消费者时，消费消息的数量 ≈ 在线消费者数量*生
 
 ## 5、tpoic和queue对比
 
-![img](\images\clip_image022.jpg)
+![img](images\clip_image022.jpg)
 
 # 三、JMS规范
 
@@ -603,9 +603,9 @@ topic有多个消费者时，消费消息的数量 ≈ 在线消费者数量*生
 
 ​     java消息服务指的是两个应用程序之间进行异步通信的API，它为标准协议和消息服务提供了一组通用接口，包括创建、发送、读取消息等，用于支持Java应用程序开发。在JavaEE中，当两个应用程序使用JMS进行通信时，它们之间不是直接相连的，而是通过一个共同的消息收发服务组件关联起来以达到解耦/异步削峰的效果。
 
-![img](\images\clip_image023.jpg)
+![img](images\clip_image023.jpg)
 
-![img](\images\clip_image0024.jpg)
+![img](images\clip_image0024.jpg)
 
 ## 2、消息头
 
@@ -679,11 +679,11 @@ public class JnsProduceTopic {
 
 ## 3、消息体
 
-![img](\images\clip_image025.jpg)
+![img](images\clip_image025.jpg)
 
 5种消息体格式：
 
-![img](\images\clip_image028.jpg)
+![img](images\clip_image028.jpg)
 
 下面我们演示MapMessage的用法
 
@@ -778,7 +778,7 @@ public class JmsConsumerMapMessage {
 
 下图是设置消息属性的API：
 
-![img](\images\clip_image026.jpg)
+![img](images\clip_image026.jpg)
 
 消息生产者
 
@@ -881,7 +881,7 @@ public class JmsConsumerProperty {
 
 ### queue消息非持久和持久
 
-![img](\images\clip_image032.jpg)
+![img](images\clip_image032.jpg)
 
 运行结果证明：当生产者成功发布消息之后，MQ服务端宕机重启，消息生产者就收不到该消息了
 
@@ -991,60 +991,45 @@ public class JmsProduceTopic {
 持久化topic消费者代码
 
 ```java
-public class JmsProduceTopic {
-    // Linux上部署的activemq的IP地址+activemq的端口号
-    public static final String ACTIVEMQ_URL = "tcp://192.168.30.128:61616";
-    // 目的地的名称
-    public static final String QUEUE_NAME = "topic_demon";
+import org.apache.activemq.ActiveMQConnectionFactory;
 
-    public static void main(String[] args) throws JMSException {
+import javax.jms.*;
+import java.io.IOException;
+
+public class JmsConsumerTopicPersistent {
+    public static final String ACTIVEMQ_URL = "tcp://192.168.30.128:61616";
+
+    public static final String TOPIC_NAME = "topic_demon";
+
+    public static void main(String[] args) throws JMSException, IOException {
         ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(ACTIVEMQ_URL);
         Connection connection = activeMQConnectionFactory.createConnection();
+        // 设置客户端ID。向MQ服务器注册自己的名称
+        connection.setClientID("harry");
         connection.start();
         Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-        Topic topic = session.createTopic(QUEUE_NAME);
-        MessageProducer messageProducer = session.createProducer(topic);
-        // 设置持久化topic
-        messageProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
-        // 设置持久化topic之后再，启动连接
+        Topic topic = session.createTopic(TOPIC_NAME);
+        // 创建一个topic订阅者对象。一参是topic，二参是订阅者名称
+        TopicSubscriber topicSubscriber = session.createDurableSubscriber(topic,"remark...");
+        // 之后再开启连接
         connection.start();
-        for (int i = 1; i < 4; i++) {
-            TextMessage textMessage = session.createTextMessage("msg" + i);
-            // 这里可以指定每个消息的目的地
-            textMessage.setJMSDestination(topic);
-            /*
-            持久模式和非持久模式。
-            一条持久性的消息：应该被传送“一次仅仅一次”，这就意味着如果JMS提供者出现故障，该消息并不会丢失，它会在服务器恢复之后再次传递。
-            一条非持久的消息：最多会传递一次，这意味着服务器出现故障，该消息将会永远丢失。
-             */
-            textMessage.setJMSDeliveryMode(0);
-            /*
-            可以设置消息在一定时间后过期，默认是永不过期。
-            消息过期时间，等于Destination的send方法中的timeToLive值加上发送时刻的GMT时间值。
-            如果timeToLive值等于0，则JMSExpiration被设为0，表示该消息永不过期。
-            如果发送后，在消息过期时间之后还没有被发送到目的地，则该消息被清除。
-             */
-            textMessage.setJMSExpiration(1000);
-            /*  消息优先级，从0-9十个级别，0-4是普通消息5-9是加急消息。
-            JMS不要求MQ严格按照这十个优先级发送消息但必须保证加急消息要先于普通消息到达。默认是4级。
-             */
-            textMessage.setJMSPriority(10);
-            // 唯一标识每个消息的标识。MQ会给我们默认生成一个，我们也可以自己指定。
-            textMessage.setJMSMessageID("ABCD");
-            // 上面有些属性在send方法里也能设置
-            messageProducer.send(textMessage);
+        Message message = topicSubscriber.receive();
+        while (null != message){
+            TextMessage textMessage = (TextMessage)message;
+            System.out.println(" 收到的持久化 topic ："+textMessage.getText());
+            message = topicSubscriber.receive();
         }
-        messageProducer.close();
         session.close();
         connection.close();
-        System.out.println("*** 消息发送到MQ完成 ***");
     }
+
 }
+
 ```
 
 ## 6、消息的事务性
 
-![img](\images\clip_image042.jpg)
+![img](images\clip_image042.jpg)
 
 (1) 生产者开启事务后，执行commit方法，这批消息才真正的被提交。不执行commit方法，这批消息不会提交。执行rollback方法，之前的消息会回滚掉。生产者的事务机制，要高于签收机制，当生产者开启事务，签收机制不再重要。
 
@@ -1182,7 +1167,7 @@ public class Jms_TX_Producer {
         connection.start();
         //1.创建会话session，两个参数transacted=事务,acknowledgeMode=确认模式(签收)
         //设置为开启事务
-        Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+        Session session = connection.createSession(true, Session.CLIENT_ACKNOWLEDGE);
         Queue queue = session.createQueue(QUEUE_NAME);
         MessageProducer producer = session.createProducer(queue);
         try {
@@ -1221,7 +1206,7 @@ public class Jms_TX_Consumer {
         connection.start();
         // 创建会话session，两个参数transacted=事务,acknowledgeMode=确认模式(签收)
         // 消费者开启了事务就必须手动提交，不然会重复消费消息
-        final Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+        final Session session = connection.createSession(true, Session.CLIENT_ACKNOWLEDGE);
         Queue queue = session.createQueue(QUEUE_NAME);
         MessageConsumer messageConsumer = session.createConsumer(queue);
         int a = 0;
@@ -1299,7 +1284,7 @@ public class Jms_TX_Consumer {
 
 启动broker时指定配置文件，可以帮助我们在一台服务器上启动多个broker。实际工作中一般一台服务器只启动一个broker。
 
-![image-20201116205146856](\images\image-20201116205146856.png)
+![image-20201116205146856](images\image-20201116205146856.png)
 
 ## 3、嵌入式的broker启动
 
@@ -2172,7 +2157,7 @@ public class BeanConfig {
 
 ## 1、简介
 
-ctiveMQ支持的client-broker通讯协议有：TVP、NIO、UDP、SSL、Http(s)、VM。其中配置Transport Connector的文件在ActiveMQ安装目录的conf/activemq.xml中的\<transportConnectors>标签之内。
+ActiveMQ支持的client-broker通讯协议有：TVP、NIO、UDP、SSL、Http(s)、VM。其中配置Transport Connector的文件在ActiveMQ安装目录的conf/activemq.xml中的\<transportConnectors>标签之内。
 
 activemq传输协议的官方文档：http://activemq.apache.org/configuring-version-5-transports.html
 
@@ -2201,7 +2186,7 @@ activemq传输协议的官方文档：http://activemq.apache.org/configuring-ver
 
 ​	除了tcp和nio协议，其他的了解就行。各种协议有各自擅长该协议的中间件，工作中一般不会使用activemq去实现这些协议。如： mqtt是物联网专用协议，采用的中间件一般是mosquito。ws是websocket的协议，是和前端对接常用的，一般在java代码中内嵌一个基站（中间件）。stomp好像是邮箱使用的协议的，各大邮箱公司都有基站（中间件）
 
-![img](\images\clip_image102.jpg)
+![img](images\clip_image102.jpg)
 
 ### TCP协议
 
@@ -2237,25 +2222,25 @@ activemq传输协议的官方文档：http://activemq.apache.org/configuring-ver
 
 (5) 关于Transport协议的可选配置参数可以参考官网http://activemq.apache.org/configuring-version-5-transports.html
 
-![img](\images\clip_image05.jpg)
+![img](images\clip_image05.jpg)
 
 ### AMQP协议
 
-![img](\images\clip_image052.jpg)
+![img](images\clip_image052.jpg)
 
 ### STOMP协议
 
-![img](D:\studyDoc\java\images\222.jpg)
+![img](images\222.jpg)
 
 ### MQTT协议
 
-![img](\images\clip_image0552.jpg)
+![img](images\clip_image0552.jpg)
 
 ## 3、NIO协议案例
 
 ### **(1)**   **修改配置文件**activemq.xml
 
-![img](\images\clip_image00222.jpg)
+![img](images\clip_image00222.jpg)
 
 ①　修改配置文件activemq.xml在\<transportConnectors>节点下添加如下内容：
 
@@ -2267,7 +2252,7 @@ service activemq restart
 
 ③　查看管理后台，可以看到页面多了nio
 
-![img](\images\clip_image2002.jpg)
+![img](images\clip_image2002.jpg)
 
 ## （2）代码
 
@@ -2363,9 +2348,9 @@ public class NioConsumer {
 
 上面是Openwire协议传输底层使用NIO网络IO模型。 如何让其他协议传输底层也使用NIO网络IO模型呢？
 
-![img](\images\clip_image020222.jpg)
+![img](images\clip_image020222.jpg)
 
-![img](\images\clip_image21002.jpg)
+![img](images\clip_image21002.jpg)
 
 ### **(2)**   **修改配置文件**activemq.xml
 
@@ -2397,7 +2382,7 @@ nio   ：使用NIO网络IO模型
 
 ### **(1)**   此处持久化和之前的持久化的区别
 
-![img](\images\clip_imadsge002.jpg)
+![img](images\clip_imadsge002.jpg)
 
 MQ高可用：事务、可持久、签收，是属于MQ自身特性，自带的。这里的持久化是外力，是外部插件。之前讲的持久化是MQ的外在表现，现在讲的的持久是是底层实现。
 
@@ -2429,7 +2414,7 @@ AMQ是一种文件存储形式，它具有写入速度快和容易恢复的特�
 
 过于新兴的技术，现在有些不确定
 
-![img](\images\clip_image0222302.jpg)
+![img](images\clip_image0222302.jpg)
 
 ## 3、kahaDB消息存储
 
@@ -2453,7 +2438,7 @@ AMQ是一种文件存储形式，它具有写入速度快和容易恢复的特�
 
 ### 说明
 
-![img](\images\clip_image00222332.jpg)
+![img](images\clip_image00222332.jpg)
 
 
 
@@ -2461,29 +2446,27 @@ AMQ是一种文件存储形式，它具有写入速度快和容易恢复的特�
 
 ###  KahaDB的存储原理
 
-![img](\images\clip_image002dd2.jpg)
+![img](images\clip_image002dd2.jpg)
 
 
 
-![img](\images\clip_image034302.jpg)
+![img](images\clip_image034302.jpg)
 
 ## 4、JDBC消息存储
 
 ### 原理图
 
-![image-20201122140604614](\images\image-20201122140604614.png)
+![image-20201122140604614](images\image-20201122140604614.png)
 
 ### 添加mysql数据库的驱动包到lib文件夹
 
-![image-20201122140915790](\images\image-20201122140915790.png)
+![image-20201122140915790](images\image-20201122140915790.png)
 
 
 
 ### **jdbcPersistenceAdapter配置**
 
-
-
-![img](\images\clip_image00sss2.jpg)
+![img](images\clip_image00sss2.jpg)
 
 修改配置文件activemq.xml。将之前的替换为jdbc的配置。如下：
 
@@ -2502,11 +2485,11 @@ AMQ是一种文件存储形式，它具有写入速度快和容易恢复的特�
 
 需要我们准备一个mysql数据库，并创建一个名为activemq的数据库。
 
-![image-20201122141147926](\images\image-20201122141147926.png)
+![image-20201122141147926](images\image-20201122141147926.png)
 
 在\</broker>标签和\<import>标签之间插入数据库连接池配置
 
-![image-20201122141230646](\images\image-20201122141230646.png)
+![image-20201122141230646](images\image-20201122141230646.png)
 
 具体操作如下：
 
@@ -2590,21 +2573,21 @@ create index ACTIVEMQ_MSGS_XIDX
 
 #### ACTIVEMQ_MSGS数据表
 
-![image-20201122141807823](\images\image-20201122141807823.png)
+![image-20201122141807823](images\image-20201122141807823.png)
 
 #### **ACTIVEMQ_ACKS数据表**
 
-![img](\images\clip_imagessssd002.jpg)
+![img](images\clip_imagessssd002.jpg)
 
 #### **ACTIVEMQ_LOCK数据表**
 
-![img](\images\clip_imagesdsf002.jpg)
+![img](images\clip_imagesdsf002.jpg)
 
 
 
 ### Queeue验证和数据表变化
 
-![image-20201122142041593](\images\image-20201122142041593.png)
+![image-20201122142041593](images\image-20201122142041593.png)
 
 queue模式，非持久化不会将消息持久化到数据库。
 
@@ -2612,7 +2595,7 @@ queue模式，持久化会将消息持久化数据库。
 
 我们使用queue模式持久化，发布3条消息后，发现ACTIVEMQ_MSGS数据表多了3条数据。
 
-![img](\images\clip_image002dsdfs.jpg)
+![img](images\clip_image002dsdfs.jpg)
 
 启动消费者，消费了所有的消息后，发现数据表的数据消失了。
 
@@ -2651,15 +2634,15 @@ public class JmsConsumerTopicPersistent {
 
 我们先启动一下持久化topic的消费者。看到ACTIVEMQ_ACKS数据表多了一条消息。
 
-![image-20201123203128213](\images\image-20201123203128213.png)
+![image-20201123203128213](images\image-20201123203128213.png)
 
    我们启动持久化生产者发布3个数据，ACTIVEMQ_MSGS数据表新增3条数据，消费者消费所有的数据后，ACTIVEMQ_MSGS数据表的数据并没有消失。持久化topic的消息不管是否被消费，是否有消费者，产生的数据永远都存在，且只存储一条。这个是要注意的，持久化的topic大量数据后可能导致性能下降。这里就像公总号一样，消费者消费完后，消息还会保留。  
 
 ### 总结
 
-![image-20201123203330967](\images\image-20201123203330967.png)
+![image-20201123203330967](images\image-20201123203330967.png)
 
-![image-20201123203358400](\images\image-20201123203358400.png)
+![image-20201123203358400](images\image-20201123203358400.png)
 
 ## 5、 JDBC Message Store with ActiveMQ Journal
 
@@ -2675,11 +2658,11 @@ public class JmsConsumerTopicPersistent {
 
 面是基于上面JDBC配置，再做一点修改：
 
-![image-20201123203614756](\images\image-20201123203614756.png)
+![image-20201123203614756](images\image-20201123203614756.png)
 
 
 
-![image-20201123203637146](\images\image-20201123203637146.png)
+![image-20201123203637146](images\image-20201123203637146.png)
 
 # 九、Zookeeper搭建ActiveMQ集群服务
 
@@ -2691,7 +2674,7 @@ public class JmsConsumerTopicPersistent {
 
 Slave连接Master 并同步他们的存储状态，Slave不接受客户端连接。所有存储操作都将被复制到连接至Master和Slaves。
 
-如果Mster宕机得到了最新更新的Slave会成为Mster。故障节点恢复后悔重新进入到集群并连接Master进入Slave模式
+如果Mster宕机得到了最新更新的Slave会成为Mster。故障节点恢复后重新进入到集群并连接Master进入Slave模式
 
 所有需要同步的消息操作都将等待存储状态被复制到其他法定节点的操作完成才能完成。
 
@@ -2792,7 +2775,7 @@ server.3=192.168.30.128:2888:3888
 server.4=192.168.30.128:2889:3889
 ```
 
-产环境中，分布式集群部署的步骤与上面基本相同，只不过因为各zk server分布在不同的机器，分布在不同的机器后，不存在端口冲突问题，可以让每个服务器的zk均采用相同的端口，这样管理起来比较方便。
+生产环境中，分布式集群部署的步骤与上面基本相同，只不过因为各zk server分布在不同的机器，分布在不同的机器后，不存在端口冲突问题，可以让每个服务器的zk均采用相同的端口，这样管理起来比较方便。
 
 ### 分别启动Zookeeper
 
@@ -2845,25 +2828,25 @@ mq_node01全部默认不动
 
 修改其他MQ的控制端口
 
-![image-20201121110805903](\images\image-20201121110805903.png)
+![image-20201121110805903](images\image-20201121110805903.png)
 
 ### Hostname名字的映射
 
-![image-20201121111202969](\images\image-20201121111202969.png)
+![image-20201121111202969](images\image-20201121111202969.png)
 
 ### ActiveMQ集群配置
 
-![image-20201121111338404](\images\image-20201121111338404.png)
+![image-20201121111338404](images\image-20201121111338404.png)
 
 3个节点的BrokerName要求全部一致
 
-![image-20201121111459720](\images\image-20201121111459720.png)
+![image-20201121111459720](images\image-20201121111459720.png)
 
 3个节点的持久化配置
 
-![image-20201121111746024](\images\image-20201121111746024.png)
+![image-20201121111746024](images\image-20201121111746024.png)
 
-![ ](\images\image-20201121111812073.png)
+![ ](images\image-20201121111812073.png)
 
 ```xml
 <!-- 持久化的部分为ZooKeeper集群连接地址-->  
@@ -2893,23 +2876,23 @@ mq_node01全部默认不动
 
 ### 修改各个节点的消息端口
 
-![image-20201121112318194](\images\image-20201121112318194.png)
+![image-20201121112318194](images\image-20201121112318194.png)
 
 ### 按顺序启动3个ActiveMQ节点，到这一步前提是zk集群已经成功启动运行
 
 vim amq_batch.sh
 
- ![image-20201121112553672](\images\image-20201121112553672.png)
+ ![image-20201121112553672](images\image-20201121112553672.png)
 
 ### 查看ZK的节点状态
 
 3台zk集群链接任意一台
 
-![image-20201121112959886](\images\image-20201121112959886.png)
+![image-20201121112959886](images\image-20201121112959886.png)
 
 查看master
 
-![image-20201121113059397](\images\image-20201121113059397.png)
+![image-20201121113059397](images\image-20201121113059397.png)
 
 ```bash
 [zk: 127.0.0.1:2181(CONNECTED) 1] ls /actimemq/leveldb-stores
@@ -2939,11 +2922,11 @@ ActiveMQ的客户端只能访问Master的Broker，其他处于Slave和Broker不�
 
 ### 代码生成者和消费者都修改
 
-![image-20201121121109878](\images\image-20201121121109878.png)
+![image-20201121121109878](images\image-20201121121109878.png)
 
 ### 干掉一台ActiveMQ节点，它会自动切换到另外一个活着的
 
-![image-20201121121649146](\images\image-20201121121649146.png)
+![image-20201121121649146](images\image-20201121121649146.png)
 
 # 十、高级特性
 
@@ -2951,7 +2934,7 @@ ActiveMQ的客户端只能访问Master的Broker，其他处于Slave和Broker不�
 
 ### 异步投递是什么
 
-![image-20201123203901678](\images\image-20201123203901678.png)
+![image-20201123203901678](images\image-20201123203901678.png)
 
 自我理解：此处的异步是指生产者和broker之间发送消息的异步。不是指生产者和消费者之间异步。
 
@@ -2965,7 +2948,7 @@ ActiveMQ的客户端只能访问Master的Broker，其他处于Slave和Broker不�
 
 ### 代码实现
 
-![image-20201123204447376](\images\image-20201123204447376.png)
+![image-20201123204447376](images\image-20201123204447376.png)
 
 生产者代码
 
@@ -3012,7 +2995,7 @@ public class JmsAsyncProduce {
 
 ### 异步发送如何确认发送成功
 
-![image-20201123204930150](\images\image-20201123204930150.png)
+![image-20201123204930150](images\image-20201123204930150.png)
 
 下面演示异步发送的回调
 
@@ -3071,7 +3054,7 @@ public class JmsAsyncProduce {
 
 控制台观察发送消息的信息(未消费的消息)：
 
-![image-20201123210427330](\images\image-20201123210427330.png)
+![image-20201123210427330](images\image-20201123210427330.png)
 
 ## 2、延迟投递和定时投递
 
@@ -3079,13 +3062,13 @@ public class JmsAsyncProduce {
 
 官网文档：http://activemq.apache.org/delay-and-schedule-message-delivery.html
 
-![image-20201123210548530](\images\image-20201123210548530.png)
+![image-20201123210548530](images\image-20201123210548530.png)
 
-![image-20201123210615465](\images\image-20201123210615465.png)
+![image-20201123210615465](images\image-20201123210615465.png)
 
 ### 修改配置文件并重启
 
-![image-20201123210657383](\images\image-20201123210657383.png)
+![image-20201123210657383](images\image-20201123210657383.png)
 
 ### 代码实现
 
@@ -3160,11 +3143,11 @@ public class DelayQueueProducer {
 
 ### 有毒消息Poison ACK
 
-一个消息被redelivedred超过默认的最大重发次数（默认6次）时，消费的回个MQ发一个“poison ack”表示这个消息有毒，告诉broker不要再发了。这个时候broker会把这个消息放到DLQ（私信队列）。
+一个消息被redelivedred超过默认的最大重发次数（默认6次）时，消费者会给MQ发一个“poison ack”表示这个消息有毒，告诉broker不要再发了。这个时候broker会把这个消息放到DLQ（死信队列）。
 
 ### 属性说明
 
-![image-20201123211853179](\images\image-20201123211853179.png)
+![image-20201123211853179](images\image-20201123211853179.png)
 
 ### 代码验证
 
@@ -3215,7 +3198,7 @@ public class DeadQueueConsumer {
 
   activemq管理后台。多了一个名为ActiveMQ.DLQ队列，里面多了3条消息。  
 
-![image-20201123212405536](\images\image-20201123212405536.png)
+![image-20201123212405536](images\image-20201123212405536.png)
 
 ### 代码修改默认参数
 
@@ -3267,7 +3250,7 @@ public class DeadQueueConsumer {
 
 ###   **整合**spring
 
-![image-20201123212548193](\images\image-20201123212548193.png)
+![image-20201123212548193](images\image-20201123212548193.png)
 
 ## 4、死信队列
 
@@ -3275,9 +3258,9 @@ public class DeadQueueConsumer {
 
 死信队列：异常消息规避处理的集合，主要处理失败的消息。
 
-![image-20201123212640143](\images\image-20201123212640143.png)
+![image-20201123212640143](images\image-20201123212640143.png)
 
-![image-20201123212718506](\images\image-20201123212718506.png)
+![image-20201123212718506](images\image-20201123212718506.png)
 
 ### 死信队列的配置(一般采用默认)
 
@@ -3285,27 +3268,27 @@ public class DeadQueueConsumer {
 
 不管是queue还是topic，失败的消息都放到这个队列中。下面修改activemq.xml的配置，可以达到修改队列的名字。
 
-![image-20201123212840769](\images\image-20201123212840769.png)
+![image-20201123212840769](images\image-20201123212840769.png)
 
 #### individualDeadLetterStrategy
 
 可以为queue和topic单独指定两个死信队列。还可以为某个话题，单独指定一个死信队列。
 
-![image-20201123212932691](\images\image-20201123212932691.png)
+![image-20201123212932691](images\image-20201123212932691.png)
 
-![image-20201123212953949](\images\image-20201123212953949.png)
+![image-20201123212953949](images\image-20201123212953949.png)
 
 #### 自动删除过期消息
 
-过期消息是值生产者指定的过期时间，超过这个时间的消息
+过期消息是指生产者指定的过期时间，超过这个时间的消息
 
-![image-20201123213101797](\images\image-20201123213101797.png)
+![image-20201123213101797](images\image-20201123213101797.png)
 
 #### 存放费持久消息到死信队列中
 
-![image-20201123213147816](\images\image-20201123213147816.png)
+![image-20201123213147816](images\image-20201123213147816.png)
 
 ## 5、消息不被重复消费，幂等性
 
-![image-20201123213252084](\images\image-20201123213252084.png)
+![image-20201123213252084](images\image-20201123213252084.png)
 

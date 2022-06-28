@@ -779,12 +779,11 @@ docker commit -m="提交的描述信息" -a="作者" 容器ID 要创建的目标
 坑：容器卷记得加入 --privileged=true， Docker挂载主机目录访问如果出现cannot open directory .: Permission denied，解决办法：在挂载目录后多加一个--privileged=true参数即可
 
 如果是CentOS7安全模块会比之前系统版本加强，不安全的会先禁止，所以目录挂载的情况被默认为不安全的行为，
-在SELinux里面挂载目录被禁止掉了额，如果要开启，我们一般使用--privileged=true命令，扩大容器的权限解决挂载目录没有权限的问题，也即
-使用该参数，container内的root拥有真正的root权限，否则，container内的root只是外部的一个普通用户权限。
+在SELinux里面挂载目录被禁止掉了额，如果要开启，我们一般使用--privileged=true命令，扩大容器的权限解决挂载目录没有权限的问题，也即使用该参数，container内的root拥有真正的root权限，否则，container内的root只是外部的一个普通用户权限。
 
-运行一个带有容器卷存储功能的容器实例   docker run -it --privileged=true -v /宿主机绝对路径目录:/容器内目录      镜像名
+运行一个带有容器卷存储功能的容器实例   docker run -it --privileged=true -v /宿主机绝对路径目录:/容器内目录  
 
- 将运用与运行的环境打包镜像，run后形成容器实例运行 ，但是我们对数据的要求希望是持久化的
+镜像名将运用与运行的环境打包镜像，run后形成容器实例运行 ，但是我们对数据的要求希望是持久化的
 
 Docker容器产生的数据，如果不备份，那么当容器实例删除后，容器内的数据自然也就没有了。
 为了能保存数据在docker中我们使用卷。
@@ -793,7 +792,7 @@ Docker容器产生的数据，如果不备份，那么当容器实例删除后�
 	1：数据卷可在容器之间共享或重用数据
 	2：卷中的更改可以直接实时生效，爽
 	3：数据卷中的更改不会包含在镜像的更新中
-	4：数据卷的生命周期一直持续到没有容器使用它为
+	4：数据卷的生命周期一直持续到没有容器使用它为止
 
 ### 数据卷案例
 
@@ -3048,7 +3047,6 @@ exec格式:
 
 用来在构建镜像过程中设置环境变量
 
-
 ENV MY_PATH /usr/mytest
 这个环境变量可以在后续的任何RUN指令中使用，这就如同在命令前面指定了环境变量前缀一样；
 也可以在其它指令中直接使用这些环境变量，
@@ -3338,7 +3336,7 @@ VOLUME /tmp
 # 将jar包添加到容器中并更名为harry_docker.jar
 ADD docker_boot-0.0.1-SNAPSHOT.jar harry_docker.jar
 # 运行jar包
-RUN bash -c 'touch /zzyy_docker.jar'
+RUN bash -c 'touch /harry_docker.jar'
 ENTRYPOINT ["java","-jar","/harry_docker.jar"]
 #暴露6001端口作为微服务
 EXPOSE 6001
@@ -4833,7 +4831,7 @@ services:
     - INFLUXDB_PORT=8086
     - INFLUXDB_NAME=cadvisor
     - INFLUXDB_USER=root
-    - INFLUXDB_PASS=roo
+    - INFLUXDB_PASS=root
 ```
 
 #### 启动docker-compose文件
