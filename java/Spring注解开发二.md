@@ -606,7 +606,6 @@ BeanFactoryPostProcessor其实就是BeanFactory（创建bean的工厂）的后�
 仔细看一下其内部postProcessBeanFactory方法上的描述，这很重要，因为从这段描述中我们就可以知道BeanFactoryPostProcessor的调用时机。描述中说，我们可以在IOC容器里面的BeanFactory的标准初始化完成之后，修改IOC容器里面的这个BeanFactory。
 
 也就是说，BeanFactoryPostProcessor的调用时机是在BeanFactory标准初始化之后，这样一来，我们就可以来定制和修改BeanFactory里面的一些内容了。那什么叫标准初始化呢？接着看描述，它说的是所有的bean定义已经被加载了，但是还没有bean被初始化。
-就是**BeanFactoryPostProcessor的调用时机是在BeanFactory标准初始化之后，这样一来，我们就可以来定制和修改BeanFactory里面的一些内容了，此时，所有的bean定义已经保存加载到BeanFactory中了，但是bean的实例还未创建。**
 
 ## 案例实践
 

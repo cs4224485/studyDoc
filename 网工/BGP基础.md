@@ -559,25 +559,41 @@ s-----抑制路由，即路由不生效——聚合路由时，可以选择抑�
 
 ## BGP选路原则
 
-1.如果该路由是到目的地址的唯一路由，直接优选
+1. 当到达同一目的地存在多条路由时，BGP 依次对比下列属性来选择路由：
 
-2.到达同一目的地有多条路由，优选有效路由
+   （1）优选协议首选值（PrefVal）最高的路由。
 
-3.到达同一目的地有多条有效路由，有更细的原则比较
+   协议首选值（PrefVal）是华为设备的特有属性，该属性仅在本地有效。
 
-1)    丢弃下一条不可达路由
-2)    优选私有属性（Prefernce）最高的路由——私有路由属性仅本地有效
-3)    优选本地优先级（Local_Preference）最高的路由
-4)    当有聚合路由时，手动聚合＞自动聚合＞network＞import＞从对等体学到的路由
-5)    优选AS_Path最短的路由
-6)    Orign：i＞e＞？（network＞EGP协议引入＞import-route引入）
-7)    对相同同一AS的路由，优选MED最小的
-8)    优选从EBGP学来的路由（EBGP＞IBGP）
-9)    优选AS内部IGP的Metric最小的路由——Metric  从此路由器到下一跳的度量值
-10)    Cluster_List最短
-11)    起源ID最小
-12)    Router_ID最小
-13)    IP地址最小的
+   （2）优选本地优先级（Local_Pref）最高的路由。
+
+   如果路由没有本地优先级，BGP 选路时将该路由按缺省的本地优先级 100 来处
+
+   理。
+
+   （3）依次优选手动聚合路由、自动聚合路由、network 命令引入的路由、
+
+   import-route 命令引入的路由、从对等体学习的路由
+
+   （4）优选 AS 路径（AS_Path）最短的路由。
+
+   （5）依次优选 Origin 类型为 IGP、EGP、Incomplete 的路由。
+
+   （6）对于来自同一 AS 的路由，优选 MED 值最低的路由。
+
+   （7）依次优选 EBGP 路由、IBGP 路由、LocalCross 路由、RemoteCross 路由。
+
+   （8）优选到 BGP 下一跳 IGP 度量值（metric）最小的路由。
+
+   （9）优选 Cluster_List 最短的路由。
+
+   （10）优选 Router ID 最小的设备发布的路由。
+
+   如果路由携带 Originator_ID 属性，选路过程中将比较 Originator_ID 的大小
+
+   （不再比较 Router ID），并优选 Originator_ID 最小的路由。
+
+   （11）优选从具有最小 IP Address 的对等体学来的路由
 
 ## BGP负载均衡
 

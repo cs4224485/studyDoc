@@ -602,7 +602,8 @@ throws Throwable {
 // });
            UserDaoImpl userDao = new UserDaoImpl();
            UserDao dao =(UserDao)Proxy.newProxyInstance(JDKProxy.class.getClassLoader(), interfaces,
-           new UserDaoProxy(userDao)); int result = dao.add(1, 2);
+           new UserDaoProxy(userDao)); 
+           int result = dao.add(1, 2);
            System.out.println("result:"+result);
     }
  }

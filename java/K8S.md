@@ -98,6 +98,14 @@ kube-proxy 维护节点上的网络规则。这些网络规则允许从集群内
 
 如果操作系统提供了数据包过滤层并可用的话，kube-proxy 会通过它来实现网络规则。否则， kube-proxy 仅转发流量本身。
 
+​	ipvs：监听Master节点增加和删除service以及endpoint的消息，调用Netlink接口创建相应的IPVS规则。通过IPVS规则，将流量转发至相应的Pod上
+
+   IPtables：监听Master节点增加和删除service以及endpoint的消息，调用Netlink接口创建相应的IPVS规则。通过IPVS规则将流量转发至相应的pod上
+
+   Calico：符合CNI标准的网络插件，给每个pod生成一个唯一的ip地址，并且把每个节点当做一个路由器
+
+   CoreDNS：用于Kubernetes集群内部service的解析，可以让pod把service名称解析成ip地址，然后通过service的ip地址进行连接到对应的应用上
+
 ![img](https://cdn.nlark.com/yuque/0/2021/png/1613913/1626605698082-bf4351dd-6751-44b7-aaf7-7608c847ea42.png?x-oss-process=image%2Fwatermark%2Ctype_d3F5LW1pY3JvaGVp%2Csize_37%2Ctext_YXRndWlndS5jb20gIOWwmuehheiwtw%3D%3D%2Ccolor_FFFFFF%2Cshadow_50%2Ct_80%2Cg_se%2Cx_10%2Cy_10)
 
 ### 3、Pod
@@ -184,7 +192,7 @@ Flannel 是 CoreOS 团队针对 Kubernetes 设计的一个网络规划服务，�
 这些 IP 地址之间建立一个覆盖网络（Overlay Network），通过这个覆盖网络，将数据包原封
 不动地传递到目标容器内
 
-![image-20220110151250366](\\images\image-20220110151250366.png)
+![image-20220110151250366](images\image-20220110151250366.png)
 
 ETCD 之 Flannel 提供说明：
 
@@ -1441,7 +1449,7 @@ service "nginx-deployment" deleted
 
 livenessProbe-httpget
 
-```yml
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -1456,12 +1464,15 @@ spec:
     - name: http
       containerPort: 80
     livenessProbe:
+      failureThreshold: 5
       httpGet:
         port: http
         path: /index.html
       initialDelaySeconds: 1
       periodSeconds: 3
       timeoutSeconds: 10
+      
+      
 
 ```
 
@@ -1494,6 +1505,12 @@ spec:
 ```
 
 ![image-20220113200856058](\\images\image-20220113200856058.png)
+
+
+
+StartupProbe:  k8s 1.16版本后新加热探测方式，用于判断容器内应用程序是否已经启动。如果配置了startupProbe就会先禁止其他的探测，知道它成功为止，成功后将不再进行探测。
+
+
 
 ### 就绪和存货检查共存
 
@@ -2526,7 +2543,7 @@ ingress.extensions/nginx-test created
 创建另外一个www2.harry.com
 
 ```yml
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Deployment
 metadata:
   name: nginx-dm2
@@ -3441,7 +3458,60 @@ spec:
 
 ![image-20220122104052866](\\images\image-20220122104052866.png)
 
-#### 创建PVC
+#### 创建PVC 
+
+
+
+```yml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: myclaim
+spec: 
+  accessModes:
+  	- ReadWriteMany
+  volumeMode: Filesystem
+  resourese:
+    requests:
+      storage: 2Gi
+  storageClassName: nfs-slow
+```
+
+####  创建Deloyement
+
+```yml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: web
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  serviceName: "nginx"
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: myapp:v1
+        ports:
+        - containerPort: 80
+          name: web
+        volumeMounts:
+        - name: test-pvc
+          mountPath: /usr/share/nginx/html
+     volumes:
+     - name: test-pvc
+       persistentVolumeClaim:
+         claimName: myclaim
+    
+```
+
+直接在deployment中创建pvc
 
 ```yml
 apiVersion: v1
@@ -3507,6 +3577,21 @@ web-1的这个pod并没有绑定pv成功， 因为满足RWO的pv只有一个
 
 ![image-20220122110357393](\\images\image-20220122110357393.png)
 
+很多情况下：
+
+创建pvc之后，一直绑定不上pv（Pending）
+
+             1. PVC的空间申请大小大于PV的大小
+             1. pvc的StorageClassName没有和PV的一致
+             1. PVC的accessModes和PV的不一致   
+
+创建挂载了pvc和pod之后一直处于Pending状态：
+
+1. PVC没有被创建成功，或者被创建
+2. PVC和Pod不在同一个Namespace
+
+
+
 #### 关于 StatefulSet
 
 > 匹配 Pod name ( 网络标识 ) 的模式为：$(statefulset名称)-$(序号)，比如上面的示例：web-0，web-1，web-2
@@ -3566,7 +3651,7 @@ Predicate 有一系列的算法可以使用：
 
 > PodFitsResources ：节点上剩余的资源是否大于 pod 请求的资源
 > PodFitsHost ：如果 pod 指定了 NodeName，检查节点名称是否和 NodeName 匹配
-> PodFitsHostPorts ：节点上已经使用的 port 是否和 pod 申请的 port 冲突
+> PodFitsHostPorts ：节点上已经使用的 port 是否和 pod 申请的 port 冲突 
 > PodSelectorMatches ：过滤掉和 pod 指定的 label 不匹配的节点
 > NoDiskConflict ：已经 mount 的 volume 和 pod 指定的 volume 不冲突，除非它们都是只读
 
