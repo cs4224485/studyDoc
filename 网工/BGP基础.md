@@ -1024,7 +1024,7 @@ Peer [ip-address] route-policy [name] [export | import]
  当一条路由第一次被RR反射的时候，RR将Originator_ID属性加入这条路由，标识这条路由的发起设备。如果一条路由中已经存在了Originator_ID属性，则RR将不会创建新的Originator_ID属性
 当设备接收到这条路由的时候，将比较收到的Originator ID和本地的Router ID，如果两个ID相同，则不接收此路由。
 
-### Cluster_List用于防止集群间产生路由环路---Cluster-ID就类似于[OSPF](https://so.csdn.net/so/search?q=OSPF&spm=1001.2101.3001.7020)中的Router-id
+### Cluster_List用于防止集群间产生路由环路---Cluster-ID就类似于OSPF中的Router-id
 
     当一条路由第一次被RR反射的时候，RR会把本地Cluster ID添加到Cluster List的前面。如果没有Cluster_List属性，RR就创建一个。
     
@@ -1047,3 +1047,4 @@ Peer [ip-address] route-policy [name] [export | import]
        Peer  reflect-client              配置自己为RR，并将指定的对等体最为Client
        Peer  ip地址   reflect-client      配置此对等体为客户机
        reflector cluster-id       配置集群ID
+
