@@ -384,15 +384,11 @@ Prometheus通过指标名称（metrics name）以及对应的一组标签（labe
 http_requests_total
 ```
 
-
-
 等同于：
 
 ```
 http_requests_total{}
 ```
-
-
 
 该表达式会返回指标名称为http_requests_total的所有时间序列：
 
@@ -400,8 +396,6 @@ http_requests_total{}
 http_requests_total{code="200",handler="alerts",instance="localhost:9090",job="prometheus",method="get"}=(20889@1518096812.326)
 http_requests_total{code="200",handler="graph",instance="localhost:9090",job="prometheus",method="get"}=(21287@1518096812.326)
 ```
-
-
 
 PromQL还支持用户根据时间序列的标签匹配模式来对时间序列进行过滤，目前主要支持两种匹配模式：完全匹配和正则匹配。
 
@@ -415,8 +409,6 @@ PromQL支持使用`=`和`!=`两种完全匹配模式：
 ```
 http_requests_total{instance="localhost:9090"}
 ```
-
-
 
 反之使用`instance!="localhost:9090"`则可以排除这些时间序列：
 
@@ -436,3 +428,47 @@ http_requests_total{instance!="localhost:9090"}
 ```
 http_requests_total{environment=~"staging|testing|development",method!="GET"}
 ```
+
+## 范围查询
+
+
+
+直接通过类似于PromQL表达式`http_requests_total`查询时间序列时，会选择出所有属于该度量指标的时序的当前采样值，这样的返回结果我们称之为__瞬时向量__。而相应的这样的表达式称之为__瞬时向量表达式__。
+
+而如果我们想过去一段时间范围内的样本数据时，我们则需要使用__区间向量表达式__。区间向量表达式和瞬时向量表达式之间的差异在于在区间向量表达式中我们需要定义时间选择的范围，时间范围通过时间范围选择器`[]`进行定义。例如，通过以下表达式可以选择最近5分钟内的所有样本数据：
+
+```
+http_requests_total{}[5m]
+```
+
+该表达式将会返回查询到的时间序列中最近5分钟的所有样本数据：
+
+```
+http_requests_total{code="200",handler="alerts",instance="localhost:9090",job="prometheus",method="get"}=[
+    1@1518096812.326
+    1@1518096817.326
+    1@1518096822.326
+    1@1518096827.326
+    1@1518096832.326
+    1@1518096837.325
+]
+http_requests_total{code="200",handler="graph",instance="localhost:9090",job="prometheus",method="get"}=[
+    4 @1518096812.326
+    4@1518096817.326
+    4@1518096822.326
+    4@1518096827.326
+    4@1518096832.326
+    4@1518096837.325
+]
+```
+
+通过区间向量表达式查询到的结果我们称为__区间向量__。
+
+除了使用m表示分钟以外，PromQL的时间范围选择器支持其它时间单位：
+
+- s - 秒
+- m - 分钟
+- h - 小时
+- d - 天
+- w - 周
+- y - 年
