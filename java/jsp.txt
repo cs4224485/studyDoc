@@ -1,0 +1,1362 @@
+一 什么是JSP
+	JSP全称是Java Server Pages，是一种动态网页技术，JSP其实就是在html中插入了java代码和JSP标签之后形成的文件，文件名以.jsp结尾。其实JSP就是一个servlet。
+	在servlet中编写html比较痛苦，而写JSP就像在写html，但它相比html而言，html只能为用户提供静态数据即静态页面，而Jsp技术允许在页面中嵌套java代码，为用户提供动态数据，从而形成动态页面。需要注意的是最好只在JSP中编写动态输出的java代码。
+	
+	第一个JSP：
+		在WebContent目录下点击右键—>new—>JSP file，创建一个名为first.jsp的文件，然后在文件中编写下
+		<%@ page import="java.util.Date" %>
+		<%@ page import="java.text.DateFormat" %>
+		Created by IntelliJ IDEA.
+		  User: harry.cai
+		  Date: 2019/11/24
+		  Time: 11:59
+		  To change this template use File | Settings | File Templates.
+		--%>
+		<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
+		<html>
+		<head>
+			<title>Title</title>
+		</head>
+		<body>
+			<%
+				Date d = new Date();
+				out.write(DateFormat.getDateInstance().format(d));
+			%>
+		</body>
+		</html>
+		
+	JSP的工作流程
+		将JSP文件转换为.java文件并将其编译为.class文件的过程都是由tomcat完成的，在tomcat内部有一个翻译引擎，当JSP页面第一次被访问时由翻译引擎转换为.java文件并编译出.class文件。之后再运行该class文件。
+		在JSP中的html代码都会翻译到servlet中的out.write()中。
+	
+	JSP中的注释
+		在JSP中可以使用下面两种注释：
+			<!-- -->  html注释
+			<%-- --%> JSP注释
+			
+	JSP中Java相关的标签
+		<% %>
+		在JSP中使用该标签嵌入Java代码，在一个JSP中可以有多个<% %>并且可以出现JSP文件中的任意位置，JSP引擎会将这部分Java代码按照从上到下的顺序放到_jspService方法中，因此在<% %>中只能出现以分号结尾的Java语句，不能出现下面内容：
+			声明变量添加访问权限修饰符的；
+			不能定义方法；
+			不能定义静态语句块；
+			
+		<%! %>
+		如果想要在JSP中声明方法或静态代码块等内容的话可以使用该标签，在该标签中不能直接编写普通的Java语句，一般情况下不建议使用这个标签，因为JSP是在单线程环境下运行的，所以在这部分中的变量可能会有线程安全问题。例：
+			<%! private int a = 10; %>
+			<%! 
+				public void m1(){
+					System.out.println("m1方法");
+				}
+			 %>
+
+			<% m1();//调用m1方法 %>
+		
+		<%= %>
+			该标签中的内容可以直接在JSP中输出变量、常量等，里面的内容是不用分号结尾的，会被JSP引擎直接翻译到_jspService方法中的out.write()方法中输出，例如：
+			<% int a = 1024;%>
+		    <%= a %>
+		    <%= "monkey1024" %>
+			
+	JSP的内置对象
+		为了便于开发者的使用，在JSP引擎将JSP翻译为.java文件时，会提供9个与web开发相关的对象被称为JSP中9个内置对象，开发者在JSP中可以直接使用这些对象调用的方法，这九个内置对象的引用名分别是：pageContext，request,session,application,response,config,out,page,exception。
+
+二 JSP指令
+	JSP 指令的作用是为当前页面做一些基本的属性设置，为当前的页面的运行提供基本的环境。
+	在JSP中包含三类指令：
+		page，页面指令
+		include，包含指令
+		taglib，标签库指令
+		
+	这些指令的使用的语法格式均为如下形式：
+		<%@ 指令名称  属性名=属性值 ... %>
+	
+	1 page指令
+		page指令用于设置当前JSP页面的相关信息， 一个 JSP中可以包含多个 page 指令，有以下几个常用的属性：
+			pageEncoding
+				pageEncoding属性用于设置当前JSP页面的字符编码格式。
+				<%@ page pageEncoding="UTF-8" %>
+				
+			contentType
+				contentType属性用于设置当前 JSP 页面在浏览器中的内容类型，通常为”text/html”,若在 JSP 页面中设置
+				<%@ page contentType="text/html" %>
+			
+			import
+				该属性主要用于在JSP中导入java包
+				<%@ page import="java.util.*" %>
+				若要导入多个类，则在 import 属性值中可使用逗号将这些类分隔。
+				<%@ page import="java.util.*,java.sql.*" %>
+			
+			errorPage
+				该属性主要用于指定当前页面运行过程中发生异常时所要跳转到的页面。
+				<%@ page errorPage="/error.jsp" %>
+				
+			isErrorPage
+				如果一个页面中指定了发生异常后所要跳转的页面，这时将会出现一个问题：异常信息被隐藏。在控制台看不到异常信息，在所跳转的页面中也看不到异常信息，这样不利于开发者定位错误的原因。此时可以在发生异常后所要跳转的页面中将isErrorPage属性设置为true，将其声明为错误处理页面：
+				<%@ page isErrorPage="true" pageEncoding="UTF-8"%>
+
+				系统出现问题，请联系管理员
+
+				<%
+					//在控制台中打印异常信息
+					exception.printStackTrace();
+
+				%>
+			
+			session
+				session属性用于指定当前页面中是否可以直接使用内置对象session,默认为 true。
+				
+	2 include指令
+		包含指令，用于将某个文件包含到当前的 JSP 文件中。该指令只有一个属性 file，用于指定要包含的文件。
+		被包含的文件可以是 JSP 文件，也可以是 HTML文件。
+		这里定义一个名为 left.jsp 的文件，其中定义了一个变量 sum。
+			<%
+				int sum = 10;
+			%>
+		
+		再定义一个index.jsp文件，将left.jsp文件包含进来：
+			<%@ include file="/left.jsp" %>
+			<br>
+			<!-- 访问sum变量 -->
+			<%= sum%>
+			
+三 JSP标签
+	1 什么是JSP标签
+		JSP标签，有的地方也叫做JSP动作，在JSP中编写大量的java代码会使JSP页面显得杂乱无章，看起来非常不舒服，因此JSP提供了一些类似html的标签，通过这些标签能够替代部分java代码实现功能。
+		语法格式如下：
+			<jsp:标签名称 属性名=属性值 ... ></jsp:标签名称> 或 <jsp:标签名称 属性名=属性值 ... />
+			
+	2 常用JSP标签
+		在JSP中有很多JSP标签，但是常用的主要有下面两个：
+		
+		< jsp:forward>
+			该标签的作用是把请求转发给另外一个资源，页面中使用该指令之后，当前页面中的所有要显示的内容都将无法显示，因为会直接转发到了另一个页面。
+			index.jsp页面，因为使用了forward标签，所以该页面中的内容不会显示
+
+			<%
+				request.setAttribute("name", "monkey1024");
+			%>
+
+			<jsp:forward page="/next.jsp"></jsp:forward>
+			
+		
+		< jsp:include>
+			该标签用于把另外一个文件引入到当前JSP里面，这种引入方式叫做动态引入。
+			创建一个left.jsp
+				<%
+					int sum = 50
+				%>
+				<br>
+				left sum=<%= sum %>
+				
+			创建一个index.jsp
+				<%
+					int sum = 100
+				%>
+				<br>
+				<jsp:include page="/left.jsp"/>
+				<br>
+				index sum=<%= sum %>
+	3 动态引入和静态引入的区别
+		静态引入：
+			<%@ include file="/xxx.jsp" %>
+			静态引入会生成一个java文件，两个jsp文件中可以共享同一个变量，但不能定义重名的变量。
+		
+		动态引入：
+			<jsp:include page="/xxx.jsp"/>
+			动态引入会生成两个java文件，两个jsp文件中不可以共享同一个变量，可以定义重名的变量。
+		在静态引入与动态引入均可使用时，一般使用静态引入。因为在程序运行时只存在一个Servlet，对资源的消耗较少，且不存在调用问题，执行效率较高。
+		
+四 EL表达式
+	
+	1 什么是EL表达式
+		EL，Expression Language，表达式语言，是一种在JSP页面中获取数据的简单方式，通过${变量名}的方式可以获取到值，需要注意的是EL只能从 pageConext、request、session、application 四大域属性空间中获取数据。
+		
+	2 EL表达式示例代码
+		<%
+			pageContext.setAttribute("name", "page");
+			request.setAttribute("name2", "request");
+			session.setAttribute("name", "session");
+			application.setAttribute("name", "application");
+		%>
+		${name}
+		${name2}
+		<!-- 使用域属性空间相关的内置对象获取数据 -->
+		${pageScope.name}<br>
+		${requestScope.name}<br>
+		${sessionScope.name}<br>
+		${applicationScope.name}<br>
+		<!-- 访问bean属性 -->
+		<%
+			Student s = new Student("张三", 21);
+			request.setAttribute("s", s);
+		%>
+		${ s.name}<br>
+		${s.age}<br>
+		${requestScope.s.name}
+		${s["name"]}
+		<%
+			School school = new School("清华大学", s);
+			request.setAttribute("school", school);
+		%>
+		从school中取得的学生姓名${school.stu.name}
+		${school.stu.age}
+		<!-- 从List中取得数据 -->
+		<%
+			List<Student> list  = new ArrayList<Student>();
+			list.add(new Student("李四", 24));
+			list.add(new Student("王五", 25));
+			list.add(new Student("赵六", 26 ));
+			request.setAttribute("list", list);
+		%>
+		${list[1].name}<br>
+
+		<!-- 从map中获取数据 -->
+		<%
+			Map<String,String> map =new HashMap<String, String>();
+			map.put("name", "harry");
+			map.put("password", "123456");
+			request.setAttribute("map", map);
+		%>
+		${map.name}<br>
+		${map.password}<br>
+	
+	3 EL表达式的运算符
+		EL 表达式可以进行各种运算，其中常用的运算符有：
+			算术运算符 + – * / % （不支持++、–）
+			关系运算符 == != > >= < <=
+			逻辑运算符 ! && || not and or
+			三目运算符 ? :
+			特殊运算符 empty
+		&& 或者 and， 例如：${false && false} 或者 ${false and false }
+		|| 或者 or， 例如：${true || false} 或者 ${true or false }
+		! 或者 not，例如：${!true} 或者 ${not true }
+		
+		empty的法为${empty 变量}，结果为布尔值。
+			若变量未定义，则返回值为 true
+			若变量为 String 类型，且其值为空串，则返回值为 true。
+			若变量为引用类型，且其值为 null，则返回值为 true。
+			若变量为集合类型，且其不包含任何元素，则返回值为 true。
+	
+	4 EL表达式的内置对象
+		同JSP类似，在EL表达式中也有一些内置对象，共11个：
+			pageContext
+			pageScope
+			requestScope
+			sessionScope
+			applicationScope
+			cookie
+			param
+			paramValues
+			header
+			headerValues
+			initParam
+		上面除了pageContext是javax.servlet.jsp.PageContext类型，其他的都是java.util.Map类型。四个域属性相关的对象之前用过了，下面主要介绍一些其他常用的。
+		
+		(1) pageContext
+			EL表达式中的pageContext与JSP内置对象中的 pageContext 是同一个对象。通过该对象，可以获取到 request、response、session、servletContext、servletConfig 等对象。注意，这些对象在 EL中不是内置对象，只能通过EL中的pageContext 获取。
+			${pageContext.request}
+			${pageContext.request}
+			${pageContext.request.contextPath}
+				<form action="${pageContext.request.contextPath}/login.do">
+					
+				</form>
+		
+		(2) param
+			在 EL 中通过${param.参数名}可获取到请求中指定参数名的值。例如，提交的请求为：localhost:8080/07-04-jsp/index.jsp?name=harry
+			在 JSP 页面中通过如下方式，可获取到 name 参数的值:${param.name}
+			
+		(3) paramValues
+			若提交的请求中同一参数具有多个值，则可通过 ${paramValues.参数名[索引]} 获取到指定索引号的该参数值。例如，提交的请求为:localhost:8080/07-04-jsp/index.jsp?hobby=basketball&hobby=football
+			在JSP中获取方式如下：
+				${paramValues.hobby[0]}
+				${paramValues.hobby[1]}
+				
+		(4) initParam
+			在 EL 中通过使用 ${initParam.初始化参数名} 可以获取到初始化参数的值。 例如在 web.xml 中定义了初始化参数如下：
+			<context-param>
+			  <param-name>admin</param-name>
+			  <param-value>1024</param-value>
+			</context-param>
+			在JSP中的获取方式如下：
+				${initParam.admin}
+	
+	5 自定义EL函数
+		(1) 定义Java方法
+			自定义一个类名为StringFunction的类，创建一个静态方法：
+				package com.harry.function;
+				public class StringFunction {
+					public static String toUpper(String str){
+						return str.toUpperCase();
+					}
+				}
+
+		(2) 创建标签
+			在 Web 项目的/WEB-INF 目录下，新建一个扩展名为.tld 的 XML 文件，例如 harryfn.tld。 tld的全称是Tag Library Definition，标签库定义，之后将定义好的函数，在这个文件中进行注册。
+			<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+					xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+					xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+					version="2.0">
+				<!-- 指定定义当前函数库版本号,随意定义 -->
+				<tlib-version>1.0</tlib-version>
+				<!-- 指定该函数库的名, 一个函数库对应一个名称，通常与文件名相同, 该名称会在JSP中使用到-->
+				<short-name>harryfn</short-name>
+				<!-- 指定该函数库所对应的Url, 一个库对应一个URL,在JSP中会用到 -->
+				<uri>http://www.harry.cai.com/jsp/harryTld</uri>
+				<function>
+					<!-- 指定将来在JSP的EL中使用该函数的名称, 一般与类中的静态方法一致 -->
+					<name>toUpper</name>
+					<!-- 指定函数定义在哪个类中 -->
+					<function-class>com.harry.function.StringFunction</function-class>
+					<!-- 指定类中的方法 -->
+					<function-signature>java.lang.String toUpper(java.lang.String)</function-signature>
+				</function>
+			</taglib>
+			
+		(3) 使用自定义函数
+			<%@ taglib uri="http://www.harry.cai.com/jsp/harryTld" prefix="harryfn" %>
+			${harryfn:toUpper("harry")}
+			
+	
+五 JSTL标签
+	
+	1 JSTL标签简介
+		JSTL是JavaServerPages Standard Tag Library的缩写，即JSP标准标签库。开发者可以使用JSTL实现JSP页面中逻辑处理。如判断、循环等，在JSTL中已经定义好了一套对于字符串进行处理的函数标签库，这样就不用我们自己去编写相关逻辑了。
+	
+	2 使用JSTL前的准备
+		首先需要下载相关jar包。
+		目前最新版本是1.2.5，如果使用该版本的话，需要添加下面这些jar包：
+			taglibs-standard-spec-1.2.5.jar
+			taglibs-standard-impl-1.2.5.jar
+			taglibs-standard-jstlel-1.2.5.jar
+			xalan-2.7.1.jar
+			serializer-2.7.1.jar
+		如果使用1.2.x之前版本的话（不包括1.2），只添加下面这些jar包即可：
+			jstl.jar
+			standard.jar
+			
+	3 使用JSTL处理字符串	
+		在JSTL中有对字符串的处理，使用时需要将相关函数库引入，示例如下：
+			<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+			<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
+			<html>
+			<head>
+				<title>Title</title>
+			</head>
+			<body>
+			${fn:toUpperCase("harry")}
+			</body>
+			</html>
+
+	4 jspl的核心标签库
+		<%@ page import="java.util.*" %>
+		<%@ page import="com.harry.bean.Student" %><%--
+		  Created by IntelliJ IDEA.
+		  User: harry.cai
+		  Date: 2019/11/26
+		  Time: 20:28
+		  To change this template use File | Settings | File Templates.
+		--%>
+		<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+		<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+		<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+		<html>
+		<head>
+			<title>Title</title>
+		</head>
+		<body>
+		<!-- c:out -->
+		<%
+			pageContext.setAttribute("user", "admin");
+		%>
+		el表达式：${user}<br>
+		使用e:out标签:<c:out value="${user}"></c:out><br>
+		<!-- c:catch标签 -->
+		<c:catch var="e">
+			${pageContext.name}
+		</c:catch>
+		${e.message}
+		<!-- c:if标签  var后面的值可以存储判断结果 -->
+		<c:if test="${user == 'admin'}"  var="flag" >
+			欢迎登录
+			${flag}
+		</c:if>
+		<!-- c:chose标签 -->
+		<%
+			pageContext.setAttribute("hobby", "basketball");
+		%>
+		<c:choose>
+			<c:when test="${hobby == 'basketball'}">
+				我喜欢打篮球
+			</c:when>
+			<c:when test="${hobby == 'football'}">
+				我喜欢踢足球
+			</c:when>
+
+			<c:otherwise>
+				我没什么爱好
+			</c:otherwise>
+		</c:choose>
+		<!-- c:forEach标签 -->
+		<br>---------------------遍历数组---------------<br>
+		<%
+			Object[] city = {"北京", "上海", "广州", "天津"};
+			pageContext.setAttribute("city", city);
+		%>
+		<c:forEach items="${city}" var="c">
+			${c}<br>
+		</c:forEach>
+		<br>---------------------遍历List---------------<br>
+		<%
+			List<String> name = new ArrayList<String>();
+			pageContext.setAttribute("name", name);
+			name.add("sam");
+			name.add("harry");
+			name.add("jerry");
+		%>
+		<c:forEach items="${name}" var="n">
+			${n}<br>
+		</c:forEach>
+
+		<br>---------------------遍历set---------------<br>
+		<%
+			HashSet<String> sport = new HashSet<String>();
+			pageContext.setAttribute("sport", sport);
+			sport.add("足球");
+			sport.add("篮球");
+			sport.add("乒乓球");
+		%>
+		<c:forEach items="${sport}" var="s">
+			${s}<br>
+
+		</c:forEach>
+		<br>---------------------遍历map---------------<br>
+		<%
+			Map<String, String> map = new HashMap<String, String>();
+			map.put("第一名", "中国");
+			map.put("第二名", "美国");
+			map.put("第三名", "德国");
+			pageContext.setAttribute("map", map);
+		%>
+		<c:forEach items="${map}" var="m">
+			${m.key}:${m.value}<br>
+		</c:forEach>
+		<!-- 指定遍历的起始索引及步长 -->
+		<br>---------------------遍历起始索引和结束索引---------------<br>
+		<%
+			Object[] country = {"0中国", "1美国", "2德国", "3法国", "4英国", "5瑞士", "6瑞典", "7意大利"};
+			pageContext.setAttribute("country", country);
+		%>
+		<c:forEach items="${country}" var="c" begin="1" end="7" step="2">
+			${c}<br>
+		</c:forEach>
+		<br>---------------------varStatus---------------<br>
+		<%
+			List<Student> student = new ArrayList<Student>();
+			student.add(new Student("马云", 22));
+			student.add(new Student("马化腾", 21));
+			student.add(new Student("雷军", 30));
+			student.add(new Student("王宇", 50));
+			student.add(new Student("孙子轩", 25));
+			student.add(new Student("袁梦颖", 23));
+			student.add(new Student("罗正华", 20));
+			pageContext.setAttribute("student", student);
+		%>
+		<table border="1">
+			<tr>
+				<td>序号</td>
+				<td>姓名</td>
+				<td>年龄</td>
+			</tr>
+			<c:forEach items="${student}" var="s" varStatus="obj">
+				<tr style="background-color: ${obj.index % 2 == 0 ? 'orange':'red'}">
+					<td>${obj.count}</td>
+					<td>${s.name}</td>
+					<td>${s.age}</td>
+				</tr>
+			</c:forEach>
+
+		</table>
+		</body>
+		</html>
+	
+	5 jstl格式标签库
+		fmt:formatDate标签
+			该标签用于使用不同的模式格式化日期。其常用属性有：
+
+				value：将要被格式化的数据
+				pattern：格式化的模式。其与 SimpleDateFormat 的参数设置方式相同。
+				var：格式化后的字符串所要存放的变量。若不指定 var，则会将格式化过的结果直接显示在页面
+				scope：变量存放的域属性空间，取值为 page、request、session、application。默认为page 范围
+				type：其取值为 date、time，或 both，表示给出的 value 是日期、时间，还是两者都包含。默认为 date
+				<%
+					Date date = new Date();
+					pageContext.setAttribute("date", date);
+				%>
+
+				<form action="">
+					<!-- 在页面中直接显示 -->
+					<fmt:formatDate value="${date }" pattern="yyyy-MM-dd"/>
+					<br>
+					<!-- 将格式化后的日期显示在表格中 -->
+					<fmt:formatDate value="${date }" var="birth" pattern="yyyy-MM-dd"/>
+					<input type="text" name="birthdat" value="${birth }">
+				</form>
+						
+		fmt:parseDate标签
+			该标签用于将指定字符串转换为日期类型。常用的属性有：
+
+				value：将要被转换的数据
+				pattern：将要被转换的数据的模式。其与 SimpleDateFormat 的参数设置方式相同。
+				var：转换后的日期类型数据所要存放的变量。若不指定 var，则会将转换过的结果直接显示在页面
+				scope：变量存放的域属性空间，取值为 page、request、session、application。默认为page 范围。
+				
+				<%
+					String date = "2017-10-03";
+					pageContext.setAttribute("date", date);
+				%>
+				<!-- 将转换后的日期直接输出在页面中 -->
+				<fmt:parseDate value="${date }" pattern="yyyy-MM-dd"></fmt:parseDate>
+				<br>
+
+				<!-- 将转换后的日期存放在指定变量中 -->
+				<fmt:parseDate value="${date }" var="birth" pattern="yyyy-MM-dd"></fmt:parseDate>
+				${birth }
+				
+		fmt:formatNumber标签
+			该标签用于按照指定格式对数字进行格式化。常用的属性有：
+				value				要显示的数字		
+				type				NUMBER，CURRENCY（货币）， PERCENT（百分数）		
+				pattern				指定一个自定义的格式化模式用与输出		
+				groupingUsed		是否对数字分组 (TRUE 或 FALSE)		
+				maxIntegerDigits	整数部分最多的位数		
+				minIntegerDigits	整数部分最少的位数		
+				maxFractionDigits	小数点后最多的位数		
+				minFractionDigits	小数点后最少的位数		
+				var					存储格式化结果的变量		
+				scope				var 属性的作用域		
+			    <!-- 格式化后直接在页面显示 -->
+				<fmt:formatNumber value="12345.678" minIntegerDigits="6" maxFractionDigits="2"></fmt:formatNumber>
+				<br>
+				<fmt:formatNumber value="123456" minFractionDigits="2" groupingUsed="false"></fmt:formatNumber>
+				<br>
+
+				<!-- 格式化后存储在某个变量中 -->
+				<fmt:formatNumber value="12345.678" var="num1" minIntegerDigits="6" maxFractionDigits="2"></fmt:formatNumber>
+				<br>
+				<fmt:formatNumber value="123456" var="num2" minFractionDigits="2" groupingUsed="false"></fmt:formatNumber>
+				<br>
+				num1:<input type="text" name="num1" value="${num1 }">
+				<br>
+				num2:<input type="text" name="num2" value="${num2 }">
+
+六 观察者设计模式
+	现实生活中，每个人都是一个观察者，同时也是一个被观察者，"你站在桥上看风景,看风景的人在楼上看你"形容的就是这样的一个场景。
+	观察者设计模式，定义了一种一对多的关联关系。一个对象 A 与多个对象 B、C、D 之间建立“被观察与观察关系”。当对象 A 的状态发生改变时，会通知所有观察者对象 B、 C、 D。当B、C、D 在接收到 A 的状态改变通知后，根据自身实际情况，做出相应改变。
+	通常观察者和被观察者都是接口，上面所提到的对象是指实现了这些接口的对象。
+	
+	Observer.java：
+		package com.harry1024.observer;
+
+		public interface Observer {
+			/**
+			 * 在接收到通知之后做出的响应处理
+			 * @param message
+			 */
+			public void handleNotify(String message);
+
+		}
+	
+	ObserverA.java：
+		package com.harry1024.observer.impl;
+
+		import com.harry1024.observer.Observer;
+
+		public class ObserverA implements Observer {
+			@Override
+			public void handleNotify(String message){
+				System.out.println("路人甲正在观察");
+			}
+		}
+	
+	ObserverB.java:
+		package com.harry1024.observer.impl;
+
+		import com.harry1024.observer.Observer;
+
+		public class ObserverB implements Observer {
+			@Override
+			public void handleNotify(String message){
+				System.out.println("路人甲正在监察");
+			}
+		}
+	
+	ToBeObserver.java
+		package com.harry1024.observer;
+
+		/**
+		 * 被观察者
+		 */
+		public interface ToBeObserver {
+			/**
+			 * 添加观察者
+			 */
+			public void addObserver(Observer observer);
+
+			/**
+			 * 删除观察者
+			 * @param observer
+			 */
+			public void removeObserver(Observer observer);
+
+			/**
+			 * 通知观察者
+			 * @param message
+			 */
+			public void notifyObserver(String message);
+		}
+	
+	ToBeObserverA.java
+		package com.harry1024.observer.impl;
+
+		import com.harry1024.observer.Observer;
+		import com.harry1024.observer.ToBeObserver;
+
+		import java.util.ArrayList;
+		import java.util.List;
+
+		public class ToBeObserverA implements ToBeObserver {
+			// 将观察者放到集合中
+			List<Observer> observers;
+
+			public ToBeObserverA() {
+				observers = new ArrayList<>();
+			}
+
+			@Override
+			public void addObserver(Observer observer) {
+				observers.add(observer);
+			}
+
+			@Override
+			public void removeObserver(Observer observer) {
+				observers.remove(observer);
+			}
+
+			@Override
+			public void notifyObserver(String message) {
+				for (Observer o : observers) {
+					o.handleNotify(message);
+				}
+			}
+		}
+	
+	Test.java:
+	
+		package com.harry1024.observer;
+
+		import com.harry1024.observer.impl.ObserverA;
+		import com.harry1024.observer.impl.ObserverB;
+		import com.harry1024.observer.impl.ToBeObserverA;
+
+		/**
+		 * 观察者模式测试
+		 */
+
+		public class Test {
+			public static void main(String[] args) {
+				// 创建被观察者对象
+				ToBeObserver toBeObserverA = new ToBeObserverA();
+				// 创建观察者对象
+				Observer a = new ObserverA();
+				Observer b = new ObserverB();
+				// 向被观察者中添加被观察者
+				toBeObserverA.addObserver(a);
+				toBeObserverA.addObserver(b);
+				// 被观察者向观察者发送通知
+				toBeObserverA.notifyObserver("摔倒了");
+			}
+		}
+
+	
+七 servlet中的监听器
+	servlet中的监听器是用于监听web常见对象HttpServletRequest,HttpSession,ServletContext。主要有下面三个作用：
+		1.监听web对象创建与销毁。
+		2.监听web对象的属性变化，添加、删除、修改。
+		3.监听session绑定javaBean操作，活化（从硬盘读取到内存）与钝化（从内存持久化到硬盘）操作。
+		当监听器发现被监听的对象发生变化时，可以做一些操作。
+	
+	在servlet中一共有8个监听器，按照监听器的作用分类如下：
+
+		监听web对象创建与销毁的监听器
+			ServletContextListener
+			HttpSessionListener
+			ServletRequestListener
+		监听web对象属性变化的监听器
+			ServletContextAttributeListener
+			HttpSessionAttributeListener
+			ServletRequestAttributeListener
+		监听session绑定javaBean操作的监听器
+			HttpSessionBindingListener
+			HttpSessionActivationListener
+	
+	监听器的创建和使用
+		javaweb创建监听器的步骤：
+
+			1.创建一个类，实现指定的监听器接口
+			2.重写接口中的方法
+			3.在web.xml文件中配置监听器
+			
+	监听对象的创建和销毁
+		下面演示监听HttpServletRequest对象的销毁和创建。
+
+		1.创建一个类实现ServletRequestListener接口：	
+			package com.harry.listener;
+
+			import javax.servlet.ServletRequestListener;
+
+			public class MyRequestListener implements ServletRequestListener {
+				
+			}
+			
+		2.重写接口中的方法：
+			package com.harry.listener;
+
+			import javax.servlet.ServletRequestEvent;
+			import javax.servlet.ServletRequestListener;
+
+			public class MyRequestListener implements ServletRequestListener {
+				@Override
+				public void requestDestroyed(ServletRequestEvent sre) {
+					System.out.println("request对象销毁");
+				}
+
+				@Override
+				public void requestInitialized(ServletRequestEvent sre) {
+					System.out.println("request对象创建");
+				}
+			}
+		
+		3. 在web.xml文件中配置监听器
+			<listener>
+				<listener-class>com.harry.listener.MyRequestListener</listener-class>
+			</listener>
+			
+		当客户端发送请求时，就可以看见控制台打印出的”request对象被销毁”和”request被创建”。
+
+		同理，在监听HttpSesssion对象的创建与销毁时，需要创建一个类实现HttpSessionListener接口并重写里面的方法。
+		什么情况下会销毁session：
+			默认超时 30分钟
+			关闭服务器
+			invalidate()方法
+			setMaxInactiveInterval(int interval) 可以设置超时时间
+			在监听ServletContext对象的创建与销毁时，创建一个类实现ServletContextListener接口并重写里面的方法即可。
+			
+	监听属性的变化
+		1.创建一个类实现ServletRequestAttributeListener接口并实现该接口中方法：
+			package com.harry.listener;
+
+			import javax.servlet.ServletRequestAttributeEvent;
+			import javax.servlet.ServletRequestAttributeListener;
+			import javax.servlet.ServletRequestListener;
+
+			public class MyRequestAttributeListener implements ServletRequestAttributeListener {
+				@Override
+				public void attributeAdded(ServletRequestAttributeEvent srae) {
+					System.out.println("向request中添加了一个属性");
+					System.out.println("属性名：" + srae.getName());
+					System.out.println("属性值：" + srae.getValue());
+				}
+
+				@Override
+				public void attributeRemoved(ServletRequestAttributeEvent srae) {
+					System.out.println("request中删除了一个属性");
+					System.out.println("属性名：" + srae.getName());
+					System.out.println("属性值：" + srae.getValue());
+				}
+
+				@Override
+				public void attributeReplaced(ServletRequestAttributeEvent srae) {
+					System.out.println("修改了request中的一个属性");
+					System.out.println("属性名：" + srae.getName());
+					System.out.println("属性值：" + srae.getValue());
+				}
+			}
+			
+		2.在web.xml文件中注册监听器：
+			<listener>
+				<listener-class>com.harry.listener.MyRequestAttributeListener</listener-class>
+			</listener>
+			
+		3.创建index.jsp
+			<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+			<html>
+			  <head>
+				<title>$Title$</title>
+			  </head>
+			  <body>
+				<h1>测试监听器</h1>
+				<%
+				  request.setAttribute("name", "harry");
+				  request.setAttribute("name", "CaiShuang");
+				  request.removeAttribute("name");
+				%>
+
+			  </body>
+			</html>
+	
+	监听session绑定javabean
+		HttpSessionBindingListener监听器可以使javaBean对象在被绑定到会话或从会话中取消对它的绑定时得到通知。该监听器是由实体类来实现，需要注意的是该监听器的实现类不需要在web.xml文件中进行配置。
+		
+		1.创建Student类实现HttpSessionBindingListener接口并实现里面的方法：
+			package com.harry.listener;
+
+			import javax.servlet.http.HttpSessionBindingEvent;
+			import javax.servlet.http.HttpSessionBindingListener;
+
+			/**
+			 * 监听session绑定javabean
+			 */
+			public class Student implements HttpSessionBindingListener {
+				private String name;
+				private int age;
+
+				public String getName() {
+					return name;
+				}
+
+				public void setName(String name) {
+					this.name = name;
+				}
+
+				public int getAge() {
+					return age;
+				}
+
+				public void setAge(int age) {
+					this.age = age;
+				}
+
+				@Override
+				public void valueBound(HttpSessionBindingEvent event) {
+					System.out.println("Student对象被添加到session中");
+				}
+
+				@Override
+				public void valueUnbound(HttpSessionBindingEvent event) {
+					System.out.println("Student对象从session中被删除");
+				}
+			}
+	·	2.在index.jsp中添加下面代码：
+			Student s = new Student();
+			session.setAttribute("student", s);
+			session.removeAttribute("student");
+		当客户端访问index.jsp时，会在控制台中看到下面信息：
+			Student对象被添加到session中
+			Student对象从session中被删除了
+			
+	监听在 Session 中存放的指定类型对象的钝化与活化
+		HttpSessionActivationListener该监听器用于监听在 Session 中存放的指定类型对象的钝化与活化。
+		钝化是指将内存中的数据写入到硬盘中，而活化是指将硬盘中的数据恢复到内存。当用户正在访问的应用或该应用所在的服务器由于种种原因被停掉，然后在短时间内又重启，此时用户在访问时 Session 中的数据是不能丢掉的，在应用关闭之前，需要将数据持久化到硬盘中，在重启后应可以立即重新恢复 Session 中的数据。这就称为 Session 的钝化与活化。
+		那么 Session 中的哪些数据能够钝化呢？只有存放在 JVM 堆内存中的实现了 Serializable
+		类的对象能够被钝化。也就是说，对于字符串常量、基本数据类型常量等存放在 JVM 方法区中常量池中的常量，是无法被钝化的。
+		对于监听 Session 中对象数据的钝化与活化，需要注意以下几点：
+			* 实体类除了要实现 HttpSessionActivationListener 接口外，还需要实现 Serializable 接口。
+			* 钝化指的是 Session 中对象数据的钝化，并非是 Session 的钝化。所以 Session 中有几个可以钝化的对象，就会发生几次钝化。
+			* HttpSessionActivationListener 监听器是不需要在 web.xml 中注册的。
+		
+		1.创建Person类实现HttpSessionActivationListener和Serializable接口：
+			package com.harry.listener;
+
+			import javax.servlet.http.HttpSessionActivationListener;
+			import javax.servlet.http.HttpSessionEvent;
+			import java.io.Serializable;
+
+			/**
+			 * 监听对象的活化与钝化
+			 */
+
+			public class Person implements HttpSessionActivationListener, Serializable {
+				private static final long serialVersionUid = 189413377798346859L;
+
+				private String name;
+
+				public String getName() {
+					return name;
+				}
+
+				public void setName(String name) {
+					this.name = name;
+				}
+
+				public int getAge() {
+					return age;
+				}
+
+				public void setAge(int age) {
+					this.age = age;
+				}
+
+				private int age;
+
+
+				@Override
+				public void sessionWillPassivate(HttpSessionEvent se) {
+					System.out.println("钝化："+ se.getSession().getId());
+				}
+
+				@Override
+				public void sessionDidActivate(HttpSessionEvent se) {
+					System.out.println("活化："+ se.getSession().getId());
+				}
+			}
+		2.在index.jsp中编写下面内容：
+			Person p = new Person();
+			session.setAttribute("person", p);
+		
+		3.在项目中的META-INF目录下创建一个content.xml的文件，在里面写上下面内容：
+			<?xml version="1.0" encoding="UTF-8"?>
+			<Context>
+				<Manager className="org.apache.catalina.session.PersistentManager" maxIdleSwap="1">
+					<Store className="org.apache.catalina.session.FileStore" directory="monkey1024"/>
+				</Manager>
+			</Context>
+					
+八 过滤器
+	Filter 是 Servlet 规范的三大组件之一，另外两个分别是servlet和listener。filter中文意思是过滤，可以在请求到达目标资源之前先对请求进行拦截过滤，即对请求进行一些处理； 也可以在响应到达客户端之前先对响应进行拦截过滤，即对响应进行一些处理。
+	WEB开发人员通过Filter技术，可以对web服务器管理的所有web资源：例如Jsp, Servlet, 静态图片文件或静态 html 文件等进行拦截，从而实现一些特殊的功能。例如实现URL级别的权限访问控制、过滤敏感词汇、压缩响应信息、计算系统的响应时间等一些高级功能。	
+	
+	在 Servlet 规范中，有一个 javax.servlet.Filter 接口。实现了该接口的类称为过滤器，接口中有三个方法可以重写：
+
+		init()：初始化方法，即 Filter 被创建后，在后面用到的资源的初始化工作，可以在这里完成。
+		doFilter()：Filter 的核心方法，对于请求与响应的过滤，就是在这个方法中完成的。
+		destroy()：销毁方法。 Filter 被销毁前所调用执行的方法。对于资源的释放工作，可以在这里完成。
+
+		
+	创建Filter过滤器的步骤
+		1.创建一个类实现javax.servlet.Filter接口
+		2.重写接口中的方法
+		3.在web.xml文件中配置Filter
+	
+	创建一个类实现Filter接口并重写接口中的方法
+	注意:在Filter的doFilter方法内如果没有执行doFilter(request, response)方法，那么服务器中的资源是不会被访问到的。
+		package com.harry.filter;
+
+		import javax.servlet.*;
+		import java.io.IOException;
+
+		public class MyFilter implements Filter {
+
+			public  MyFilter(){
+				System.out.println("实例化");
+			}
+
+			@Override
+			public void init(FilterConfig filterConfig) throws ServletException {
+				System.out.println("初始化");
+			}
+
+			@Override
+			public void destroy() {
+				System.out.println("销毁");
+			}
+
+			@Override
+			public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+				System.out.println("过滤请求");
+				// 通过过滤器继续访问资源
+				filterChain.doFilter(servletRequest, servletResponse);
+				System.out.println("过滤响应");
+			}
+		}
+		
+	在web.xml中配置filter，跟配置servlet类似：
+		<filter-mapping>
+			<filter-name>MyFilter</filter-name>
+			<url-pattern>/*</url-pattern>
+		</filter-mapping>
+		
+	使用Filter控制权限
+		当用户访问某网站时，有些页面或 Servlet 在不登录的情况下是可以访问的，例如首页、登录页面等。除此之外大部分资源是必须登录后才能访问的。此时，可以定义一个权限过滤器，对每一个访问该应用的请求进行过滤：若具有访问权限，则直接跳转到相应资源即可；若不具有访问权限，则跳转到登录页面。
+		修改一下之前写过的登录功能，当用户没有登录时，不能访问login_success.jsp页面。
+		首先在WebConten目录下创建一个success文件夹，之后将login_success.jsp页面移至该文件夹下。
+		之后创建一个Filter，根据session中是否含有user属性来判断用户是否登录：
+			package com.monkey1024.filter;
+
+			import java.io.IOException;
+			import javax.servlet.Filter;
+			import javax.servlet.FilterChain;
+			import javax.servlet.FilterConfig;
+			import javax.servlet.ServletException;
+			import javax.servlet.ServletRequest;
+			import javax.servlet.ServletResponse;
+			import javax.servlet.http.HttpServletRequest;
+			import javax.servlet.http.HttpServletResponse;
+			import javax.servlet.http.HttpSession;
+
+			import com.monkey1024.javabean.User;
+
+			/**
+			 * 权限过滤器
+			 */
+			public class PermissionFilter implements Filter {
+
+				public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+					HttpServletRequest req = (HttpServletRequest)request;
+					HttpServletResponse res = (HttpServletResponse)response;
+
+					//获取请求路径
+					String path = req.getServletPath();
+
+					//判断请求路径是是否包含/success
+					if(path.startsWith("/success")){
+						HttpSession session = req.getSession();
+						//如果为null则说明session还未创建，跳转到登录页面
+						if(session == null){
+							res.sendRedirect(req.getContextPath() + "/login.jsp");
+						}else{
+							User user = (User)session.getAttribute("user");
+							//如果为null则说明还没有登录成功，跳转到登录页面
+							if(user == null){
+								res.sendRedirect(req.getContextPath() + "/login.jsp");
+							}
+						}
+
+					}
+
+					chain.doFilter(request, response);
+				}
+
+				public void destroy() {
+				}
+
+				public void init(FilterConfig fConfig) throws ServletException {
+				}
+
+			}
+			
+		web.xml文件如下：
+			<filter>
+				<filter-name>PermissionFilter</filter-name>
+				<filter-class>com.monkey1024.filter.PermissionFilter</filter-class>
+			</filter>
+			<filter-mapping>
+				<filter-name>PermissionFilter</filter-name>
+				<url-pattern>/*</url-pattern>
+			</filter-mapping>
+					
+
+九 文件上传
+	文件上传
+		文件上传指的是用户通过浏览器向服务器上传某个文件，服务器接收到该文件后会将该文件存储在服务器的硬盘中，通常不会存储在数据库中，这样可以减轻数据库的压力并且在文件的操作上更加灵活，常见的功能是上传头像图片。
+	
+	文件上传的原理
+		所谓的文件上传就是服务器端通过request对象获取输入流，将浏览器端上传的数据读取出来，保存到服务器端。
+	
+	文件上传的要求
+		提供form表单，表单的提交方式必须是post
+		form表单中的enctype属性必须是multipart/form-data
+		表单中提供input type=”file”上传输入域
+		
+	代码示例
+		创建一个upload.jsp的文件，里面提供上传的按钮：
+			<form action="${pageContext.request.contextPath}/upload" method="post" enctype="multipart/form-data">
+				<input  type="file" name="photo">
+				<input type="submit" value="上传">
+			</form>
+			
+		创建servlet用来处理用户上传的文件：
+			package com.harry.servlet;
+
+			import javax.servlet.ServletException;
+			import javax.servlet.ServletInputStream;
+			import javax.servlet.http.HttpServlet;
+			import javax.servlet.http.HttpServletRequest;
+			import javax.servlet.http.HttpServletResponse;
+			import java.io.IOException;
+
+			/**
+			 * 文件上传
+			 */
+			public class Upload extends HttpServlet {
+				@Override
+				protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+					super.doGet(req, resp);
+				}
+
+				@Override
+				protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+					// 获取请求的输入流
+					ServletInputStream is = req.getInputStream();
+					// 读取输入流中的数据
+					int len = 0;
+					byte[] b = new byte[1024];
+					while ((len = is.read(b)) != -1) {
+						System.out.println(new String(b, 0, len));
+					}
+				}
+			}
+			
+	FileUpload工具的使用
+		在实际开发中通常会借助第三方工具来实现上传功能，应用较多的是apache旗下的Commons-fileupload。
+		Apache 开源组织提供了一个用来处理表单文件上传的一个开源组件（ Commons-fileupload ），该组件性能优异，并且其API使用极其简单，可以让开发人员轻松实现web文件上传功能，因此在web开发中实现文件上传功能，通常使用Commons-fileupload组件实现。
+		在使用该工具实现上传功能时，首先需要导入Commons-fileupload和commons-io两个jar包。
+		Commons-fileupload：http://pan.baidu.com/s/1skVOoTR
+		commons-io：http://pan.baidu.com/s/1dF4cDXJ
+		
+		代码示例：
+			package com.harry.servlet;
+
+			import org.apache.commons.fileupload.FileItem;
+			import org.apache.commons.fileupload.FileUploadException;
+			import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+			import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
+			import javax.servlet.ServletException;
+			import javax.servlet.http.HttpServlet;
+			import javax.servlet.http.HttpServletRequest;
+			import javax.servlet.http.HttpServletResponse;
+			import java.io.File;
+			import java.io.FileOutputStream;
+			import java.io.IOException;
+			import java.io.InputStream;
+			import java.util.List;
+
+			/**
+			 * 使用commons fileupload实现文件上传
+			 */
+			public class UploadServlet extends HttpServlet {
+				@Override
+				protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+					super.doGet(req, resp);
+				}
+
+				@Override
+				protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+					// 1.判断表单是否支持文件上传
+					boolean isMultipart = ServletFileUpload.isMultipartContent(req);
+					if (!isMultipart) {
+						throw new RuntimeException("该请求不支持文件上传");
+					}
+					//2.创建一个DiskFileItemFactory对象
+					DiskFileItemFactory factory = new DiskFileItemFactory();
+					//3.创建ServletFileUpload对象，该对象是上传的核心组件
+					ServletFileUpload sfu = new ServletFileUpload(factory);
+					//4.解析request对象，并获得表单项集合
+					try {
+						List<FileItem> fileItems = sfu.parseRequest(req);
+						// 5.遍历表单项集合
+						for (FileItem item : fileItems) {
+							if (item.isFormField()) {
+								// 普通表单 type='text'
+								String fieldName = item.getFieldName(); // 字段名
+								String fileValue = item.getString("utf-8"); // 字段值
+								System.out.println(fieldName + ":" + fileValue);
+							}else {
+								// 上传表单项
+								// 获取文件名
+								String fileName = item.getName();
+								// 获取输入流
+								InputStream is = item.getInputStream();
+								// 创建输出流
+								String path = this.getServletContext().getRealPath("/upload");
+								File file = new File(path, fileName);
+								FileOutputStream fos = new FileOutputStream(file);
+								byte[] bytes = new byte[1024];
+								int len = 0;
+								while ((len = is.read(bytes)) !=-1){
+									fos.write(bytes,0, len);
+								}
+							}
+						}
+					} catch (FileUploadException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			
+		临时目录：
+			文件由浏览器通过网络上传到服务器，并不是直接通过一条网络线路将所有请求数据发送到了服务器的。而是将这些数据分为了很多个数据包，这些数据包分别被编号后，经由不同的网络线路最终发送到了服务器中。这些数据包到达服务器的时间会根据不同的网络线路的情况不同，分别先后到达服务器，顺序是不定的。因此服务器会在其临时目录中，创建一个临时文件，将这些数据包进行拼接组装。
+			Tomcat 默认情况下的临时目录是 Tomcat 服务器安装目录的 temp 子目录。我们也可以修改临时目录的默认位置。Apache 的 FileUpload 支持设置创建临时文件的最小临界值，即只有上传的文件大小超出这个值，才会创建临时文件。
+			通过 DiskFileItemFactory 的 setSizeThreshold()方法可以设置临界值，单位为字节。通过 DiskFileItemFactory 的 setRepository()方法可以指定临时目录。
+			
+			在WebContent文件夹下创建temp文件夹。
+			修改上面的代码如下：
+				package com.harry.servlet;
+
+				import org.apache.commons.fileupload.FileItem;
+				import org.apache.commons.fileupload.FileUploadException;
+				import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+				import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
+				import javax.servlet.ServletException;
+				import javax.servlet.http.HttpServlet;
+				import javax.servlet.http.HttpServletRequest;
+				import javax.servlet.http.HttpServletResponse;
+				import java.io.File;
+				import java.io.FileOutputStream;
+				import java.io.IOException;
+				import java.io.InputStream;
+				import java.util.List;
+
+				/**
+				 * 临时目录
+				 */
+				public class UploadServlet3 extends HttpServlet {
+					@Override
+					protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+						super.doGet(req, resp);
+					}
+
+					@Override
+					protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+						// 1.判断表单是否支持文件上传
+						boolean isMultipart = ServletFileUpload.isMultipartContent(req);
+						if (!isMultipart) {
+							throw new RuntimeException("该请求不支持文件上传");
+						}
+						//2.创建一个DiskFileItemFactory对象
+						DiskFileItemFactory factory = new DiskFileItemFactory();
+						String tempPath = this.getServletContext().getRealPath("/temp");
+						// **** 指定临时文件存储的目录
+						factory.setRepository(new File(tempPath));
+						//3.创建ServletFileUpload对象，该对象是上传的核心组件
+						ServletFileUpload sfu = new ServletFileUpload(factory);
+						//4.解析request对象，并获得表单项集合
+						try {
+							List<FileItem> fileItems = sfu.parseRequest(req);
+							// 5.遍历表单项集合
+							for (FileItem item : fileItems) {
+								if (item.isFormField()) {
+									// 普通表单 type='text'
+									String fieldName = item.getFieldName(); // 字段名
+									String fileValue = item.getString("utf-8"); // 字段值
+									System.out.println(fieldName + ":" + fileValue);
+								} else {
+									// 上传表单项
+									// 获取文件名
+									String fileName = item.getName();
+									// 获取输入流
+									InputStream is = item.getInputStream();
+									// 创建输出流
+									String path = this.getServletContext().getRealPath("/upload");
+									File file = new File(path, fileName);
+									FileOutputStream fos = new FileOutputStream(file);
+									byte[] bytes = new byte[1024];
+									int len = 0;
+									while ((len = is.read(bytes)) != -1) {
+										fos.write(bytes, 0, len);
+									}
+									/*
+										临时文件一旦用完，就可将其删除了，否则占用服务器的硬盘空间。
+										需要注意的是，对于临时文件的删除，需要在 IO 流关闭后，否则，无法删除。
+									*/
+									is.close();
+									fos.close();
+									item.delete();
+								}
+							}
+
+						} catch (FileUploadException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				
+		上传文件的大小：
+			对于上传文件的大小，可以通过 ServletFileUpload 的 setFileSizeMax()与 setSizeMax()方法进行控制。 setFileSizeMax()用于设置单个文件上传的最大值，而 setSizeMax()用于设置单次上传的最大值。即若一次上传多个文件，每个文件的大小边界值与所有文件加起来的最大小值。
+			//3.创建一个ServletFileUpload对象，该对象是上传的核心组件
+			ServletFileUpload sfu = new ServletFileUpload(factory);
+			//设置单个文件的最大值（2M）
+			sfu.setFileSizeMax(1024 * 1024 *2);
+			//设置上传文件的总大小(5M)
+			sfu.setSizeMax(1024 * 1024 *5);
+			
+		上传文件名重名的问题：
+			在服务器中已有文件名叫做monkey.jpg的文件，当用户再次上传同名的文件时，会将之前的文件名覆盖，这样会出现问题。为了解决该问题，可以将上传的文件重命名，有两种方式：
+				在文件名中添加系统时间。
+				在文件名中添加uuid。
+				//重命名文件名
+				fileName = fileName.substring(fileName.lastIndexOf("\\") + 1);
+				//在文件名中添加系统时间
+				fileName = System.currentTimeMillis() + "_" + fileName;
+				//在文件名中添加uuid
+				fileName = UUID.randomUUID() + "_" + fileName;
+				
+		创建目录
+			无论是 Windows 系统、Linux 系统，还是其它系统，其目录中所包含的文件数量是有上限的。
+			所以对于上传的文件，应该分目录进行管理。若文件较多，则可按照年、月、日创建多级子目录。这样，即方便管理，又不会超出目录的文件数量上限。
+			
+			//获取输入流
+			InputStream is = item.getInputStream();
+			//创建输出流
+			String path = this.getServletContext().getRealPath("/upload");
+			// 获取系统时间的年月日
+			LocalDate now = LocalDate.now();
+			int year = now.getYear();
+			int month = now.getMonthValue();
+			int day = now.getDayOfMonth();
+			path = path + File.separator + year + File.separator + month + File.separator + day;
+			System.out.println("upload子目录" + path);
+			// 创建父目录
+			File parentDir = new File(path);
+			// 如果父目录不存在则创建
+			if (!parentDir.exists()) {
+				parentDir.mkdirs();
+			}
+	
+	文件下载 
+		超链接下载
+			超链接下载是指，将下载资源作为超链接的链接目的文件出现。若浏览器可以解析该资源文件，则将在浏览器上直接显示文件内容；若浏览器不支持该文件的解析，则会弹出另存为对话框，要求用户保存。
+			在WebContent文件夹下创建download文件夹，里面放入一些文件。
+			创建jsp：
+				<body>
+					<a href="${pageContext.request.contextPath }/download/aaa.zip">下载aaa文件</a>
+				</body>
+				
+		使用servlet实现下载
+			若要使下载的文件以附件的形式出现在浏览器，则需要设置响应头的属性content-disposition 的值为 attachment，且需要指定浏览器下载后显示的文件名。即需要指定content-disposition 的值为 attachment;filename=文件名。
+			
+				package com.harry.servlet;
+				/**
+				 * 文件下载
+				 */
+
+				import javax.servlet.ServletException;
+				import javax.servlet.ServletOutputStream;
+				import javax.servlet.http.HttpServlet;
+				import javax.servlet.http.HttpServletRequest;
+				import javax.servlet.http.HttpServletResponse;
+				import java.io.IOException;
+				import java.io.InputStream;
+
+				public class DownloadServlet1 extends HttpServlet {
+					@Override
+					protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+						// 设置响应头属性，使文件以附件的形式下载
+						resp.setHeader("content-disposition", "attachment;filename=monkey1024.png");
+						// 获取文件的输入流
+						InputStream is = this.getServletContext().getResourceAsStream("/download/monkey1024.png");
+						// 输出流
+						ServletOutputStream os = resp.getOutputStream();
+						// 复制文件
+						byte[] bytes = new byte[1024];
+						int len = 1;
+						while ((len = is.read(bytes)) != -1) {
+							os.write(bytes,0,len);
+						}
+					}
+
+					@Override
+					protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+						super.doPost(req, resp);
+					}
+				}
+			创建jsp：
+				<a href="${pageContext.request.contextPath }/download">下载图片文件</a>
+			解决文件名乱码问题
+			只需将文件名设置编码即可：
+				String fileName = "小猴子.png";
+				fileName = new String(fileName.getBytes("utf-8"),"iso8859-1");
+				//设置响应头属性值，使文件以附件形式进行下载
+				response.setHeader("content-disposition", "attachment;filename="+fileName);

@@ -1,0 +1,249 @@
+一 什么是XML
+	xml的全称是eXtensible Markup Language 即可扩展标记语言。
+	特点是可扩展，里面的标签都是自定义的。
+	xml的主要作用就是简单数据的存储，可以用来做配置文件，也可以使用xml做数据传输
+
+二 xml语法
+	xml语法是严格的，区分大小写的。
+
+	文档声明：
+		必须写在xml文档的第一行。
+		写法：<?xml version="1.0" ?>
+		属性：
+			version：版本号 固定值 1.0
+			encoding:指定文档的码表。默认值为 iso-8859-1
+			standalone：指定文档是否独立 yes 或 no
+	元素：xml文档中的标签
+
+		文档中必须有且只能有一个根元素
+		元素需要正确闭合
+		元素需要正确嵌套
+		元素名称要遵守：
+			元素名称区分大小写
+			数字不能开头
+	
+	文本：
+		转义字符：>
+		CDATA: 里边的数据会原样显示
+		<![CDATA[ 数据内容 ]]>
+
+	属性：
+		属性值必须用引号引起来。单双引号都行
+
+	注释：
+	
+	xml示例：
+		<?xml version="1.0" encoding="UTF-8"?>
+
+		<books>
+			<book id="1001">
+				<name>java编程入门</name>
+				<price>50</price>
+			</book>
+			<book>
+				<name>java高级编程</name>
+				<price>50&lt;30</price>
+				<![CDATA[
+					if(5>3&&3<6)<abc></abc>
+				]]>
+
+			</book>
+			<book>
+				<name>java之道</name>
+				<price>80</price>
+			</book>
+			<book>
+				<name>颈椎病康复指南</name>
+				<price>20</price>
+			</book>
+		</books>
+		
+三 Xml约束
+	如果想要约束xml中的标签内容，可以使用下面两种方式编写约束内容：
+	
+	1 dtd
+		dtd的全称是document Type Definition，即文档类型定义。
+		dtd的分类：
+			内部dtd：在xml内部编写dtd
+			外部dtd：在外部文件中编写dtd，然后再引入到xml中
+				引入本地dtd文件：<!DOCTYPE students SYSTEM "student.dtd">
+				引入网络dtd文件：<!DOCTYPE students PUBLIC "名称空间" "student.dtd">
+			
+	2 schema		
+		
+		使用schema约束更加严谨，它克服了dtd的局限性。其实schema本身也是一个xml文件，但是通常是以.xsd文件名结尾。
+		如下是一个web项目中的web.xml文件，其中使用了schema作为约束。
+			<?xml version="1.0" encoding="UTF-8"?>
+			<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xmlns="http://java.sun.com/xml/ns/javaee"
+				xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+				id="WebApp_ID" version="2.5">
+				<display-name>xml</display-name>
+				<welcome-file-list>
+					<welcome-file>index.html</welcome-file>
+				</welcome-file-list>
+			</web-app>
+		下面是web-app_2_5.xsd的schema约束文件的部分代码：
+			<?xml version="1.0" encoding="UTF-8"?>
+			<xsd:schema xmlns="http://www.w3.org/2001/XMLSchema"
+					targetNamespace="http://java.sun.com/xml/ns/javaee"
+					xmlns:javaee="http://java.sun.com/xml/ns/javaee"
+					xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+					elementFormDefault="qualified"
+					attributeFormDefault="unqualified"
+					version="2.5">
+			  <xsd:annotation>
+				<xsd:documentation>
+				  @(#)web-app_2_5.xsds    1.62 05/08/06
+				</xsd:documentation>
+			  </xsd:annotation>
+
+四 xml解析思想
+	数据存储在xml文件中，如果想要将其读取到java内存中，这时就需要对xml进行解析，解析xml有下面两个思想：
+	1 dom
+		dom会将xml文档加载进内存，形成一颗dom树(document对象)，将文档的各个组成部分封装为对象。
+		优点：可以对dom树进行增删改查。
+		缺点：dom树非常占内存，解析速度慢。
+		
+	2 sax
+		逐行读取，基于事件驱动
+		优点：不占内存，速度快
+		缺点：只能读取，不能回写
+	
+	3 xml常用解析器
+		JAXP：sun公司提供的解析器，支持dom和sax，不过使用的不多。
+		JDOM
+		DOM4J：全称是dom for java，是jdom的升级版，性能优异，使用较为广泛。
+		
+		这里主要介绍dom4j的使用方式，首先下载dom4j相关的jar包：
+		http://pan.baidu.com/s/1kVeKBQJ
+		下载后解压，将里面的dom4j-1.6.1.jar文件拷贝到web项目中的lib文件夹下。
+		代码示例，这里来读取之前写的book.xml文件：
+			package com.monkey1024.xml;
+
+			import java.util.List;
+
+			import org.dom4j.Document;
+			import org.dom4j.DocumentException;
+			import org.dom4j.Element;
+			import org.dom4j.Node;
+			import org.dom4j.io.SAXReader;
+			import org.junit.Test;
+
+			/**
+			 * 使用dom4j解析文件
+			 *
+			 */
+			public class Dom4jTest01 {
+
+				/*
+				 * 得到某个具体的节点内容:第3本书的书名--》java之道
+				 */
+				@Test 
+				public void test1() throws DocumentException {
+					// 创建一个xml解析对象
+					SAXReader reader = new SAXReader();
+					// 把xml文档加载到document对象中
+					Document document = reader.read("src/book.xml");
+					//获取根节点
+					Element root = document.getRootElement();
+					// 得到当前节点的所有子节点
+					List list = root.elements();
+					// 得到第三本书对象
+					Element thirdBook = (Element) list.get(2);
+					// 得到当前节点的文本内容
+					String name = thirdBook.element("name").getText();
+					System.out.println(name);
+				}
+
+				/*
+				 * // 遍历所有元素节点
+				 */
+				@Test 
+				public void test2() throws DocumentException {
+					// 创建一个xml解析对象
+					SAXReader reader = new SAXReader();
+					// 把xml文档加载到document对象中
+					Document document = reader.read("src/book.xml");
+					Element root = document.getRootElement();
+					treeSelect(root);
+				}
+
+				//递归
+				private void treeSelect(Element ele) {
+					// 输出当前节点的名子
+					System.out.println(ele.getName());
+					// ele.nodeCount()得到当前节点的所有子节点的数量
+					for (int i = 0; i < ele.nodeCount(); i++) {
+						// 取出下标为i的节点
+						Node node = ele.node(i);
+						// 判断当前节点是否为标签
+						if (node instanceof Element) {
+							// 把node强转为标签(Element)
+							treeSelect((Element) node);
+						} else {
+							System.out.println(node.getText());
+						}
+					}
+				}
+			}
+			
+	4 使用xpath方式读取xml
+	
+		xpath主要用来查找xml中的内容。
+		常用方法：
+			selectSingleNode();
+			selectNodes();
+			
+		注意：使用时要先将jaxen-1.1-beta-6.jar包导入到项目中。
+		语法：
+			nodename 选取此节点。
+			/     从根节点选取。
+			//     从匹配选择的当前节点选择文档中的节点，而不考虑它们的位置。
+			..     选取当前节点的父节点。
+			@     选取属性。
+			[@属性名]    属性过滤
+			[标签名]     子元素过滤
+			
+		示例：
+			package com.harry.xml;
+
+			import org.dom4j.Document;
+			import org.dom4j.DocumentException;
+			import org.dom4j.Node;
+			import org.dom4j.io.SAXReader;
+			import org.junit.Test;
+
+			import java.util.List;
+
+			/**
+			 * 使用XPath读取xml
+			 */
+
+			public class XPathTest01 {
+				@Test
+				public void test1() throws DocumentException {
+					SAXReader reader = new SAXReader();
+					Document document = reader.read("src/book.xml");
+					Node node1 = document.selectSingleNode("/books/book/name");
+					System.out.println(node1.getText());
+					Node node2 = document.selectSingleNode("/books/book[4]/name");
+					// 拿ID的属性， 这里拿到ID号1001
+					Node node3 = document.selectSingleNode("books/book/attribute::id");
+					Node node4 = document.selectSingleNode("/books/book[3]/attribute::id");
+				}
+
+				/**
+				 * xpath遍历xml文档
+				 */
+				@Test
+				public void test2() throws DocumentException {
+					SAXReader reader = new SAXReader();
+					Document document = reader.read("src/book.xml");
+					List list = document.selectNodes("//*");
+					for (int i=0; i<list.size(); i++){
+						Node node = (Node)list.get(i);
+						System.out.println(node.getText()+"\t");
+					}
+				}
+			}

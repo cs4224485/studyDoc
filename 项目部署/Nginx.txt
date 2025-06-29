@@ -1,0 +1,415 @@
+一 Nginx介绍
+Nginx是一款轻量级的Web 服务器/反向代理服务器及电子邮件（IMAP/POP3）代理服务器，并在一个BSD-like 协议下发行。其特点是占有内存少，并发能力强，
+事实上nginx的并发能力确实在同类型的网页服务器中表现较好，中国大陆使用nginx网站用户有：百度、京东、新浪、网易、腾讯、淘宝等。
+
+特点：
+	高可靠性
+		master/worker
+	支持热部署
+	不停机更新配置文件，更换日志文件，更新服务器程序版本
+	低内存消耗
+	10000个keep-alive连接模式下的非活动连接仅消耗2.5M内存
+
+基本功能：
+	静态资源的web服务器
+	http协议反向代理服务器
+	pop3/imap4协议反射代理服务器
+	FastCGI(LNMP),uWSGI等协议
+	模块化（非DSO），著名有zip，SSL
+
+二 Nginx安装
+	1 源码安装
+		从nginx官网获取源码包
+		配置 --> 编译 --> 安装
+			安装所需依赖包：yum -y install gcc pcre-devel zlib zlib-devel
+			./configure --prefix=/usr/local/nginx
+			make
+			make install
+			
+	2 相关目录
+		 nginx path prefix: "/usr/local/nginx"
+		 nginx binary file: "/usr/local/nginx/sbin/nginx"
+		 nginx modules path: "/usr/local/nginx/modules"
+		 nginx configuration prefix: "/usr/local/nginx/conf"
+		 nginx configuration file: "/usr/local/nginx/conf/nginx.conf"
+		 nginx pid file: "/usr/local/nginx/logs/nginx.pid"
+		 nginx error log file: "/usr/local/nginx/logs/error.log"
+		 nginx http access log file: "/usr/local/nginx/logs/access.log"
+	3 Nginx启动
+		/usr/local/nginx/sbin/nginx
+	4 验证
+		netstat –ntpl
+		lsof -i :80
+	5 浏览器测试
+		elinks 文本界面浏览器
+		
+三 Nginx的配置文件
+	
+	#启动子进程程序默认用户
+	#user  nobody;
+	#一个主进程和多个工作进程。工作进程是单进程的，且不需要特殊授权即可运行；这里定义的是工作进程数量
+	worker_processes  1;
+
+	#全局错误日志的位置及日志格式
+	#error_log  logs/error.log;
+	#error_log  logs/error.log  notice;
+	#error_log  logs/error.log  info;
+
+	#pid        logs/nginx.pid;
+
+
+	events {
+		#每个工作进程最大的并发数
+		worker_connections  1024;
+	}
+
+
+	#http服务器设置
+	http {
+		#设定mime类型，类型由mime.type文件定义
+		include       mime.types;
+		
+		#
+		default_type  application/octet-stream;
+
+		#日志格式
+		#log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+		#                  '$status $body_bytes_sent "$http_referer" '
+		#                  '"$http_user_agent" "$http_x_forwarded_for"';
+		#$remote_addr与$http_x_forwarded_for用以记录客户端的ip地址；
+		#$remote_user：用来记录客户端用户名称；
+		#$time_local： 用来记录访问时间与时区；
+		#$request： 用来记录请求的url与http协议；
+		#$status： 用来记录请求状态；成功是200，
+		#$body_bytes_sent ：记录发送给客户端文件主体内容大小；
+		#$http_referer：用来记录从那个页面链接访问过来的；
+		#$http_user_agent：记录客户浏览器的相关信息；
+
+		#全局访问日志路径 
+		#access_log  logs/access.log  main;
+		#sendfile指令指定 nginx 是否调用sendfile 函数（zero copy 方式）来输出文件，对于普通应用，必须设为on。如果用来进行下载等应用磁盘IO重负载应用，可设置为off，以平衡磁盘与网络IO处理速度，降低系统uptime。
+		sendfile        on;
+		
+		#此选项允许或禁止使用socke的TCP_CORK的选项，此选项仅在使用sendfile的时候使用
+		#tcp_nopush     on;
+
+		#长连接超时时间
+		#keepalive_timeout  0;
+		keepalive_timeout  65;
+
+		#开启压缩
+		#gzip  on;
+
+		#配置虚拟主机
+		server {
+			#虚拟主机使用的端口
+			listen       80;
+			#虚拟主机域名
+			server_name  localhost;
+
+			#虚拟主机支持的字符集
+			#charset koi8-r;
+
+			#虚拟主机的访问日志路径
+			#access_log  logs/host.access.log  main;
+
+			#定义web根路径
+			location / {
+				#根目录路径
+				root   html;
+				#索引页
+				index  index.html index.htm;
+			}
+
+			#error_page  404              /404.html;
+
+			# redirect server error pages to the static page /50x.html
+			#
+
+			#根据错误码 返回对应的页面
+			error_page   500 502 503 504  /50x.html;
+
+			#定义页面路径
+			location = /50x.html {
+				root   html;
+			}
+
+			#定义反向代理服务器 数据服务器是lamp模型
+			# proxy the PHP scripts to Apache listening on 127.0.0.1:80
+			#
+			#location ~ \.php$ {
+			#    proxy_pass   http://127.0.0.1;
+			#}
+
+
+			#定义PHP为本机服务的模型  
+			# pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+			#
+			#location ~ \.php$ {
+			#    root           html;
+			#    fastcgi_pass   127.0.0.1:9000;
+			#    fastcgi_index  index.php;
+			#    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+			#    include        fastcgi_params;
+			#}
+
+			# deny access to .htaccess files, if Apache's document root
+			# concurs with nginx's one
+			#
+			#拒绝apache DR目录及子目录下的.htaccess文件访问
+			#location ~ /\.ht {
+			#    deny  all;
+			#}
+		}
+
+
+		# another virtual host using mix of IP-, name-, and port-based configuration
+		#
+		#server {
+		#    listen       8000;
+		#    listen       somename:8080;
+		#    server_name  somename  alias  another.alias;
+
+		#    location / {
+		#        root   html;
+		#        index  index.html index.htm;
+		#    }
+		#}
+
+	}
+四、默认网站 
+	1、默认网站
+		server {
+		 listen 80;
+		 server_name localhost;
+			 location / {
+				 root html;
+				 index index.html index.htm;
+			 }
+			 error_page 500 502 503 504 /50x.html;
+			 location = /50x.html {
+				root html;
+			 }
+		 }
+		 
+	2、访问控制
+		location /a {
+			allow 192.168.1.0/24;
+			deny all;
+			#return 404;
+			return http://www.jd.com;
+		}
+		
+	3、登陆验证
+		location /c {
+			auth_basic "登陆验证";
+			auth_basic_user_file /etc/nginx/htpasswd;
+		}
+	
+	4、日志管理
+		Nginx访问日志主要有两个参数控制
+			log_format #用来定义记录日志的格式（可以定义多种日志格式，取不同名字即可）
+			access_log #用来指定日至文件的路径及使用的何种日志格式记录日志
+			access_log logs/access.log main;
+		log_format格式变量：
+			 $remote_addr #记录访问网站的客户端地址
+			 $remote_user #远程客户端用户名
+			 $time_local #记录访问时间与时区
+			 $request #用户的http请求起始行信息
+			 $status #http状态码，记录请求返回的状态码，例如：200、301、404等
+			 $body_bytes_sent #服务器发送给客户端的响应body字节数
+			 $http_referer #记录此次请求是从哪个连接访问过来的，可以根据该参数进行防盗链设置。
+			 $http_user_agent #记录客户端访问信息，例如：浏览器、手机客户端等
+			 $http_x_forwarded_for #当前端有代理服务器时，设置web节点记录客户端地址的配置，此参数生效的前提是代理服务器也要进行相关的x_forwarded_for设置
+		案例
+			自定义一个json格式的访问日志
+			log_format main_json '{"@timestamp":"$time_local",'
+				'"client_ip": "$remote_addr",'
+				'"request": "$request",'
+				'"status": "$status",'
+				'"bytes": "$body_bytes_sent",'
+				'"x_forwarded": "$http_x_forwarded_for",'
+				'"referer": "$http_referer"'
+				'}';
+				access_log logs/access_json.log main_json;
+	5、防盗链
+		拒绝某些跳转连接
+		valid_referers  none | blocked | server_names | string ....
+			定义合法的referer数据
+			none：请求报文的首部没有refere首部
+			blocked：请求报文的referer首部没有值
+			server_names：其值是主机名
+			arbitrary string：直接字符串，可以使用*作为通配符
+			regular expression：被指定的正则表达式模式匹配到的字符串，要使用~起始
+			示例： valid_referers none blocked server_name  *.caishuang.com  ~\.caishuang\.;
+		location /images/ {
+				alias /data/images/;
+				valid_referers none blocked *.ayitula.com;
+				if ($invalid_referer) {
+					rewrite ^/ http://www.ayitula.com/daolian.gif;
+					#return 403;
+				}
+			}
+	6、日志截断
+		mv access.log access.log.0
+		killall -USR1 `cat master.nginx.pid`
+		sleep 1
+		gzip access.log.0
+
+五虚拟主机
+	就是把一台物理服务器划分成多个“虚拟”的服务器，每一个虚拟主机都可以有独立的域名和独立的目录
+	同时发布两个网站：
+	 DocumentRoot /usr/local/nginx/html/web1
+	 DocumentRoot /usr/local/nginx/html/web2
+	1 基于IP的虚拟主机
+		实现条件
+			1) 两个IP 
+			2）DR 存在
+			3）索引页 index.html 
+		#每个网站都需要一个IP 
+		#缺点 需要多个IP 如果是公网IP 每个IP都需要付费
+		server {
+			listen 192.168.10.42:80;
+			location / {
+				root html/web1;
+				index index.html index.htm index.php;
+				}
+		}
+		server {
+			listen 192.168.10.52:80;
+			location / {
+				root html/web2;
+				index index.html index.htm;
+			 }
+		}
+		
+	2 基于端口的虚拟主机
+		#只需要一个IP
+		#缺点 端口你是无法告诉公网用户 无法适用于公网客户 适合内部用户
+		基于端口
+		server {
+			listen 80;
+			#server_name www.abc.com;
+			location / {
+				root html/web1;
+				index index.html index.htm index.php;
+			}
+		}
+		
+		server {
+			listen 8080;
+			#server_name www.abc.com;
+			location / {
+				root html/web2;
+				index index.html index.htm;
+			}
+		}
+	
+	3 基于域名的虚拟主机
+		一个网站必然有一个域名
+		基于域名
+		server {
+			listen 80;
+			server_name www.abc.com;
+			location / {
+				root html/web1;
+				index index.html index.htm index.php;
+			}
+		}
+		server {
+			listen 80;
+			server_name www.cbd.com;
+			location / {
+				root html/web2;
+				index index.html index.htm;
+			 }
+		}
+
+		
+六 反向代理	
+	代理服务器，客户机在发送请求时，不会直接发送给目的主机，而是先发送给代理服务器，代理服务接受客户机请求之后，再向主机发出，并接收目的主机返回的数据，存放在代理服务器的硬盘中，再发送给客户机。
+	client mac http://192.168.10.42
+	反代 Nginx 42
+	业务机器 book.ayitula.com http://118.190.209.153:4000/
+	location / {
+		index index.php index.html index.htm; #定义首页索引文件的名称
+		proxy_pass http://mysvr ;#请求转向mysvr 定义的服务器列表
+		proxy_set_header Host $host;
+		proxy_set_header X-Real-IP $remote_addr;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		client_max_body_size 10m; #允许客户端请求的最大单文件字节数
+		client_body_buffer_size 128k; #缓冲区代理缓冲用户端请求的最大字节数，
+		proxy_connect_timeout 90; #nginx跟后端服务器连接超时时间(代理连接超时)
+		proxy_send_timeout 90; #后端服务器数据回传时间(代理发送超时)
+		proxy_read_timeout 90; #连接成功后，后端服务器响应时间(代理接收超时)
+		proxy_buffer_size 4k; #设置代理服务器（nginx）保存用户头信息的缓冲区大小
+		proxy_buffers 4 32k; #proxy_buffers缓冲区，网页平均在32k以下的话，这样设置
+		proxy_busy_buffers_size 64k; #高负荷下缓冲大小（proxy_buffers*2）
+		proxy_temp_file_write_size 64k; #设定缓存文件夹大小，大于这个值，将从upstream服务器传
+	}
+	
+七 限速
+	限流（rate limiting）是NGINX众多特性中最有用的，也是经常容易被误解和错误配置的，特性之一。该特性可以限制某个用户在一个给定时间段内能够产生的HTTP请求数。
+	请求可以简单到就是一个对于主页的GET请求或者一个登陆表格的POST请求限流也可以用于安全目的上，比如减慢暴力密码破解攻击。通过限制进来的请求速率，并且（结合日志）标记出目标URLs来帮助防范DDoS攻击。一般地说，限流是用在保护上游应用服务器不被在同一时刻的大量用户请求湮没。
+	
+	Nginx官方版本限制IP的连接和并发分别有两个模块：
+		limit_req_zone 用来限制单位时间内的请求数，即速率限制,采用的漏桶算法"leaky bucket"。
+		limit_req_conn 用来限制同一时间连接数，即并发限制。
+		
+	limit_req_zone 参数配置
+	Syntax: limit_req zone=name [burst=number] [nodelay];
+	Default: —
+	Context: http, server, location
+	limit_req_zone $binary_remote_addr zone=one:10m rate=1r/s;
+	
+	示例一 #基于IP对下载速率做限制 限制每秒处理1次请求，对突发超过5个以后的请求放入缓存区
+		http {
+			limit_req_zone $binary_remote_addr zone=baism:10m rate=1r/s;
+			server {
+				location /abc {
+				limit_req zone=baism burst=5 nodelay;
+			  }
+			}
+		}
+		语法解析：	
+			limit_req_zone $binary_remote_addr zone=baism:10m rate=1r/s;
+			第一个参数：$binary_remote_addr 表示通过remote_addr这个标识来做限制，“binary_”的目的是缩写内存占用量，是限制同一客户端ip地址。
+			第二个参数：zone=baism:10m表示生成一个大小为10M，名字为one的内存区域，用来存储访问的频次信息。
+			第三个参数：rate=1r/s表示允许相同标识的客户端的访问频次，这里限制的是每秒1次，还可以有比如30r/m的
+			
+			limit_req zone=baism burst=5 nodelay;
+			第一个参数：zone=baism 设置使用哪个配置区域来做限制，与上面limit_req_zone 里的name对应
+			第二个参数：burst=5，重点说明一下这个配置，burst爆发的意思，这个配置的意思是设置一个大小为5的缓冲区当有大量请求（爆发）过来时，超过了访问频次限制的请求可以先放到这个缓冲区内。
+			第三个参数：nodelay，如果设置，超过访问频次而且缓冲区也满了的时候就会直接返回503，如果没有设置，则所有请求会等待排队
+	
+	示例二 #基于IP做连接限制 限制同一IP并发为1 下载速度为100K
+		limit_conn_zone $binary_remote_addr zone=addr:10m;
+		server {
+			listen 80;
+			server_name localhost;
+			location / {
+				root html;
+				index index.html index.htm;
+			 }
+			location /abc {
+				limit_conn addr 1;
+				limit_rate 100k;
+			}
+		 }
+	
+	示例三 基于IP对下载速率做限制 限制每秒处理1次请求，对突发超过5个以后的请求放入缓存区
+		limit_req_zone $binary_remote_addr zone=one:10m rate=1r/s;
+		server {
+			listen 80;
+			server_name localhost;
+			location / {
+				root html;
+				index index.html index.htm;
+			}
+			location /abc {
+				limit_req zone=one burst=5 nodelay;
+				limit_conn addr 1;
+				limit_rate 100k;
+			}
+		 }
+	

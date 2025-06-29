@@ -1,0 +1,92 @@
+1 创建redis连接池
+	redis_pool.py
+		pool = redis.ConnectionPool(host='10.211.55.4', port=6379)
+
+2 引入连接池		
+import redis
+from django.shortcuts import render
+from utils.redis_pool import POOL
+
+def index(request):
+	conn = redis.Redis(connection_pool=POOL)
+	conn.hset('kkk', 'age', 18)
+	
+	return HttpResponse('设置成功')
+
+def order(request):
+	conn = redis.Redis(connection_pool=POOL)
+	conn.hget('kkk','age')
+	
+	return HttpResponse('获取成功')
+	
+	
+3 使用django-redis工具
+   安装： pip insatll django-redis
+   
+   在setting文件：
+		# redis的配置
+		CACHES = {
+			"default": {
+				"BACKEND": "django_redis.cache.RedisCache",
+				"LOCATION": "redis://127.0.0.1:6379",
+				"OPTIONS": {
+					"CLIENT_CLASS": "django_redis.client.DefaultClient",
+					"CONNECTION_POOL_KWARGS": {"max_connections": 100}
+					# "PASSWORD": "密码",
+				}
+			}
+		}
+	
+	在代码中使用
+		from djang_redis import get_redis_connection
+		def index(request):
+			conn = get_redis_connection("default")
+			return HttpResponse('设置成功')
+
+		def order(request):
+			conn = get_redis_connection('default')
+			conn.hget('kkk','age')
+			
+			return HttpResponse('获取成功')
+			
+4 高级使用
+	a  网站全站缓存
+		settings：
+			中间件
+			使用中间件，经过一系列的认证等操作，如果内容在缓存中存在，则使用FetchFromCacheMiddleware获取内容并返回给用户，当返回给用户之前，判断缓存中是否已经存在，如果不存在则UpdateCacheMiddleware会将缓存保存至缓存，从而实现全站缓存
+
+			MIDDLEWARE = [
+				'django.middleware.cache.UpdateCacheMiddleware',
+				# 其他中间件...
+				'django.middleware.cache.FetchFromCacheMiddleware',
+			]
+
+			CACHE_MIDDLEWARE_ALIAS = ""
+			CACHE_MIDDLEWARE_SECONDS = ""           # 缓存超时时间(秒)
+			CACHE_MIDDLEWARE_KEY_PREFIX = ""		# 
+	b   单独视图缓存
+		 # 主要要先把中间件的缓存去掉
+		 方式一：
+			from django.views.decorators.cache import cache_page
+
+			@cache_page(60 * 15)
+			def my_view(request):
+				...
+
+		方式二：
+			from django.views.decorators.cache import cache_page
+
+			urlpatterns = [
+				url(r'^foo/([0-9]{1,2})/$', cache_page(60 * 15)(my_view)),
+			]
+			
+	c   局部视图缓存
+		a. 引入TemplateTag
+
+			{% load cache %}
+
+		b. 使用缓存
+
+			{% cache 5000 缓存key %}
+				缓存内容
+			{% endcache %}

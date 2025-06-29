@@ -1,0 +1,796 @@
+一 数据库的权限管理
+	#授权表
+	user #该表放行的权限，针对：所有数据，所有库下所有表，以及表下的所有字段
+	db #该表放行的权限，针对：某一数据库，该数据库下的所有表，以及表下的所有字段
+	tables_priv #该表放行的权限。针对：某一张表，以及该表下的所有字段
+	columns_priv #该表放行的权限，针对：某一个字段
+
+	#按图解释：
+	user：放行db1，db2及其包含的所有
+	db：放行db1，及其db1包含的所有
+	tables_priv:放行db1.table1，及其该表包含的所有
+	columns_prive:放行db1.table1.column1，只放行该字段
+	#创建用户
+	create user 'egon'@'1.1.1.1' identified by '123';
+	create user 'egon'@'192.168.1.%' identified by '123';
+	create user 'egon'@'%' identified by '123';
+
+	#授权：对文件夹，对文件，对文件某一字段的权限
+	查看帮助：help grant
+	常用权限有：select,update,alter,delete
+	all可以代表除了grant之外的所有权限
+
+	#针对所有库的授权:*.*
+	grant select on *.* to 'harry1'@'localhost' identified by '123'; #只在user表中可以查到harry1用户的select权限被设置为Y
+
+	#针对某一数据库：db1.*
+	grant select on db1.* to 'harry2'@'%' identified by '123'; #只在db表中可以查到harry2用户的select权限被设置为Y
+
+	#针对某一个表：db1.t1
+	grant select on db1.t1 to 'harry3'@'%' identified by '123';  #只在tables_priv表中可以查到harry3用户的select权限
+	
+二 单表查询
+	1 基本语法
+		SELECT 字段1,字段2... FROM 表名 WHERE 条件GROUP BY field HAVING 筛选  ORDER BY field LIMIT 限制条数 
+	2 关键字执行优先级
+		(1) 找到表:from
+		(2) 拿着where指定的约束条件，去文件/表中取出一条条记录
+		(3) 将取出的一条条记录进行分组group by，如果没有group by，则整体作为一组
+		(4) 将分组的结果进行having过滤
+		(5) 执行select
+		(6) distinct 去重
+		(7) 将结果按条件排序：order by
+		(8) 限制结果的显示条数
+	3 简单查询
+		(1) 创建一张员工表
+			create table employee(
+				id int not null unique auto_increment,
+				name varchar(20) not null,
+				sex enum('male','female') not null default 'male', #大部分是男的
+				age int(3) unsigned not null default 28,
+				hire_date date not null,
+				post varchar(50),
+				post_comment varchar(100),
+				salary double(15,2),
+				office int, #一个部门一个屋子
+				depart_id int
+			);
+		(2) 查看表结构
+			MariaDB [testdb]> desc emp;
+			+--------------+-----------------------+------+-----+---------+----------------+
+			| Field        | Type                  | Null | Key | Default | Extra          |
+			+--------------+-----------------------+------+-----+---------+----------------+
+			| id           | int(11)               | NO   | PRI | NULL    | auto_increment |
+			| name         | varchar(20)           | NO   |     | NULL    |                |
+			| sex          | enum('male','female') | NO   |     | male    |                |
+			| age          | int(3) unsigned       | NO   |     | NULL    |                |
+			| hire         | date                  | NO   |     | NULL    |                |
+			| post         | varchar(50)           | YES  |     | NULL    |                |
+			| post_commnet | varchar(100)          | YES  |     | NULL    |                |
+			| salary       | double(15,2)          | YES  |     | NULL    |                |
+			| office       | int(11)               | YES  |     | NULL    |                |
+			| depart_id    | int(11)               | YES  |     | NULL    |                |
+			+--------------+-----------------------+------+-----+---------+----------------+
+		
+		(3) 简单查询
+			查询整张表
+				MariaDB [testdb]> select id,name,sex,age,hire,post,post_commnet,salary,office,depart_id from emp;
+				+----+--------+--------+-----+------------+-----------+--------------+----------+--------+-----------+
+				| id | name   | sex    | age | hire       | post      | post_commnet | salary   | office | depart_id |
+				+----+--------+--------+-----+------------+-----------+--------------+----------+--------+-----------+
+				|  1 | harry  | male   |  24 | 2018-03-01 | IT        | NULL         | 10000.00 |    401 |         1 |
+				|  2 | sam    | male   |  25 | 2018-03-01 | IT        | NULL         |  4522.30 |    401 |         1 |
+				|  3 | beal   | male   |  30 | 2017-03-01 | IT        | NULL         |  9832.30 |    401 |         1 |
+				|  4 | 王强   | male   |  40 | 2010-03-01 | sale      | NULL         |   922.30 |    402 |         2 |
+				|  6 | 呵呵   | female |  21 | 2018-03-01 | ui        | NULL         |  9222.30 |    404 |         4 |
+				|  7 | 蔡爽   | male   |  25 | 2018-03-01 | IT        | NULL         | 10000.50 |    401 |         1 |
+				|  8 | alex   | male   |  40 | 2017-03-03 | IT        | NULL         | 20000.00 |    401 |         1 |
+				+----+--------+--------+-----+------------+-----------+--------------+----------+--------+-----------+
+			通过四则运算查询
+				MariaDB [testdb]> select name,salary*12 from emp limit 1;
+				+-------+-----------+
+				| name  | salary*12 |
+				+-------+-----------+
+				| harry | 120000.00 |
+				+-------+-----------+
+			定义显示格式
+				concat()函数用于连接字符串
+				MariaDB [testdb]> select concat('姓名:',name,' 年薪:',salary*12) as Annual_salary from emp limit 1;
+				+-------------------------------+
+				| Annual_salary                 |
+				+-------------------------------+
+				| 姓名:harry 年薪:120000.00     |
+				+-------------------------------+
+				concat_ws() 第一个参数为分隔符
+				MariaDB [testdb]> select concat_ws(':',name,salary*12) as annual_salary from emp limit 1;
+				+-----------------+
+				| annual_salary   |
+				+-----------------+
+				| harry:120000.00 |
+				+-----------------+
+		
+		(4) where约束
+				where字句中可以使用：
+					比较运算符：><>= <= <> !=
+					between 80 and 100 值在10到20之间
+					in(80,90,100) 值是10或20或30
+					like 'harry%'
+					pattern可以是%或_，
+					%表示任意多字符
+					_表示一个字符
+					逻辑运算符：在多个条件直接可以使用逻辑运算符 and or not
+		
+				单条件查询：
+					MariaDB [testdb]> select name from emp where post = 'sale';	
+			
+				多条件查询
+					MariaDB [testdb]> select name,salary from emp; where port='teacher' and salary > 10000;
+				
+				关键字BETWWN AND
+					MariaDB [testdb]> select name,salary from emp where salary between 10000 and 20000;
+
+				关键字IS NULL(判断某个字段是否为NULL不用等号，需要用IS）
+					MariaDB [testdb]> select name,post_commnet from emp where post_commnet is null;
+				
+				关键字IN集合查询
+					MariaDB [testdb]> select name,salary from emp where salary in (3000,4000,9000);
+
+				关键字LIKE模糊查询
+					MariaDB [testdb]> select * from emp where name like 'har%';
+		
+		(5) 分组查询
+			注意:查询的内容除了聚合函数外的其他内容必须在group by的后面
+			分组是指将所有记录按照某个相同字段进行归类，比如针对员工信息表的职位分组，或者按照姓名性别分组、
+				单独使用group by关键字分组
+					select post from employee group by post
+				
+				group by关键字和group_concat()函数一起使用
+					MariaDB [testdb]> select post,group_concat(name) from emp group by post; #按照岗位分组，并查看组内成员名
+					MariaDB [testdb]> select post,group_concat(name) as emp_members from emp group by post;
+					+-----------+----------------------------+
+					| post      | group_concat(name)         |
+					+-----------+----------------------------+
+					| IT        | harry,sam,beal,蔡爽,alex   |
+					| sale      | 王强                       |
+					| ui        | 呵呵                       |
+
+				使用聚合函数
+					MariaDB [testdb]> select count(1) from emp;  统计总共多少条
+					MariaDB [testdb]> select count(*) from emp where depart_id=1;   depart_id为1的有几条
+					MariaDB [testdb]> select max(salary) from emp;   工资最高的
+					MariaDB [testdb]> select min(salary) from emp;	 工资最低的
+					MariaDB [testdb]> select avg(salary) from emp;   工资的平均值
+					MariaDB [testdb]> select sum(salary) from emp;	 总和
+		
+			    练习
+					 查询岗位名以及岗位包含的所有员工名字
+						MariaDB [testdb]> select post,group_concat(name) from emp group by post;
+				     查询岗位名以及各岗位内包含的员工个数
+					    MariaDB [testdb]> select post,count(id) from emp group by post;
+				 	 查询公司内男员工和女员工的个数
+						MariaDB [testdb]> select sex,count(id) from emp group by sex;
+					 查询岗位名以及各岗位的平均薪资
+						MariaDB [testdb]> select post,avg(salary) from emp group by post;
+					 查询岗位名以及各岗位的最高薪资
+						MariaDB [testdb]> select post,max(salary) from emp group by post;
+					 查询男员工与男员工的平均薪资，女员工与女员工的平均薪资	
+						MariaDB [testdb]> select sex,avg(salary) from emp group by sex;
+		
+		(6) HAVING过滤
+			HAVING与WHERE不一样的地方在于where在group by之前，因而where可以有任意字段，但不能使用聚合函数，
+			HAVING发生在group by之后，因而只能使用分组字段，无法直接取到其他字段，可以使用聚合函数
+			
+			小练习：
+				 查询各岗位内包含的员工个数小于2的岗位名、岗位内包含员工名字、个数
+				   MariaDB [testdb]> select post,group_concat(name),count(id) from emp group by post having count(id) < 2;
+				 查询各岗位平均薪资大于10000的岗位名、平均工资
+				   MariaDB [testdb]> select post,avg(salary) from emp group by post having avg(salary) > 10000;
+				 查询各岗位平均薪资大于10000且小于20000的岗位名、平均工资
+				  MariaDB [testdb]> select post,avg(salary) from emp group by post having avg(salary) > 10000 and avg(salary) < 20000;
+				  
+		(7) ORDER BY排序
+			单列排序：
+				SELECT * FROM employee ORDER BY salary;
+				SELECT * FROM employee ORDER BY salary ASC;
+				SELECT * FROM employee ORDER BY salary DESC;
+					
+			按多列排序：先按照age排序，如果年纪相同，则按照薪资排序
+				select * from employee order by age salary desc
+			
+			小练习：	
+				查询所有员工信息，先按照age升序排序，如果age相同则按照hire_date降序排序
+					MariaDB [testdb]> select * from emp order by age,hire desc;
+
+				查询各岗位平均薪资大于10000的岗位名、平均工资,结果按平均薪资升序排列
+					MariaDB [testdb]> select post,avg(salary) from emp group by post having avg(salary)>10000 order by avg(salary) asc;
+
+				查询各岗位平均薪资大于10000的岗位名、平均工资,结果按平均薪资降序排列
+					MariaDB [testdb]> select post,avg(salary) from emp group by post having avg(salary)>10000 order by avg(salary) desc;
+		
+		(8) 限制查询的记录数:LIMIT
+			示例：
+				SELECT * FROM employee ORDER BY salary DESC 
+					LIMIT 3;                    #默认初始位置为0 
+
+				SELECT * FROM employee ORDER BY salary DESC
+					LIMIT 0,5; #从第0开始，即先查询出第一条，然后包含这一条在内往后查5条
+
+				SELECT * FROM employee ORDER BY salary DESC
+					LIMIT 5,5; #从第5开始，即先查询出第6条，然后包含这一条在内往后查5条
+					
+			分页查询：
+				select * from employee limit (n-1)*pageSize, pageSize
+			小练习： 
+				分页显示，每页5条
+				mysql> select * from  employee limit 0,5;
+				mysql> select * from  employee limit 5,5;
+			
+		(9) 正则表达式	
+				SELECT * FROM employee WHERE name REGEXP '^ale';
+				SELECT * FROM employee WHERE name REGEXP 'on$';
+				SELECT * FROM employee WHERE name REGEXP 'm{2}';
+			
+三 多表查询
+	
+	1 建表准备数据
+		# 建表
+			create table department(
+			id int,
+			name varchar(20) 
+			);
+
+			create table employee(
+			id int primary key auto_increment,
+			name varchar(20),
+			sex enum('male','female') not null default 'male',
+			age int,
+			dep_id int
+			);
+		
+		插入数据
+			insert into department values
+			(200,'技术'),
+			(201,'人力资源'),
+			(202,'销售'),
+			(203,'运营');
+		
+			insert into employee(name,sex,age,dep_id) values
+			('egon','male',18,200),
+			('alex','female',48,201),
+			('harry','male',24,201),
+			('yuanhao','female',28,202),
+			('liwenzhou','male',18,200),
+			('jingliyang','female',18,204)
+			;
+	2 多表查询
+		(1) 交叉查询 不适用任何匹配条件生成笛卡尔积
+			MariaDB [company]> select * from employee,department;
+			+----+-------+--------+------+--------+------+--------------+
+			| id | name  | sex    | age  | dep_id | id   | name         |
+			+----+-------+--------+------+--------+------+--------------+
+			|  1 | egon  | male   |   18 |    200 |  200 | 技术         |
+			|  2 | alex  | female |   48 |    201 |  200 | 技术         |
+			|  3 | harry | male   |   24 |    201 |  200 | 技术         |
+			|  4 | jerry | female |   30 |    204 |  200 | 技术         |
+			|  1 | egon  | male   |   18 |    200 |  201 | 人力资源     |
+			|  2 | alex  | female |   48 |    201 |  201 | 人力资源     |
+			|  3 | harry | male   |   24 |    201 |  201 | 人力资源     |
+			|  4 | jerry | female |   30 |    204 |  201 | 人力资源     |
+			|  1 | egon  | male   |   18 |    200 |  202 | 销售         |
+			|  2 | alex  | female |   48 |    201 |  202 | 销售         |
+			|  3 | harry | male   |   24 |    201 |  202 | 销售         |
+			|  4 | jerry | female |   30 |    204 |  202 | 销售         |
+			|  1 | egon  | male   |   18 |    200 |  203 | 运营         |
+			|  2 | alex  | female |   48 |    201 |  203 | 运营         |
+			|  3 | harry | male   |   24 |    201 |  203 | 运营         |
+			|  4 | jerry | female |   30 |    204 |  203 | 运营         |
+		
+	   (2) 内连接：只连接匹配的行
+			
+			MariaDB [company]> select employee.id,employee.name,employee.age,employee.sex,department.name from employee inner join department on employee.dep_id=department.id;
+			+----+-------+------+--------+--------------+
+			| id | name  | age  | sex    | name         |
+			+----+-------+------+--------+--------------+
+			|  1 | egon  |   18 | male   | 技术         |
+			|  2 | alex  |   48 | female | 人力资源     |
+			|  3 | harry |   24 | male   | 人力资源     |
+			|  4 | jerry |   30 | female | 运维         |
+			#上述sql等同于
+            mysql> select employee.id,employee.name,employee.age,employee.sex,department.name from employee,department where employee.dep_id=department.id;
+			
+		(3) 外连接至左连接：优先显示左表全部记录
+			# 以左表为基准，找出所有员工信息，包括没有部门的员工
+			MariaDB [company]> select employee.id,employee.name,department.name as depart_name from employee left join department on employee.dep_id = department.id;
+			+----+-------+--------------+
+			| id | name  | depart_name  |
+			+----+-------+--------------+
+			|  1 | egon  | 技术         |
+			|  2 | alex  | 人力资源     |
+			|  3 | harry | 人力资源     |
+			|  4 | jerry | NULL         |
+			+----+-------+--------------+
+		
+		(4) 外连接至右连接：优先显示右表全部记录
+			# 以右表为基准，找出所有部门信息，包括没有员工的部门
+			MariaDB [company]> select employee.id,employee.name,department.name as depart_name from employee right join department on employee.dep_id=department.id;
+			+------+-------+--------------+
+			| id   | name  | depart_name  |
+			+------+-------+--------------+
+			|    1 | egon  | 技术         |
+			|    2 | alex  | 人力资源     |
+			|    3 | harry | 人力资源     |
+			| NULL | NULL  | 销售         |
+			| NULL | NULL  | 运营         |
+			+------+-------+--------------+
+		
+		(5) 全外连接：显示左右两表全部记录
+			#全外连接在内连接的基础上增加左边有右边没有的右边有左边没有的结果
+			MariaDB [company]> select * from employee left join department on employee.dep_id = department.id union select * from employee right join department on employee.dep_id = department.id
+			+------+-------+--------+------+--------+------+--------------+
+			| id   | name  | sex    | age  | dep_id | id   | name         |
+			+------+-------+--------+------+--------+------+--------------+
+			|    1 | egon  | male   |   18 |    200 |  200 | 技术         |
+			|    2 | alex  | female |   48 |    201 |  201 | 人力资源     |
+			|    3 | harry | male   |   24 |    201 |  201 | 人力资源     |
+			|    4 | jerry | female |   30 |    204 | NULL | NULL         |
+			| NULL | NULL  | NULL   | NULL |   NULL |  202 | 销售         |
+			| NULL | NULL  | NULL   | NULL |   NULL |  203 | 运营         |
+			+------+-------+--------+------+--------+------+--------------+
+	
+	3 符合条件连接查询
+		(1) 以内连接的方式查询employee和department表，并且employee表中的age字段值必须大于25,即找出年龄大于25岁的员工以及员工所在的部门
+			MariaDB [company]> select  employee.name,employee.age,department.name from employee  inner join department on employee.dep_id = department.id where age > 25;
+			+------+------+--------------+
+			| name | age  | name         |
+			+------+------+--------------+
+			| alex |   48 | 人力资源     |
+			+------+------+--------------+
+		
+		(2) 以内连接的方式查询employee和department表，并且以age字段的升序方式显示
+			MariaDB [company]> select  employee.name,employee.age,department.name from employee  inner join department on employee.dep_id = department.id order by age asc;
+			+-------+------+--------------+
+			| name  | age  | name         |
+			+-------+------+--------------+
+			| egon  |   18 | 技术         |
+			| harry |   24 | 人力资源     |
+			| alex  |   48 | 人力资源     |
+			+-------+------+--------------+
+		
+	4 子查询
+
+		#1：子查询是将一个查询语句嵌套在另一个查询语句中。
+		#2：内层查询语句的查询结果，可以为外层查询语句提供查询条件。
+		#3：子查询中可以包含：IN、NOT IN、ANY、ALL、EXISTS 和 NOT EXISTS等关键字
+		#4：还可以包含比较运算符：= 、 !=、> 、<等	
+		
+		(1) 带IN关键字的子查询
+			#查询平均年龄在25岁以上的部门名
+				select id,name from department
+				where id in 
+					(select dep_id from employee group by dep_id having avg(age) > 25);
+				
+			#查看技术部员工姓名
+				select name from employee
+					where dep_id in 
+						(select id from department where name='技术');
+
+			#查看不足1人的部门名
+				select name from department
+					where id in 
+
+			
+		(2) 带比较运算符的查询
+			#比较运算符：=、!=、>、>=、<、<=、<>
+			#查询大于所有人平均年龄的员工名与年龄
+			mysql> select name,age from emp where age > (select avg(age) from emp);
+	   
+			#查询大于部门内平均年龄的员工名、年龄
+			select t1.name,t1.age from emp t1
+			inner join 
+			(select dep_id,avg(age) avg_age from emp group by dep_id) t2
+			on t1.dep_id = t2.dep_id
+			where t1.age > t2.avg_age;
+			
+		(3) 带exists关键字的子查询
+			EXISTS关字键字表示存在。在使用EXISTS关键字时，内层查询语句不返回查询的记录
+			而是返回一个真假值。True或False
+			当返回True时，外层查询语句将进行查询；当返回值为False时，外层查询语句不进行查询
+
+			#department表中存在dept_id=203，Ture
+			mysql> select * from employee
+				->     where exists
+				->         (select id from department where id=200);
+			+----+------------+--------+------+--------+
+			| id | name       | sex    | age  | dep_id |
+			+----+------------+--------+------+--------+
+			|  1 | egon       | male   |   18 |    200 |
+			|  2 | alex       | female |   48 |    201 |
+			|  3 | wupeiqi    | male   |   38 |    201 |
+			|  4 | yuanhao    | female |   28 |    202 |
+			|  5 | liwenzhou  | male   |   18 |    200 |
+			|  6 | jingliyang | female |   18 |    204 |
+			+----+------------+--------+------+--------+
+
+			#department表中存在dept_id=205，False
+			mysql> select * from employee
+				->     where exists
+				->         (select id from department where id=204);
+			Empty set (0.00 sec)
+
+四 通过pymysql模块让Python操作Mysql
+	(1) 简介
+		如果在Python中操作mysql那么就要用到pymysql模块了，该模块本质就是一个套接字客户端软件，使用要事件安装
+		pip3 install pymysql
+		
+	(2) 连接执行sql
+		# 建立连接
+			conn = pymysql.connect(
+				host='192.168.0.104',
+				port=3306,
+				user='root',
+				password='',
+				db='testdb',
+				charset='utf8'
+			)
+		# 补充建立连接时添加cursorclass=pymysql.cursors.DictCursor	fetch返回的数据类型是列表嵌套字典
+			
+		# 拿到游标
+            cursor = conn.cursor()
+			
+		#执行sql语句
+            sql='select * from userinfo where name="%s" and password="%s"' %(user,pwd) #注意%s需要加引号
+			res=cursor.execute(sql) #执行sql语句，返回sql查询成功的记录数目	
+		
+		#关闭连接和游标
+			cursor.close()
+            conn.close()
+			
+	(3) execute()之sql注入
+		注意：符号--会注释掉它之后的sql，正确的语法：--后至少有一个任意字符
+		根本原理：就根据程序的字符串拼接name='%s'，我们输入一个xxx' -- haha,用我们输入的xxx加'在程序中拼接成一个判断条件name='xxx' -- haha'
+		解决方法：
+			# 原来是我们对sql进行字符串拼接
+			# sql="select * from userinfo where name='%s' and password='%s'" %(user,pwd)
+			# print(sql)
+			# res=cursor.execute(sql)
+
+			#改写为（execute帮我们做字符串拼接，我们无需且一定不能再为%s加引号了）
+			sql="select * from userinfo where name=%s and password=%s" #！！！注意%s需要去掉引号，因为pymysql会自动为我们加上
+			res=cursor.execute(sql,[user,pwd]) #pymysql模块自动帮我们解决sql注入的问题，只要我们按照pymysql的规矩来。
+			
+	(4) 增、删、改：conn.commit()
+		import pymysql
+		#链接
+		conn=pymysql.connect(host='localhost',user='root',password='123',database='harry')
+		#游标
+		cursor=conn.cursor()
+
+		#执行sql语句
+		#part1
+		# sql='insert into userinfo(name,password) values("root","123456");'
+		# res=cursor.execute(sql) #执行sql语句，返回sql影响成功的行数
+		# print(res)
+
+		#part2
+		# sql='insert into userinfo(name,password) values(%s,%s);'
+		# res=cursor.execute(sql,("root","123456")) #执行sql语句，返回sql影响成功的行数
+		# print(res)
+
+		#part3
+		sql='insert into userinfo(name,password) values(%s,%s);'
+		res=cursor.executemany(sql,[("root","123456"),("lhf","12356"),("eee","156")]) #执行sql语句，返回sql影响成功的行数
+		print(res)
+
+		conn.commit() #提交后才发现表中插入记录成功
+		cursor.close()
+		conn.close()
+		
+	(5) 查：fetchone，fetchmany，fetchall
+	
+		import pymysql
+		#链接
+		conn=pymysql.connect(host='localhost',user='root',password='123',database='egon')
+		#游标
+		cursor=conn.cursor()
+
+		#执行sql语句
+		sql='select * from userinfo;'
+		rows=cursor.execute(sql) #执行sql语句，返回sql影响成功的行数rows,将结果放入一个集合，等待被查询
+
+		# cursor.scroll(3,mode='absolute') # 相对绝对位置移动
+		# cursor.scroll(3,mode='relative') # 相对当前位置移动
+		res1=cursor.fetchone()  # 一次只取出一条 以元祖形式返回
+		res2=cursor.fetchone()  
+		res3=cursor.fetchone()
+		res4=cursor.fetchmany(2) # 一次只取出二条 以元祖嵌套元祖形式返回
+		res5=cursor.fetchall()	 # 取出查询到的全部内容 以元祖嵌套元祖形式返回
+
+五 Mysql的内置功能
+	
+	1 视图
+		视图是一个虚拟表(非真实存在),其本质是根据SQL语句获取动态的数据集并以其命名，用户使用时只需使用名称即可获取结果，可以将结果当做表来用
+		(1) 创建视图的方法
+			#语法：CREATE VIEW 视图名称 AS  SQL语句
+			create view teacher_view as select tid from teacher where tname='李平老师';
+			#于是查询李平老师教授的课程名的sql可以改写为
+			mysql> select cname from course where teacher_id = (select tid from teacher_view);
+		(2) 修改视图
+			语法：ALTER VIEW 视图名称 AS SQL语句
+			mysql> alter view teacher_view as select * from course where cid>3;
+		(3) 删除视图
+			DROP VIEW teacher_view
+	2 触发器
+		使用触发器可以定制用户对表进行【增、删、改】操作时前后的行为，注意：没有查询
+		(1) 创建触发器
+			# 插入前
+			CREATE TRIGGER tri_before_insert_tb1 BEFORE INSERT ON tb1 FOR EACH ROW
+			BEGIN
+				...
+			END
+
+			# 插入后
+			CREATE TRIGGER tri_after_insert_tb1 AFTER INSERT ON tb1 FOR EACH ROW
+			BEGIN
+				...
+			END
+
+			# 删除前
+			CREATE TRIGGER tri_before_delete_tb1 BEFORE DELETE ON tb1 FOR EACH ROW
+			BEGIN
+				...
+			END
+
+			# 删除后
+			CREATE TRIGGER tri_after_delete_tb1 AFTER DELETE ON tb1 FOR EACH ROW
+			BEGIN
+				...
+			END
+
+			# 更新前
+			CREATE TRIGGER tri_before_update_tb1 BEFORE UPDATE ON tb1 FOR EACH ROW
+			BEGIN
+				...
+			END
+
+			# 更新后
+			CREATE TRIGGER tri_after_update_tb1 AFTER UPDATE ON tb1 FOR EACH ROW
+			BEGIN
+				...
+			END
+		(2) 触发器示例：
+			#准备表
+				CREATE TABLE cmd (
+					id INT PRIMARY KEY auto_increment,
+					USER CHAR (32),
+					priv CHAR (10),
+					cmd CHAR (64),
+					sub_time datetime, #提交时间
+					success enum ('yes', 'no') #0代表执行失败
+				);
+
+				CREATE TABLE errlog (
+					id INT PRIMARY KEY auto_increment,
+					err_cmd CHAR (64),
+					err_time datetime
+				);
+
+			#创建触发器
+				delimiter //
+				CREATE TRIGGER tri_after_insert_cmd AFTER INSERT ON cmd FOR EACH ROW
+				BEGIN
+					IF NEW.success = 'no' THEN #等值判断只有一个等号
+							INSERT INTO errlog(err_cmd, err_time) VALUES(NEW.cmd, NEW.sub_time) ; #必须加分号
+					  END IF ; #必须加分号
+				END//
+				delimiter ;
+
+
+			#往表cmd中插入记录，触发触发器，根据IF的条件决定是否插入错误日志
+				INSERT INTO cmd (
+					USER,
+					priv,
+					cmd,
+					sub_time,
+					success
+				)
+				VALUES
+					('egon','0755','ls -l /etc',NOW(),'yes'),
+					('egon','0755','cat /etc/passwd',NOW(),'no'),
+					('egon','0755','useradd xxx',NOW(),'no'),
+					('egon','0755','ps aux',NOW(),'yes');
+
+
+			#查询错误日志，发现有两条
+				mysql> select * from errlog;
+				+----+-----------------+---------------------+
+				| id | err_cmd         | err_time            |
+				+----+-----------------+---------------------+
+				|  1 | cat /etc/passwd | 2017-09-14 22:18:48 |
+				|  2 | useradd xxx     | 2017-09-14 22:18:48 |
+				+----+-----------------+---------------------+
+			rows in set (0.00 sec)
+	
+	3   事务
+		事务用于将某些操作的多个SQL作为原子性操作，一旦有某一个错误出现即可回滚到原来的状态，从而保证数据的完整性
+		
+		# 创一张用户表并插入账户余额数据
+			create table user(
+			id int primary key auto_increment,
+			name char(32),
+			balance int
+			);
+			
+			insert into user(name,balance)
+			values
+			('wsb',1000),
+			('harry',1000),
+			('ysb',1000);
+		
+		# 一个原子查找，当出现异常时回滚
+			start TRANSACTION;
+			UPDATE user set balance=900 where name='wsb';
+			UPDATE user set balance=1010 wher name = 'harry';
+			UPDATE user set balance=1090 WHERE name = 'ysb';
+			ROLLBACK;
+			commit;
+			
+		# 创建一个事务的示例
+			delimiter //     # 指定结束符
+				create procedure p6(                # 创建一个函数 p_reture_code 为返回状态码
+					out p_return_code TINYINT
+				)
+				BEGIN
+					DECLARE exit handler for SQLEXCEPTION     # 声明一个退出的方法，一旦捕捉到sql异常那么会进行回滚操作并返回状态码						
+					BEGIN										
+						set p_return_code = 1;
+						ROLLBACK;
+					END;
+					
+					DECLARE exit handler for SQLWARNING		 # 声明一个退出的方法，一旦捕捉到sql警告会进行回滚操作并返回状态码	
+					BEGIN
+						set p_return_code = 2;
+						ROLLBACK;
+					END;
+			
+			
+					 
+					start TRANSACTION; 						# 进行事务内的操作
+							UPDATE user set balance=900 where name='wsb';
+							UPDATE user set balance=1010 where name = 'harry';
+							UPDATE user set balance=1090 WHERE name = 'ysb';
+					COMMIT;
+					
+					 set p_return_code  = 0; 				# 0代表返回成功状态码
+				END//
+			delimiter;
+
+		# 调用事务
+			#在mysql中调用存储过程
+			set @res=123;
+			call p5(@res);
+			select @res;
+
+			#在python中基于pymysql调用存储过程
+			cursor.callproc('p5',(123,))
+			print(cursor.fetchall()) #查询select的查询结果
+
+			cursor.execute('select @_p5_0;')
+			print(cursor.fetchall())
+	
+	4 存储过程
+		(1) 什么是存储过程
+			存储过程包含了一系列可执行的sql语句，存储过程存放于MySql中，通过调用它的名字可以执行内部的一堆sql语句
+		(2) 创建一个简单的存储过程 (无参数)
+			delimiter //
+			create procedure p1()
+			BEGIN
+				select * from blog;
+				inset into blog(name,sub_time) values("xxx",now());
+			END//
+			delimiter;
+			
+			#在mysql中调用
+			call p1()
+		
+		(3) 创建存储过程(有参数)
+			对于存储过程，可以接收参数，其参数有三类
+			#in     	仅用于传入参数用
+			#out    	仅用于返回值用
+			#inout		即可以传入又当作返回值
+			示例一： 使用in插入参数
+				delimiter //
+				create procedure p2(
+					in n1 int,
+					in n2 int
+					)
+				BEGIN	
+					select * from blog where id > n1;  # n1相当于in传进来的值
+				END//
+				delimier ;
+				
+				# 在mysql中调用
+				call p2(3,2)
+				
+				#在python中基于pymsql调用
+				cursor.callproc('p2',(3,2))
+			
+			示例二：使用out返回值
+				delimiter //
+				create producer p3(
+					in n1 int,
+					out res int
+				)
+				BEGIN
+					select * from blog where id > n1;
+					set res = 1;  					   # 设置返回值
+				END//
+				delimiter;
+				
+				#在mysql中调用
+				set @res=0; #0代表假(执行失败), 1代表真(执行成功)
+				call p3(3,@res)
+				select @res;
+				
+				#在Python中基于pymsql调用
+				cursor.callproc('p3',(3,0)) #0相当于 set res=0
+				print(cursor.fetchall()) # 查询select的查询结果
+				
+				cursor.execute('select @_p3_0,@_p3_1;') #@p3_0代表第一个参数，@p3_1代表第二个参数，即返回值
+				
+			示例三： inout既可以传入又可以返回
+				delimiter //
+				create procedure p4(
+					inout n1 int
+				)
+				BEGIN
+					select * from blog where id > n1;
+					set n1 = 1;
+				END//
+				delimiter;
+				
+				#在mysql中调用
+				set @x=3;
+				call p4(@x);
+				select @x;
+				
+				#在python中基于pymsql调用
+				cursor.callproc('p4',(3,))
+				print(cursor.fetchall())
+				
+				cursor.execute('select @_p4_0;') 
+                print(cursor.fetchall())
+		
+		(4) 删除存储过程
+		
+			drop procedure proc_name;
+			
+			
+		(5) 案例
+			#案例1：创建存储过程实现 根据女神名，查询对应的男神信息
+
+			CREATE PROCEDURE myp2(IN beautyName VARCHAR(20))
+			BEGIN
+				SELECT bo.*
+				FROM boys bo
+				RIGHT JOIN beauty b ON bo.id = b.boyfriend_id
+				WHERE b.name=beautyName;
+				
+
+			END $
+			
+			#案例2 ：创建存储过程实现，用户是否登录成功
+
+			CREATE PROCEDURE myp4(IN username VARCHAR(20),IN PASSWORD VARCHAR(20))
+			BEGIN
+				DECLARE result INT DEFAULT 0;#声明并初始化
+				
+				SELECT COUNT(*) INTO result#赋值
+				FROM admin
+				WHERE admin.username = username
+				AND admin.password = PASSWORD;
+				
+				SELECT IF(result>0,'成功','失败');#使用
+			END $
+			
+			#调用
+			CALL myp3('张飞','8888')$

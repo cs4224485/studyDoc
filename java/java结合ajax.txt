@@ -1,0 +1,215 @@
+一 XMLHttpRequest对象
+	JavaScript中XMLHttpRequest对象是整个Ajax技术的核心，它提供了异步发送请求的能力。
+	对象的创建方式
+	对于不同的浏览器，对象的创建方式是不同的。
+	function getXMLHttpRequest(){
+		var xmlhttp;
+		if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+			xmlhttp = new XMLHttpRequest();
+		} else {// code for IE6, IE5
+			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		return xmlhttp;
+	}
+
+	
+	常用方法
+		open(method,URL,async)
+			建立与服务器的连接
+			method参数指定请求的HTTP方法,典型的值是GET或POST
+			URL参数指请求的地址
+			async参数指定是否使用异步请求，其值为true或false，默认是true
+		send(content)
+			发送请求
+			content指定请求的参数
+		setRequestHeader(header,value)
+			设置请求的头信息
+	
+	常用属性
+		onreadystatechange
+			指定回调函数
+		readyState
+			XMLHttpRequest的状态信息
+
+二 通过Ajax实现一个用户名是否存在的验证
+	<script src="${pageContext.request.contextPath}/MyAjax.js" type="text/javascript"></script>
+	<script type="text/javascript">
+		window.onload = function (ev) {
+			var nameElement = document.getElementById("username")
+			// 绑定onblur事件
+			nameElement.onblur = function (ev1) {
+				// 获取用户输入的值
+				var name = this.value;
+				//创建XMLHttpRequest对象
+				var xhr = getXMLHttpRequest();
+				// 编写回调函数处理计算结果， onreadystatechange就是告诉ajax引擎回调函数
+				xhr.onreadystatechange = function () {
+					// 请求一切正常
+					if(xhr.readyState == 4){
+						// 服务器响应一切正常
+						if(xhr.status == 200){
+							var msg = document.getElementById("msg");
+							// responseText可以获取servlet返回的数据
+							if(xhr.responseText == "true"){
+								msg.innerHTML = "<font color='red'>用户名已存在</font>"
+							}else {
+								msg.innerHTML = "可以使用"
+							}
+						}
+					}
+
+				}
+				// 创建链接
+				xhr.open("get", "${pageContext.request.contextPath}/regist?name=" + name);
+				// 发送请求
+				xhr.send(null)
+				
+			}
+		}
+	</script>
+	
+	servlet：
+		package com.harry.servlet;
+
+		import javax.servlet.ServletException;
+		import javax.servlet.http.HttpServlet;
+		import javax.servlet.http.HttpServletRequest;
+		import javax.servlet.http.HttpServletResponse;
+		import java.io.IOException;
+		import java.io.PrintWriter;
+
+		/**
+		 * 判断用户名是否重复
+		 */
+		public class RegistServlet extends HttpServlet {
+			@Override
+			protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+				PrintWriter out = resp.getWriter();
+				String name = req.getParameter("name");
+				if("harry".equals(name)){
+					out.print(true);
+				}else {
+					out.print(false);
+				}
+			}
+		}
+
+三 java解析Json
+	在java中有非常多的第三方库可以解析json格式的数据，常用的有：
+
+		fastjson：国人开发的，是目前java语言中最快的json库
+		gson：google开发
+		jackson：Tatu Saloranta开发
+
+	下面以fastjson为例看下，fastjson相关jar包下载地址：http://pan.baidu.com/s/1jIagJII
+		fastjson中常用的方法：
+		JSON.toJSONString
+		将JavaBean转成json格式的字符串
+		JSON.parseObject
+		将json格式的字符串转换为JavaBean
+		代码示例：
+
+	创建一个City类，表示城市：
+		package com.harry.bean;
+
+		/**
+		 * 城市
+		 */
+		public class city {
+			// 城市编号
+			private int id;
+			// 城市名称
+			private String  name;
+
+			public int getId() {
+				return id;
+			}
+
+			public void setId(int id) {
+				this.id = id;
+			}
+
+			public String getName() {
+				return name;
+			}
+
+			public void setName(String name) {
+				this.name = name;
+			}
+		}
+	
+	创建一个Province类， 表示省份：
+		package com.harry.bean;
+
+		import java.util.List;
+
+		public class Province {
+			// 省份名称
+			private String name;
+			// 省份下城市名称
+			private List<city> cities;
+
+			public String getName() {
+				return name;
+			}
+
+			public void setName(String name) {
+				this.name = name;
+			}
+
+			public List<city> getCities() {
+				return cities;
+			}
+
+			public void setCities(List<city> cities) {
+				this.cities = cities;
+			}
+		}
+	
+	测试类：
+		package com.harry.test;
+
+		import com.alibaba.fastjson.JSON;
+		import com.harry.bean.Province;
+		import com.harry.bean.city;
+
+		import java.util.ArrayList;
+		import java.util.List;
+
+		/**
+		 * fastjson
+		 */
+		public class JsonTest {
+			public static void main(String[] args) {
+				city c1 = new city();
+				c1.setId(1005);
+				c1.setName("石家庄");
+
+				city c2 = new city();
+				c2.setId(1006);
+				c2.setName("唐山");
+
+				city c3 = new city();
+				c3.setId(1007);
+				c3.setName("保定");
+				List<city> cities = new ArrayList<city>();
+				cities.add(c1);
+				cities.add(c2);
+				cities.add(c3);
+
+				// 创建省份对象
+				Province hebei = new Province();
+				hebei.setName("河北");
+				hebei.setCities(cities);
+
+				// 将Province对象转换为json格式
+				String heibeiStr = JSON.toJSONString(hebei);
+				System.out.println(heibeiStr);
+
+				//将json格式的字符串转换为Province
+				Province hebeiNew = JSON.parseObject(heibeiStr, Province.class);
+				System.out.println(hebeiNew.getName());
+			}
+		}
+		{"cities":[{"id":1005,"name":"石家庄"},{"id":1006,"name":"唐山"},{"id":1007,"name":"保定"}],"name":"河北"}
+		河北

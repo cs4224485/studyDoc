@@ -1,0 +1,855 @@
+一 HTTP协议
+  1 HTTP简介
+	  HTTP是Hyper Text Transfer Protocol（超文本传输协议）的缩写。它的发展是万维网协会（World Wide Web Consortium）和Internet工作小组IETF（Internet Engineering Task Force）合作的结果，（他们）最终发布了一系列的RFC，RFC 1945定义了HTTP/1.0版本。
+	  其中最著名的就是RFC 2616。RFC 2616定义了今天普遍使用的一个版本——HTTP 1.1。
+	  HTTP协议具有如下特点：
+		(1) 基于TCP的80端口
+		(2) 基于请求-响应模式
+		(3) 无状态保存，不对请求和响应之间的通信状态进行保存
+		(4) 无连接，限制每次连接至处理一个请求，处理完成后即断开连接
+	  
+  2 HTTP中的方法
+	GET：从一个服务器获取一个资源
+	HEAD：只从服务器获取文档响应首部，而不获取响应内容
+	POST：向服务器发送要处理的数据
+	PUT：将请求的主体部分直接存储在服务器上
+	DELETE：请求删除服务器上指定的文档
+	TRACE：追踪请求到达服务器中间经过的代理服务器
+	OPTIONS:请求服务器返回对指定资源支持使用的请求方法
+	
+  3 HTTP的报文格式
+  请求：request
+  响应：response
+	request报文
+	<method> <request-URL> <version>
+	<headers>
+
+	<entity-body>
+	
+	resposene报文
+	<version> <status><reason-phrase>
+	<headers>
+
+	<entity-boday>
+	
+ 4 HTTP中的响应状态码
+	三位数字，如200，301,203,404,502，描述标记请求发生的状况
+	
+	状态代码：
+	1XX:纯信息
+	2XX:成功类的信息
+	3xx：重定向类信息
+	4xx：客户端错误类的信息
+	5xx：服务器端错误类信息
+	
+	常用状态码：
+	200：成功，请求的所有数据通过响应报文entity-body部分发送
+	301：请求的URL资源已被删除，但在响应报文中通过Location指明了资源现在的位置，Moved  Permanently
+	302：与301相似，但在响应报文中通过Location指明资源现在所处临时新位置
+	304：客户端发出了条件式请求，但服务器的资源未曾发生改变，则通过响应此响应状态码通知客户端：Not Modified
+	401：需要输入账号和密码认证方能访问资源：Unauthorized
+	403：请求被禁止；Forbidden
+	404：服务器无法找到客户端请求的资源；Not Found
+	500：服务器内部错误；Internal Server Error
+	502：代理服务器从后端服务器收到了一条伪响应
+ 
+5 HTTP请求头部和响应头部包含的内容
+	通用首部：
+		Date：报文的创建时间
+		Connetction：连接方式，如keep-alive，close
+		Via：显示报文经过的中间节点
+		Cache-Control：控制缓存
+		
+	请求首部
+		Accpet：通知服务器自己可接受的媒体类型
+		Accept-Charset：通知服务器自己可接受的字符集
+		Accept-Encoding：通知服务器自己接受的编码格式，如GZIP
+		ACCPT-Language：接受的语言
+		Host：请求的服务器名称和端口号
+		Rerferer：包含当前正在请求资源的上一级资源
+		User-Agent：客户端代理
+		If-Modified-Since：自从指定的时间之后，请求的资源是否发生过修过
+		If-Unmodified-Since：自从指定的时间之后，请求的资源是否未过修过
+		If-None-Mathc：本地缓存中存储的文档的Etagb标签是否与服务器ETG不匹配
+		Authorization：向服务器端发送认证信息，如账号密码
+		Cookie：客户端向服务器端发送Cookie标识
+		Proxy-Authorization:向代理服务器认证
+		
+    响应首部
+		Age:响应持续时长
+		Server:服务器程序的软件名称和版本
+		协商首部：某资源多种表示方法时使用
+		Accpet-Ranges：服务器可接受的请求范围类型
+		Vary：服务器查看其它首部列表
+		安全响应首部：
+		Set-Cookie：向客户端设置cookie
+		www.Authenticate：来自服务器对客户端的质询认证表单
+
+6 Cookie和Session
+	Cookie和Session都为了用来保存状态信息，都是保存客户端状态机制，都是为了解决HTTP无状态的问题而产生
+	Session可以用Cookie来实现，也可以用URL回写的机制来实现。用Cookie来实现的Session可以认为是对Cookie更高级的应用。
+	
+	Cookie和Session有以下明显的不同点：
+		(1) Cookie将状态保存在客户端，Session将状态保存在服务端
+		(2) Cookie是服务器在本地机器上存储的小段文本并随每一个请求发送至同一个服务器，cookie最早在RFC2109中实现，
+		    后续RFC2965做了增强。网络服务器用HTTP头向客户端发送cookies，在客户终端，浏览器解析这些cookies并将它们保存为一个本地文件，它会自动将同一服务器的任何请求缚上这些cookies。Session并没有在HTTP的协议中定义；
+		(3) Session是针对每一个用户的，变量值保存在服务器上，用一个sessionID来区分是哪个用户session变量，这个值是通过用户的浏览器在访问的时候返回给浏览器，当客户禁用cookie时，这个值也可能设置为由get来返回给服务器。
+		(4) 就安全性来说：当你访问一个使用session 的站点，同时在自己机子上建立一个cookie，建议在服务器端的SESSION机制更安全些.因为它不会任意读取客户存储的信息。
+		
+7 通过sokcet 建立一个HTTP响应
+	def create_sk():
+		server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		server.bind(('127.0.0.1', 8080))
+		server.listen(5)
+		return server
+		
+	def handle_request(server):
+		print('server start....')
+		while 1:
+			conn,addr = server.accept()
+			data = conn.recv(1024)
+			print(data)             # 接收到 http请求头部
+			conn.send(b'HTTP/1.1 200 ok\r\n\r\n')
+			conn.send(b'<h1>hello world</h1>')
+
+	def run():
+		sk = create_sk()
+		handle_request(sk)
+
+	if __name__ == '__main__':
+		run()
+
+二 wsgi协议和wsgiref模块
+    WSGI：Web Server Gateway Interface,是Python应用程序或框架和Web服务器之间的一种接口,而wsgiref模块就是python基于wsgi协议开发的服务模块。
+	自己定义一个web框架所需的几个主要文件
+		1 urls.py：路径与视图函数映射关系  --- url控制器
+		2 views.py: 视图函数，固定一个形式参数：environ
+		3 templates文件夹： html模板文件
+		4 models:在项目启动前创建表结构
+		
+	通过wsgire模块自己搭建一个web服务器
+	   main.py  主程序	
+			from wsgiref.simple_server import make_server
+			import urls
+
+			def application(environ,start_response):
+				path = environ["PATH_INFO"]  # 获取当前请求路径
+				print('server start')
+				start_response('200 OK', [('Content-Type', 'text/html')])
+				urls_list = urls.routers()
+				func = None
+				for i in urls_list:
+					if path == i[0]:
+						func = i[1]
+				if func:
+					return func()
+				else:
+					return [b'<h1>404 not found</h1>']
+				
+		urls.py 控制器
+			from view import *
+				def routers():
+					urls_list = [
+						('/login', login),
+					]
+					return urls_list
+		
+		view.py 视图函数
+			def login():
+				with open('templates/login.html', 'rb') as f:
+					data = f.read()
+				return [data]
+
+http_server = make_server('', 8080 ,application)
+http_server.serve_forever()
+	
+	
+三 Djano基本流程和配置
+
+  1 MVC与MTV模型
+  
+	MVC
+		Web服务器开发领域里著名的MVC模式，所谓MVC就是把Web应用分为模型(M)，控制器(C)和视图(V)三层，他们之间以一种插件式的、松耦合的方式连接在一起，
+		模型负责业务对象与数据库的映射(ORM)，视图负责与用户的交互(页面)，控制器接受用户的输入调用模型和视图完成用户的请求，
+	
+	MTV
+		Django的MTV模式本质上和MVC是一样的，也是为了各组件间保持松耦合关系，只是定义上有些许不同，Django的MTV分别是值：
+		M 代表模型（Model）：负责业务对象和数据库的关系映射(ORM)。
+		T 代表模板 (Template)：负责如何把页面展示给用户(html)。
+		V 代表视图（View）：负责业务逻辑，并在适当时候调用Model和Template。
+		除了以上三层之外，还需要一个URL分发器，它的作用是将一个个URL的页面请求分发给不同的View处理，View再调用相应的Model和Template
+		
+  2 下载和安装Django
+	pip3 install django==2.0.1
+  3 创建一个django project
+	danjgo-admin.py startproject mysite
+	manage.py ----- Django项目里面的工具，通过它可以调用django shell和数据库等
+	settings.py ---- 包含乐项目默认设置， 包括数据库信息，调试标志及其他一些工作的表露
+	urls.py ---- 负责把URL模式映射到应用程序
+	
+ 4 Django的其他常用命令
+	python manage.py runserver ip:port  (启动服务器，默认ip和端口为http://127.0.0.1:8000/)
+　　python manage.py startapp appname  (新建 app)
+　　python manage.py syncdb  (同步数据库命令，Django 1.7及以上版本需要用以下的命令）
+　　python manage.py makemigrations  (显示并记录所有数据的改动)
+　　python manage.py migrate  (将改动更新到数据库)
+　　python manage.py createsuperuser  (创建超级管理员)
+　　python manage.py dbshell  (数据库命令行)
+　　python manage.py  (查看命令列表)
+
+
+四 Django的路由系统
+	每一个Django项目中都会有一个urls.py的文件，它的作用是根据用户请求的url调用不同视图函数来给用户返回不同页面
+	urlpatterns = [
+		path(url,view函数,参数,别名)
+		repath(正则表达式,view函数,参数,别名)
+		]
+	参数说明：
+		(1) 一个正则表达式字符串，或者一个url
+		(2) 一个可以调用的对象，通常称为一个视图函数，
+		(3) 可选的要传递给视图函数的默认参数(字典形式)
+		(4) 一个可选的name参数
+	1 示例：
+		from django.contrib import admin
+		from django.urls import path,re_path
+		import views
+		urlpatterns = [
+			path('admin/', admin.site.urls),
+			path('login/', views.login),
+			re_path(r'^article/2001$', views.article_year),    # 匹配正则匹配到的路径
+			re_path(r'^article/([0-9]{4})', views.article_year),
+			re_path(r'^article/([0-9]{4})/([0-9]{2})/$', views.article_month),
+			re_path(r'^article/(?P<year>[0-9]{4})/(?P<month>[0-9]{2})', views.article_month),  # 正则命名，视图函数的形参要与正则命名的一致
+		]
+		注意事项:
+			(1) 要捕获URL中的值，用括号括起来,会当作参数传入视图函数
+			(2) 没有必要添加一个斜线,因为每个URL都有。例如：^articles不是^/articles。
+			(3) 在'r'前面的每个正则表达式字符串中是可选的，但建议。它告诉Python字符串是“原始” -没有什么字符串中应该进行转义。
+	2 多个APP进行路由分发(Including)
+		如果一个Django项目里面有多个APP那么大家共用一个url路由很容易造成混淆，于是使用include分发让每个APP拥有自己单独的url
+		from django.conf.urls import re_path,include
+		from django.contrib import admin
+		from app1 import views
+		urlpatterns = [
+			 re_path(r'^app1/',include('app1.urls')),
+			 re_path(r'^app2/',include('app1.urls')),  #注意include的是字符串形式的 文件路径；
+			 re_path(r'^',views.error),
+							 ]
+	3 使用url别名的示例
+		url中还支持name参数的配置，如果配置了name属性，在模板的文件中就可以使用name值来代替相应的url值.
+		urlpatterns = [
+			re_path(r'^index',views.index,name='bieming'),
+			re_path(r'^admin/', admin.site.urls),
+			re_path(r'^articles/2003/$', views.special_case_2003),
+			re_path(r'^articles/([0-9]{4})/$', views.year_archive),
+			re_path(r'^articles/([0-9]{4})/([0-9]{2})/$', views.month_archive),
+			re_path(r'^articles/([0-9]{4})/([0-9]{2})/([0-9]+)/$', views.article_detail),
+		]
+		###################
+		def index(req):
+			if req.method=='POST':
+				username=req.POST.get('username')
+				password=req.POST.get('password')
+				if username=='alex' and password=='123':
+					return HttpResponse("登陆成功")
+
+			return render(req,'index.html')
+
+		#####################
+
+		<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<title>Title</title>
+		</head>
+		<body>
+		{#     <form action="/index/" method="post">#}
+		{#     这里只要使用bieming即可代替/index #}
+			 <form action="{% url 'bieming' %}" method="post">
+				 用户名:<input type="text" name="username">
+				 密码:<input type="password" name="password">
+				 <input type="submit" value="submit">
+			 </form>
+		</body>
+		</html>
+
+    4 名称空间
+		名称空间是表示标识符的可见范围，一个标识符可在多个命名空间中定义，它在不同命名空间中的含义是互不相干的，
+		在一个新的命名空间中可定义任何标识符，它们不会与任何已有的标识符发生冲突，因为已有的定义都处于其他命名 空间。
+		
+		由于name没有作用域，Django在反解析URL时，会在项目全局顺序搜索，当查找到第一个name指定URL时，立即返回
+		我们在开发项目时，会经常使用name属性反解除URL，当不小心在不同的app的urls中定义相同的name时，可能会导致URL反解错误，为了避免这种情况引入了命名空间
+		
+		project的urls.py:
+			urlpatterns = [
+			 re_path(r'^app1/',include(('app1.urls',"app01")),
+			 re_path(r'^app2/',include(('app2.urls',"app02")),  
+							 ]
+							 
+		app01.urls
+			urlpatterns = [
+				re_path(r'^index/',index,name="index"),
+							 ]
+		
+		app02.urls
+			urlpatterns = [
+				re_path(r'^index/',index,name="index"),
+							 ]
+		
+		app01.views
+			from django.core.urlresolvers import reverse
+			
+			def index(request)
+				return HttpResponse(reverse("app01:index"))
+			
+		app02.views
+			from django.core.urlresolvers import reverse
+			
+			def index(request)
+				return HttpResponse(reverse("app02:index")	
+				
+	5 django2.0中 path的用法
+		from django.urls import path
+		from . import views
+		urlpatterns = [
+			path('articles/2003/, views.special_case_2003),
+			path('articles/<int:year>/', views.year_archive),
+			path('articles/<int:year>/<int:month>/',views.moutn_archive),
+			path('articles/<int:year>/<int:month>/<slug>/, views.article_detail),
+			]
+		基本规则：
+			(1) 使用尖括号(<>)从url中捕获值。
+			(2) 捕获值中可以包含一个转化器类型(converter type),比如使用<int:name>捕获一个整数变量，如果没有转化器,将匹配任何字符串，也包括'/'字符
+			(3) 无需添加前倒斜杠
+			
+		Django默认支持的转化器
+			(1) str,匹配除了路径分隔符(/)之外的飞车空字符串,这是默认的形式
+			(2) int,匹配正整数,包含0
+			(3) slug,匹配字母，数字及横杠，下划线组成的字符串
+			(4) uuid,匹配格式化uuid，如0745194d3-6885-417e-a8a8-6c931e272f00
+			(5) path,匹配任何非空字符串，包含了路径分隔符
+			
+		自定义转换器
+			对于一些复杂的使用，可以自定义装换器。转换器是一个类或接口,它的要求有三点:
+				regex类属性,字符串类型
+				to_python(self,value)方法,value是由类属性regex所匹配到的字符串，返回具体的Python变量值,以供Django传递到对应的视图函数中
+				to_url(self,value)方法,和to_python相反，value是一个具体的Python变量值，返回其字符串，通常用于url反向引用
+			
+			例子：
+				class FourDigYearConverter:
+					regex = '[0-9]{4}'
+					
+					def to_python(self,value):
+						return int(value)
+					def to_url(self,value):
+						return '%04d' %value
+			
+			使用register_converter将其注册到URL配置中
+				from django.urls import register_converter,path
+				from . import converters, views			# 自己写的类模块导入尽量
+			    register_converter(converters.FourDigYearConverter, 'yyyy')
+				urlpatterns = [
+					path('articles/2003/', views.special_case_2003),
+					path('articles/<yyyy:year>', views.path_month)
+		
+
+		
+	
+五 Django静态文件
+	我们在项目中一般情况下html模板都需要引入js css等静态文件来渲染网页,下面会介绍Django引入这些静态文件的方式：
+	1 首先先要在项目中创建一个名叫static的文件夹
+	2 在Django的settings中添加一行配置, 拼接static文件夹的路径
+		STATICFILES_DIRS = [
+			os.path.join(BASE_DIR,"static")
+		]
+	3 在html直接引入static路径下的内容
+	   <script src="/static/jquery-3.3.1.js"></script>
+	
+六 template模板语言
+	
+	1 模板之过滤器
+		语法
+			{{ obj|filter_name:param }}
+		default
+			如果一个变量是false或者为空，使用给定的默认值，否则使用变量的值.
+			{{ value|default:"nothing" }}
+		length
+			返回值的长度，它对字符串和列表都起作用。例如
+			{{ value|length }}
+			如果value是['a','b','b','d']那么输出4
+		filesizeformat
+			将格式化为一个"人类可读的"文件尺寸(例如13kb,4.1mb,1024bytes等待).例如:
+			{{ value|filesizeformat }}
+			如果value是123456789，输出将会是117.7MB
+		date
+			如果 value = datetime.datetime.now()
+			{{ value|date："Y-m-d" }}
+		slice 
+			如果 value = "hello world"
+			{{ value|slice:"2-1" }}
+		truncatechars
+			如果字符串字符多于指定的字符数量,那么会被截断。截断字符串可以翻译的省略号序列("...")结尾
+			参数：要截断的字符数
+			{{ value|truncatechars:9 }}
+		safe
+			Django的模板中会对HTML标签和JS等语法进行自动转义，但是有的时候我们不希望这些HTML元素被转义,
+			在Django中关系HTML自动转义有两种方式,如果是一个单独的变量我们可以通过过滤"|safe"的方式告诉Django这段代码是安全的不必转义
+			value = "<a href="">点击</a>
+			{{ value|safe }}
+		
+	2 模板之标签
+		标签看起来是这样的：{% tag %}。标签比变量更加复杂：一些在输出中创建文件，一些通过循环或逻辑来控制流程，
+		一些加载其后的变量将使用到的额外信息添加到模板中。
+		
+		for标签
+			遍历每一个元素
+			{% for person in person_list %}
+				<p>{{ pserson.name }} <p>
+			{ % endfor %}
+			
+			可以利用{% for obj in list reversed %}反向完成循环。
+			变量一个字典：
+			{% for key,val in dic.items %}
+				<p>{{ key }}:{{ val }}<p>
+			{% endfor % }
+		
+		for ... empty
+			for标签带有一个可选的{% empt %}从句，以便在给出的组是空的或者没有找到时，可以有所操作
+			{% for person in pserson_list %}
+				<p>{{ person.name }}</p>
+				
+			{% enpty %}
+				<p>sorry,no person here</p>
+			{% endfor %}
+		
+		if 标签
+			{% if %}会对一个变量求值,如果他的值是True(存在，不为空且不是boolean类型的false值),对应的内容块会输出
+			
+			{% if num >100 or num <0 %}
+				<p>无效</p>
+			{% elif num > 80 and num < 100 %}
+				<p>优秀</p>
+			{% else %}
+				<p>凑合吧</p>
+			{% endif %}
+		
+		with
+			使用一个简单的名字缓存一个复杂的变量。
+			例如：
+				{% with total=business.employees.count %}
+					{{ total }} employee{{ total|pluralize }}
+				{% endwith %}
+	
+	3 自定义标签
+		(1) 在应用目录下创建一个templatetags目录(必须)
+		(2) 创建任意.py文件, 如：add100.py
+			from django import template
+			from django.utils.safestring import mark_safe
+			
+			register = template.Library() # register是固定变量名，不能改变
+			
+			@register.simple_tag
+			def my_add100(value1)
+				return value1 + 100
+				
+			@register.simple_tag
+			def my_input(id,arg):
+				result = "<input type="text" id='%s' class='%s'/>" %id(id,arg,)
+				return make_server(result)
+				
+			@register.filter			# 自定义过滤器
+			def multi_filter(x,y):
+				return x*y
+		注意：自定义标签和自定义过滤器的区别在于标签可以传多个参数而过滤器最多只能传2个但是过滤器可以使用if语句	
+		(3) 在使用自定义simple_tag的html文件导入之前创建add100.py文件夹
+			{% load add100 %}
+		(4) 使用simple_tag
+			{% my_add100 5%}
+			{% my_input 'id_username' 'hide'%}
+		(5) 在setting中配置当前app, 不然django无法找到自定义的simple_tag
+			INSTALLED_APPS = "app01".
+	
+	4 模板之继承
+		(1) 首先先将一些公共的版块写成一个基础模板, 如果模一块内容需要扩展，{% block contnet %} {% endblock %},相当于留了一些空间等待子模板重写里面的内容
+		(2) 在子模板的第一行引入模板{% extends 'base.html' %}		
+		(3) 在子模块引入{% block contnet %} {% endblock %}然后重写里面的内容
+	
+七 ORM(对象关系映射)
+	1 ORM简介
+		MVC或者MVC框架中包括的一个重要部分就是ORM，它实现了数据模型与数据库的解耦。
+		即数据模型的设计不需要依赖于特定的数据库，通过简单的配置可以轻松更换数据库，这可以大大减少开发人员的工作量
+	
+	2 单表操作
+		首先要在app中的moudels.py中创建表
+		代码：
+			from django.db import models
+			
+			class Book(models.Model):
+				id = models.AutoFiled(primary_key=True)
+				title = models.CharField(max_length=32)
+				state = models.BooleanFiled()
+				pub_date = models.DateField()
+				price = models.DecimalFiled(max_digits=8,decimal_places=2)
+				publish = models.CharField(max_legth=32)
+		更多字段
+			<1> CharField
+				字符串字段，用于较短的字符串
+				CharField 要求必须有一个参数maxlength,用于从数据库才能和Django校验层限制字段所允许的最大字符数
+				
+			<2> IntegerField
+				用于保存一个整数
+			
+			<3> FloatField
+				一个浮点数,必须提供两个参数：
+				
+				参数             描述
+				max_digits       总位数(不包含小数点和符号)
+				decimal_places   小数位数
+				如果要保存最大值为999(小数点后保存2位):
+					models.FloatField(max_digits=5,decimal_places=2)
+				如果要保存最大值一百万(小数点后保存10位):
+					models.FloatField(max_digits=19,decimal_places=10)
+				
+			<4> AutoField
+				一个IntegerField,添加记录时他会自动增长 通常不需要自己使用这个字段
+			
+			<5> BooleanField
+				True/False admin用checkbox来表示此类字段
+			
+			<6> TextField
+				一个容量很大的文本字段
+				admin 用一个<textarea> (文本区域)表示该字段数据
+				
+			<7> EmailField
+				一个带有Email合法性的CharField, 不接受maxlenght参数
+			
+			<8> DateField
+				一个日期字段 并且又以下可选参数
+				auto_now        当对象保存时,自动将该字段值设置为当前时间。通常用于表示"last-modified"时间戳
+				auto_now_add    当对象首次创建时,自动将该字段的值设置为当前时间,通常用于表示对象创建时间
+			
+	3 数据库的设置
+		若想要将模型转为mysql的表，需要在settings中配置：
+		
+		DATABASES = {
+			'default':{
+				'ENGINE':'django.db.backends.mysql',
+				'NAME':'bms'				# 要连接的数据库，连接前要创建好
+				'USER':'root'				# 连接数据库的用户名
+				'PASSWORD':'',				# 连接数据库的密码
+				'HOST':"127.0.0.1",		    # 连接主机的IP
+				'PORT':3306					# 数据库端口号
+				}
+			}
+		
+		注意点1
+			NAME即数据库的名字,在mysql连接前该数据库必须已经建立，而上面的sqlite数据库下的db.sqlite3则是项目自动创建USER和PASSWORD
+			分别是数据库的用户名和密码。设置完成，在启动Django项目前，需要先激活mysql。然后，项目启动会报错：no module named MySQLdb。
+			这是一位django默认你导入的驱动是MySQLdb，可是MYSQLdb对于py3有很大问题，所以我们需要驱动PyMySQL,所以,我们只需要在项目名文件下的
+			__init__.py里面写入：
+			
+			impor pymysql
+			pymysql.install_as_MYSQLdb()
+			最后通过两条数据库迁移命令在指定的数据库表中创建表:
+			python manage.py makemigrations
+			python manage.py migrate
+			
+		注意点2
+			要确保配置文件中的INSTALLED_APPS中写入我们创建的app名称
+		
+		注意点3
+			如果想打印orm转换sql的过程，需要在settings进行如下配置
+			LOGGING = {
+				'version':1,
+				'disable_existing_loggers':False,
+				'handlers':{
+					'console':{
+						'level':'DEBUG'
+						'class':'loggin.StreamHandler',
+					},
+				},
+				'loggers':{
+					'django.db.backends':{
+						'handlers':['console']
+						'propagate':True,
+						'level':'DEBUG',
+					},
+				}
+			}
+			
+	4 添加表记录
+		方式一
+			# create方法的返回值book_obj就是插入表中的python红宝石这个本书记录对象
+			book_Obj = Book.objects.create(title="python红宝石", state=True, price=100, publish="人民出版社", pub_date="2012-12-12")
+		
+		方式二 
+			book_obj = Book(title="python红宝石", state=True, price=100, publish="人民出版社", pub_date="2012-12-12")
+			book_Obj.save()
+	
+	5 查询表记录
+		查询API
+			<1> all()			             查询所有结果，返回一个queryset对象
+			<2> filter(**kwargs)             它包含了与所给予的筛选条件相匹配的对象
+			<3> get(**kwargs)				 返回与筛选条件相匹配的对象，返回结果只有一个。如果筛选条件的对象超过一个或者没有会抛出异常
+			<4> exclude(**kwargs)			 包含了与所筛选条件不匹配的对象
+			<5> order_by(*field)			 对查询结果排序
+			<6> reverse()					 对查询结果反向排序
+			<7> count()						 返回数据库中匹配查询(QuerySet)的对象数量
+			<8> first()						 返回第一条记录
+			<9> last()						 返回最后一条记录
+			<10> exists()					 如果QuerySet包含数据就返回True,否则返回False
+			<11> values(*field)				 返回一个ValueQuerySet,一个特殊的QuerSet,运行后得到的并不是一系列model实例化对象，而是一个可迭代的字典序序列
+			<12> values_list(*filed)		 它与values()非常相似，它返回的是一个元祖序列,values返回的是一个字典序列。
+			<13> distinct()					 从返回结果中剔除重复记录
+		
+		基于双下划线的模糊查询
+			Book.object.filter(price__in=[100,200,300])
+			Book.object.filter(price__get=100)
+			Book.object.filter(price__lt=100)
+			Book.object.filter(price__range=[100,200])
+			Book.object.filter(title__contains="python")   # 筛选包含python这个字符串的内容	
+			Book.object.filter(title__iontains="python")   # 筛选包含python这个字符串的内容,但是不区分大小写
+			Book.object.filter(title__startswitch="py")
+			Book.object.filter(pub__date__year=2012)
+			Book.object.filter(pub__date__isnull=true)	   # 获取为空的对象
+			Book.object.filter(timestamp__hour=23)
+			Book.object.filter(time__hour=5)
+			Book.object.filter(timestamp__hour__gte=12)
+			Book.objects.get(title__regexr'^(An?|The)+')  # 使用正则匹配	
+			Book.objects.get(title__iregexr'^(An?|The)+') # 使用正则匹配不区分大小写
+	
+	6 删除表记录
+		删除方式就是delete(),它运行时立即删除对象而不返回任何值。例如
+		    model_obj.delete()
+		你也可以一次删除多个对象，每个QuerrySet都有一个delete()方法,它一次性删除QuerrySet中所有的对象。
+		例如 下面代码将删除pub_date是2005年的Entry对象：
+		    Entry.objects.filter(pub__date__year=2005).delete()
+		在Django删除对象时，会模仿SQL约束ON DELETE CASCADE的行为,删除一个对象时也会删除与它相关的外键对象。例如：
+			b = Blog.objecs.get(pk=1)		
+			b.delete()					
+		要注意的是:delete()方法是QuerrySet上的方法,但并不适用与Manager本身。这是一种保护机制,为了避免意外的调用Entry.objects.delete()
+		方法导致所有的记录被误删。如果确认要删除索引的对象，那么必须显式调用
+			Entry.objects.all().delete()
+		如果不想级联删除，可以设置为
+			pubHouse = models.ForeignKey(to='Publisher', on_delete=models.SET_NULL, blank=True, null=True)
+	
+	7 修改表记录
+		使用修改的方式与使用删除的方法类型，都是想将内容过滤后进行操作，需要注意的是update()方法对于任何结果集(QuerySet)均有效。
+		这意味着可以同时更新多条记录update()方法会返回一个整形数值，表示受影响的记录条数
+		Book.objects.filter(title__startswitch="py").update(price=120）
+
+七 ORM多表操作
+	1 建立表结构
+		class Book(models.Model):
+			nid = models.AutoField(primary_key=True)
+			title = models.CharField(max_length=32)
+			publishDate = models.DateField()
+			price = models.DecimalField(max_digits=5, decimal_places=2)
+
+			# 书籍表与出版社表建立一对多的关系
+			publish = models.ForeignKey(to="Publish", to_field="nid", on_delete=True)
+
+			# Django自动生成多对对表的方式
+			authors = models.ManyToManyField(to="Author")
+
+
+		# 出版社表
+		class Publish(models.Model):
+			nid = models.AutoField(primary_key=True)
+			name = models.CharField(max_length=32)
+			city = models.CharField(max_length=32)
+			email = models.EmailField()
+
+
+		# 作者表
+		class Author(models.Model):
+			nid = models.AutoField(primary_key=True)
+			name = models.CharField(max_length=32)
+			age = models.IntegerField()
+
+			# 与作者详细信息表建立一对一的关系
+			authordetail = models.OneToOneField(to="AuthorDetail", to_field='nid', on_delete=True)
+
+
+		# 作者详细信息表
+		class AuthorDetail(models.Model):
+			nid = models.AutoField(primary_key=True)
+			birthday = models.DateField()
+			telephone = models.BigIntegerField()
+			addr = models.CharField(max_length=64)
+
+
+		# # 自己手动创建多对多表
+		# class Book2Author(models.Model):
+		#     nid = models.AutoField(primary_key=True)
+		#     book = models.ForeignKey(to='Book', on_delete=True)
+		#     author = models.ForeignKey(to='Author', on_delete=True)
+			  # 创建联合索引
+			  class Meta：
+				   unique_together = (
+						 ('author','book')
+						)
+						
+		#注意事项：
+			(1) 表的名称myapp_modleName,是根据模型中的元数据自动生成的,也可以覆写为别的名称
+			(2) ID字段是自动添加的
+			(3) 对于外键字段，Django会在字段名上添加"_id"来创建数据库的列名
+			(4) 定义好模型之后，需要在配置文件中INSTALL_APPS
+			中添加models所在应用名称
+			(5) 外键字段ForeignKey 有一个null=True的设置(它允许外键接收空值NULL),你可以赋给它空值NONE
+	
+	2 添加表记录
+		
+		# 出版社表插入数据
+		Publish.objects.create(name='清华大学出版社', email="456@qq.com", city="北京")
+		
+		# 为book绑定出版社 book 对应publish 绑定一对多关系
+			# 方式一
+			Book.objects.create(title="红楼梦", price=100, publishDate='2012-12-12', publish_id=1)
+			
+			# 方式二	
+			pub_obj = Publish.objects.filter(id=1) 首先查询出出版社id为的对象
+			book_obj = Book.objects.create(title="红楼梦", price=100, publishDate='2012-12-12', publish=pub_obj)
+			#注意：无论是第一种方式还是第二种方式如果取出book_obj.pulish取出来的值都是与这本书籍关联的出版社对象
+		# 为book和author绑定多对多关系表
+			author_obj = Author.objects.create(name='alex', age=24)
+			author_obj = Author.objects.create(name='beal', age=34)
+			book_obj = Book.objects.create(title='三国演义', price=100, publishDate='1998-12-03', )
+			alex = Author.objects.get(name='alex')
+			beal = Author.objects.get(name='beal')
+			
+			# 绑定多对多关系的API
+			book_obj.authors.add(alex,beal)
+			或者
+			book_obj.authors.add(1,2)
+			或者
+			book_Obj.authors.add(*[1,2])
+			
+			# 解除多对多的关系
+			book = Book.objects.filter(nid=4).first()
+			book.authores.remove(1)
+			
+			# 清除所有
+			book.authors.clear()
+	
+	3 基于对象的跨表查询
+		# 一对多查询
+		(1) 查询主键为1的书籍的出版社所在的城市
+			# 一对多的正向查询 book -------- publish 
+			book_obj = Book.objects.filter(nid=1).first()
+			print(book_obj.publish.city)
+		
+		(2) 查询人民出版社出版的所有书籍名称
+			# 反向查询 publish ------- book 按表名查询 book_set.all()
+			publish_obj = Publish.objects.filter(name="人民出版社").first()
+			print(publish_obj.book_set.all())  # 拿到一个 queryset [book1,book2,...]
+			
+		# 一对一查询
+		(1) 查询alex的手机号
+			# 正向查询 按字段：authodetail
+			author_obj = Author.objects.filter(name='alex').first()
+			print(author_obj.authordetail.telephone)
+		
+		(2) 查询手机号为911的作者的名字
+			# 反向查询 按表名：author
+			detail = AuthorDetail.objects.filter(telephone=911).first()
+			print(detail.author.name)
+		
+		# 多对多查询
+		(1) 查询三国演义所有作者的名字
+			# 正向查询 按字段：authors  book ------> author
+			book_obj = Book.objects.filter(title='三国演义').first()
+			print(book.authors.all())
+		(2) alex写过的所有书籍名称
+			# 反向查询 按表名 book_set.all() author ------> book
+			author_obj = Author.objects.filter(name="alex").first()
+			print(author_obj.book_set.all())
+		
+	4 基于双下划线的双表查询
+		(1) 查询人民出版社的所有书籍的名字和价格(一对多)
+			ret_obj = Publish.objects.filter(name="人民出版社").values("book__title","book__price") # 以出版社为左表
+			ret_obj = Book.objects.filter(publish__name='人民出版社').values('title','price')
+		(2) 查询alex出过的所有书籍的名字(多对多)
+			Author.objects.filter(name="alex").values("book__title)
+			Book.objects.filter(authors__name="alex"),values("title")
+		(3) 查询人民出版社出版过的所有书籍的名字以及作者的姓名(混合查询)
+			Book.objects.filter(publish__name="人民出版社”).values("title","authors__name")
+		(4) 手机号以151开头的作者出版的所有书籍名称以及出版社名称
+			Book.objects.filter(authors__authordetail__telephone__startswich="151").values("title","pulish__name")
+	
+	5 聚合函数与分组查询
+		1 聚合
+		   aggreate(*args, **kwargs)
+		   # 计算所有图书的平均价格
+			Book.objects.all().aggreate(Avg('price'))
+			aggreate()是QuerySet的一个终止子句，意思就是说，它返回一个包含一些键值对的字典，键的名称是聚合值的标识符，值是计算出来的聚合值。
+			键的名称是按照字段和聚合函数的名称自动生成出来的。如果想要为聚合值指定一个名称，可以向聚合子句提供它
+			Book.objects.all().aggreate(averate_price=Avg('price'))
+			{'averate_price':34.35}
+			如果你希望生成不止一个聚合,可以向aggregate()子句添加另一个参数。所以如果你还想知道所有图书价格的最大值和最小值,可以这样查询：
+			Book.objects.aggreate(Avg('price'),Max('price'),Min('price'))
+			{'price_avg':34.35,'price_max':Decimal('81.20'),'price_min':Decimal('12.99')}
+		
+		2 单表分组
+		 annotate()为调用QuerySet中每一个对象都生成一个独立的统计值(统计方法用聚合函数)
+		 (1) 统计每一本书的作者个数
+			Book.objects.all().annotate(Count("authors__name"))    # 返回的仍然是query-set，但是每个对象会以键值的方式添加统计结果
+		 (2) 统计每一个作者出版过的书籍最高价格
+			Author.objects.all().annotate(Max(book__price))
+		 (3) 统计每一个出版社出版过的书籍的平均价格
+			Publish.objects.all().annotate(Avg("book__price"))
+		 (4) 查询每一个本门的名称以及员工的平均薪水
+			Emp.objects.values("dep").annotate(avr_salary=Avg("salary"))
+		 (5) 查询每一个省份的名称以及对应的员工数
+			# 在单表分组下，按照住进进行group by是没有任何意义的
+			Emp.objects.values("provience").annotate(c=count("id"))
+	多表分组多表分组
+			# 每一个后表模型.objects.values("pk").annotate(集合函数(关联表__统计字段))
+		 (1) 查询每一个出版社的名称以及出版的书籍个数
+			Publish.objects.values("id").annotate(Count("book__title"))
+			Publish.objects.values("name").annotate(Count("book__title"))
+			Publish.objects.values("name").annotate(Count("book__title")).values("name", "c")
+		 (2) 查询每一个作者的名字以及出版过的书籍的最高价格
+			# pk == 主键
+			Author.objects.value("pk").annotate(Max("book__price"))
+		 (3) 查询每一个书籍的名称以及对应的作者个数
+			Book.objects.values("pk").annotate(c=Count("author__name")).values("title", "c")
+		 (4) 统计每一本以py开头的书籍的作者个数
+			Book.objects.filter(title__startswitch="py").values("pk").annotate(c=Count("authors__name")).values("title", "c")
+		 (5) 统计不止一个作者的图书
+			Book.objects.values("pk").annotate(c=Count("authors__name)).filter(c__gt=1).values
+	6 F查询和Q查询
+		(1) F查询
+			如果我们要对两个字段的值做比较那么Django提供了F()方法来比较同一个model实例中两个不同字段的值
+			# 查询评论数大于收藏数的书籍
+			from django.db.models impor F
+			Book.objects.filter(commnetNum__lt=F('keepNum'))
+			# 查询评论数大于收藏数2倍的书籍
+			Book.objects.fitler(commnetNum__lt=F('keepNum')*2)
+			# 将每一本书的价格提高30元
+			Book.objects.all().updatae(price=F("price")+30)
+		(2) Q查询
+			filter()等方法中的关键字参数查询都是一起进行的"AND"。如果需要执行更复杂的查询(例如OR语句)可以使用Q对象
+			Q对象可以使用&和|操作符组合起来。当一个操作符在两个Q对象上使用时它产生一个新的Q对象
+			
+			from djano.db.models impor Q
+			book_list = Book.objects.filter(Q(authors__name="harry")|Q(authors__name)="caishuang")
+			
+			同时，Q对象可以使用~操作符取反, 这允许组合正常的查询和取反(NOT)查询：
+			book_list = Book.objects.filter(Q(authors__name="harry")) & ~Q(publishDate__year=2017).values("title")
+			
+			查询函数可以混合使用Q对象和关键字参数。所有提供给查询函数的参数(关机簪子参数或Q对象)都将"AND"在一起, 但是,如果出现Q对象，它必须位于所有关键字参数的前面
+			bookList = Book.objects.filter(Q(publishDate__year=2016) | Q(publishDate__year=2017),
+												title__icontains="python")			
+		
+	7 性能相关
+		(1) select_related
+			表之间进行join连表操作，一次性获取关联的数据
+			model.tb.objects.all().select_related()
+			model.tb.objects.all().select_related("外键字段")
+			model.tb.objects.all().select_related("外键字段__外键字段")
+			
+		(2) prefetch_related
+			多表连表操作时速度会慢，使用其执行多次SQL查询在Python中实现连表操作
+			model.tb.objects.all().prefetch_related("外键字段")

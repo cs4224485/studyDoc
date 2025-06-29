@@ -1,0 +1,1089 @@
+一 什么是Servlet
+
+什么是servlet
+servlet是一门用于开发动态web资源的技术，可以运行在Web服务器中的小型Java程序，有时也叫做服务器端的小应用程序。servlet 可以通过 HTTP协议接收和响应来自 Web 客户端的请求。
+servlet的语法跟JavaSE是一样的并且能够使用JavaSE中的API，要想创建一个动态资源可以分为以下两步：
+
+	1 编写一个Java类，实现javax.servlet.Servlet接口，该接口在servlet-api.jar包中
+	2 将这个Java类部署在web服务器中
+	
+二 编写第一个Servlet
+	创建一个web项目可以在创建项目时关联tomcat，在项目创建一个Java类实现servlet接口并重写里面的方法。
+	HelloServlet.js:
+		package com.harry.servlet;
+
+		import javax.servlet.*;
+		import java.io.IOException;
+
+		public class HelloServlet implements Servlet {
+			public HelloServlet() {
+				System.out.println("实例化创建对象");
+			}
+
+			@Override
+			public void init(ServletConfig servletConfig) throws ServletException {
+				System.out.println("初始化init");
+			}
+
+			@Override
+			public ServletConfig getServletConfig() {
+				return null;
+			}
+
+			@Override
+			public void service(ServletRequest request, ServletResponse response) throws ServletException, IOException {
+				response.getWriter().write("hello servlet");
+			}
+
+			@Override
+			public String getServletInfo() {
+				return null;
+			}
+
+			@Override
+			public void destroy() {
+				System.out.println("销毁");
+			}
+		}
+	xml:
+		<!-- 创建一个servlet实例 -->
+		<servlet>
+			<!-- 给servlet取一个名字，该名字需与servlet-mapping中的servlet-name一致 -->
+			<servlet-name>HelloServlet</servlet-name>
+			<!-- servlet的包名+类名 -->
+			<servlet-class>com.harry.servlet.HelloServlet</servlet-class>
+		</servlet>
+		<!-- 给servlet一个可以访问的URI地址 -->
+		<servlet-mapping>
+			<!-- servlet的名字，与 servlet中的servlet-name一致-->
+			<servlet-name>HelloServlet</servlet-name>
+			<!-- URI地址:http://locahost:8080/07-01-servlet/hello -->
+			<url-pattern>/hello</url-pattern>
+		</servlet-mapping>
+		
+	servlet执行流程：
+		1. 客户端向tomcat发送请求，http://localhost:8080/07-01-servlet/hello
+		2. tomcat根据请求的URL找到名称为07-01-servlet的应用
+		3. tomcat根据请求的URI”/hello”找到web.xml文件中url-pattern与之对应的标签
+		4. tomcat根据url-pattern标签中的servlet-name定位到com.harry.servlet.HelloServlet类。
+		5. tomcat实例化HelloServlet类
+		6. 调用HelloServlet类中的init方法
+		7. 调用HelloServlet类中的service方法
+		8. HelloServlet将数据响应给客户端
+		9. 调用distroy方法销毁HelloServlet
+		
+	servlet的特征
+		servlet是单例多线程的，只创建一个servlet对象，但是每次请求都会起一个线程并在自己线程栈内存中执行service方法。
+		一个 Servlet 实例只会执行一次无参构造器与 init()方法，并且是在第一次访问时执行。
+		用户每提交一次对当前 Servlet 的请求，就会执行一次 service()方法。
+		一个 Servlet 实例只会执行一次 destroy()方法，在应用停止时执行。
+		由于 Servlet 是单例多线程的，所以为了保证其线程安全性，一般情况下是不建议在 Servlet类中定义可修改的成员变量，因为每个线程均可修改这个成员变量，会出现线程安全问题。
+		默认情况下，Servlet 在 Web 容器启动时是不会被实例化的。
+		
+三 ServletContext 接口
+	
+	ContTest01：
+		package com.harry.servlet;
+
+		import javax.servlet.*;
+		import java.io.IOException;
+		import java.util.Enumeration;
+
+		public class ContextTest01 implements Servlet {
+			private ServletConfig config;
+
+			@Override
+			public void init(ServletConfig servletConfig) throws ServletException {
+				this.config = servletConfig;
+			}
+
+			@Override
+			public ServletConfig getServletConfig() {
+				return null;
+			}
+
+			@Override
+			public void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException {
+				ServletContext application = this.config.getServletContext();
+				// 获取应用的初始化数据
+				String driver = application.getInitParameter("MySQLDriver");
+				Enumeration<String> configs = application.getInitParameterNames();
+				while (configs.hasMoreElements()) {
+					System.out.println(configs.nextElement());
+				}
+				// 获取路径
+				String contextPath = application.getContextPath();
+				System.out.println("contextPath:" + contextPath);
+				// 获取在Servlet class文件在硬盘中的绝对路径
+				String realPath = application.getRealPath("ServletFirst");
+				System.out.println(realPath);
+				// 向ServletContext中添加属性
+				application.setAttribute("admin", "tiger");
+				application.setAttribute("password", 123456);
+				// 删除属性
+				application.removeAttribute("password");
+
+			}
+
+			@Override
+			public String getServletInfo() {
+				return null;
+			}
+
+			@Override
+			public void destroy() {
+
+			}
+		}
+		<!-- ServletContext公共参数 -->
+		<context-param>
+			<param-name>MySQLDriver</param-name>
+			<param-value>com.mysql.jdbc.Driver</param-value>
+		</context-param>
+		<context-param>
+			<param-name>dbUrl</param-name>
+			<param-value>jdbc:mysql:</param-value>
+		</context-param>
+		
+四 url-pattern的设置
+	url-pattern标签用于对请求进行筛选匹配，对当前注册的 Servlet 所要处理的请求类型进行筛选。对于url-pattern中路径的写法，有多种不同模式，表示不同的意义，一个Servlet可以对应多个url-pattern.
+	1. 精确路径模式
+		请求路径必须与url-pattern的值完全相同才可被当前 Servlet 处理。
+		<servlet-mapping>
+		  <servlet-name>contextServlet02</servlet-name>
+		  <url-pattern>/context02</url-pattern>
+		  <url-pattern>/servlet/context02</url-pattern>
+		  <url-pattern>/test/servlet/context02</url-pattern>
+		</servlet-mapping>
+	
+	2. 通配符路径模式
+		该模式中的路径由两部分组成：精确路径部分与通配符部分。请求路径中只有携带了url-pattern值中指定的精确路径部分才可被当前 Servlet 处理。
+		<servlet-mapping>
+		  <servlet-name>contextServlet02</servlet-name>
+		  <url-pattern>/servlet/*</url-pattern>
+		</servlet-mapping>
+		
+	3. 全路径模式
+		提交的所有请求全部可被当前的 Servlet 处理。其值可以指定为/*，也可指定为/。
+		<servlet-mapping>
+		  <servlet-name>contextServlet02</servlet-name>
+		  <url-pattern>/*</url-pattern>
+		</servlet-mapping>
+		/*与/表示所有请求均会被当前 Servlet 所处理。如果一个servlet的url-pattern是/*或/，则该servlet表示默认映射，当一个请求找不到相应的url的servlet时，系统会调用这个默认映射的servlet。
+		
+		这两个路径的不同之处是：
+
+			使用/*，表示当前的 Servlet 会拦截用户对于静态资源（.css、.js、.html、.jpg、.png…..）
+			与动态资源（.jsp）的请求。即用户不会直接获取到这些资源文件，而是将请求交给当前 Servlet
+			来处理了。
+
+			使用/，表示当前的 Servlet 会拦截用户对于静态资源（.css、.js、.html、.jpg、.png…..），
+			但对于动态资源的请求，是不进行拦截的。即用户请求的静态资源文件是不能直接获取到的。
+			综上所述，对于 Servlet 的url-pattern的设置，我们一般是不会将其指定为/*或/
+			
+	4. 后辍名模式
+		请求路径最后的资源名称必须携带中指定的后辍名，其请求才可被当前Servlet 处理
+		<servlet-mapping>
+			<servlet-name>contextServlet02</servlet-name>
+			<url-pattern>*.do</url-pattern>
+		</servlet-mapping>
+		
+	5. url-pattern路径优先级
+		路径优先后辍匹配原则
+			例如 SomeServlet的url-pattern为*.do，OtherServlet 的url-pattern为 /xxx/*。
+			若用户提交的请求 URL 为 http://localhost:8080/oa/xxx/abc.do，此时服务器发现 SomeServlet 的*.do 与 OtherServlet 的/xxx/*都可以与用户提交请求的/xxx/abc.do 相匹配。那么服务器会按照“路径优先后辍匹配”的原则选择 OtherServlet。
+
+		精确路径优先匹配原则
+			例如 SomeServlet的url-pattern为/some， OtherServlet 的url-pattern为 /*。若用户提交的请求 URL 为 http://localhost:8080/oa/some
+			此时服务器发现SomeServlet 的/some 与 OtherServlet 的/*都可以与用户提交请求的/some 相匹配。那么服务器会按照“精确路径优先匹配”的原则选择 SomeServlet。
+
+		最长路径优先匹配原则
+			例如 SomeServlet 的url-pattern为/some/*，OtherServlet 的url-pattern为 /some/other/*。若用户提交的请求 URL 为http://localhost:8080/oa/some/other，此时服务器发现 SomeServlet 的/some/*与 OtherServlet 的/some/other/*都可以与用户提交请求的/some/other 相匹配。
+			那么服务器会按照“最长路径优先匹配”的原则选择 OtherServlet。
+
+五 GenericServlet
+	在通过实现Servlet接口来定义一个Servlet类时存在一个很不方便的问题：有太多不需要的方法必须要实现。通常我们只在service()方法中完成业务逻辑，但由于Servlet 接口中还存在另外四个方法，所以也要必须实现。
+	为了解决这个问题JavaEE的API中提供了一个javax.servet.GenericServlet类，开发者在定义一个servlet时继承该GenericServlet类，此时只需要重写service方法即可。、
+	
+	package com.harry.servlet;
+
+	import javax.servlet.GenericServlet;
+	import javax.servlet.ServletException;
+	import javax.servlet.ServletRequest;
+	import javax.servlet.ServletResponse;
+	import java.io.IOException;
+
+	public class SimpleServlet extends GenericServlet {
+		@Override
+		public void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException {
+			System.out.println("SimpleServlet继承GenericServlet");
+		}
+	}
+	
+六 HTTPServlet
+	在实际应用中常用的http提交方式有get和post（除此之外还有put、delete），在之前所编写的servlet中是无法直接处理这两种提交方式的，为了方便开发，JavaEE规范的API提供了
+	javax.servlet.http.HttpServlet类，在实际开发中也经常使用继承HttpServlet类的方式创建一个servlet。
+		package com.harry.servlet;
+
+		import javax.servlet.ServletException;
+		import javax.servlet.http.HttpServlet;
+		import javax.servlet.http.HttpServletRequest;
+		import javax.servlet.http.HttpServletResponse;
+		import java.io.IOException;
+
+		/**
+		 * 继承HttpServlet处理GET和POST请求
+		 */
+		public class HttpTest01 extends HttpServlet {
+			// 处理GET请求
+			@Override
+			protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+				System.out.println("");
+			}
+
+			// 处理POST请求
+			@Override
+			protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+				super.doPost(req, resp);
+			}
+		}
+	
+	模板方法设计模式
+		定义一个抽象类，将部分逻辑以具体方法以及具体构造函数的形式实现，然后声明一些抽象方法来迫使子类实现剩余的逻辑。不同的子类可以以不同的方式实现这些抽象方法，从而对剩余的逻辑有不同的实现。这就是模板方法模式的用意。
+		比如考试的时候，学生是共用同一套试卷，只是学生各自的答案是不同的；因此，试题题目是模板方法是不变的，而试题答案对于每个学生是可变的。
+	
+	HttpServlet源码分析
+		通过HttpServlet源码可以看到，这是一个抽象类，该类继承了GenericServlet并重写了其父类中的Service方法。
+		HttpServlet类中重写的service方法：
+			@Override
+			public void service(ServletRequest req, ServletResponse res)
+				throws ServletException, IOException {
+
+				HttpServletRequest  request;
+				HttpServletResponse response;
+
+				try {
+					request = (HttpServletRequest) req;
+					response = (HttpServletResponse) res;
+				} catch (ClassCastException e) {
+					throw new ServletException("non-HTTP request or response");
+				}
+				service(request, response);
+			}
+			
+七 HttpServletRequest接口
+	
+	1 HttpServletRequest简介
+		Web服务器收到客户端的http请求，会针对每一次请求，创建一个用于代表请求的HttpServletRequest类型的request对象，并将"HTTP请求协议"的完整内容封装到该对象中。开发者获拿到request对象后就可以获取客户端发送给服务器的请求数据了。
+	
+	2 HttpServletRequest的生命周期
+		当客户端浏览器向服务器发送请求后，服务器会根据HTTP请求协议的格式对请求进行解析。同时，服务器会创建 HttpServletRequest类型的对象，即请求对象，然后将解析出的数据封装到该请求对象中。此时HttpServletRequest实例就创建并初始化完毕了，也就是说，请求对象是由服务器创建。当服务器向客户端发送响应结束后，HttpServletRequest 实例对象被服务器销毁，HttpServletRequest对象的生命周期很短暂。
+		一次请求对应一个请求对象， 另外一次请求对应另外一个请求对象，即每次请求都会创建一个HttpServletRequest类型的对象，这些对象之间没有关系。
+		
+	3 HttpServletRequest中常用的方法
+		获取客户端信息的方法：
+			getRequestURL方法返回客户端发出请求时的完整URL。
+			getRequestURI方法返回请求行中的资源名部分。
+			getQueryString 方法返回请求行中的参数部分。
+			getRemoteAddr方法返回发出请求的客户机的IP地址
+			getRemoteHost方法返回发出请求的客户机的完整主机名
+			getRemotePort方法返回客户机所使用的网络端口号
+			getLocalAddr方法返回WEB服务器的IP地址。
+			getLocalName方法返回WEB服务器的主机名
+			getMethod得到客户机请求方式
+			
+		Map getParameterMap()
+		获取包含所有请求参数及值的 Map 对象。需要注意，该 Map 的 value 为 String[]，即一个参数所对应的值为一个数组。说明一个参数可以对应多个值。
+		Enumeration getParameterNames()
+		获取请求参数 Map 的所有 key,即获取所有请求参数名。
+		String[] getParameterValues(String name)
+		根据指定的请求参数名称，获取其对应的所有值。这个方法一般用于获取复选框(checkbox)数据。
+		String getParameter(String name)
+		根据指定的请求参数名称，获取其对应的值。若该参数名称对应的是多个值，则该方法获取到的是第一个值。这个方法是最常用的方法。
+		
+		public class RequestTest01 extends HttpServlet {
+			@Override
+			protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+				// 根据html中的name的名字获取用户在input中填写的value值
+				String username = req.getParameter("username");
+				String password = req.getParameter("password");
+				// 获取用户勾选的checkbox值
+				String[] hobby = req.getParameterValues("hobby");
+				System.out.println(username);
+				System.out.println(password);
+				for (String s:hobby){
+					System.out.println(s);
+				}
+			}
+
+			@Override
+			protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+			}
+		}
+	
+	4 解决提交数据乱码的问题
+		解决POST请求的乱码：
+			在接收请求参数之前先通过 request 的 setCharacterEncoding()方法，指定请求体的字符编码格式。这样的话，在接收到请求中的参数后，就可按照指定的字符编码进行解码。
+			// 设置post请求的字符编码,此方式只对post请求有效
+			req.setCharacterEncoding("UTF-8");
+			
+		解决GET请求的乱码：
+			可以通过修改 Tomcat 默认字符编码的方式来解决 GET 提交方式中携带中文的乱码问题。在 Tomcat 安装目录的 conf/server.xml 中，找到端口号为 8080 的标签，在其中添加 URIEncoding=”UTF-8″的设置，即可将 Tomcat 默认字符编码修改为 UTF-8。
+			 <Connector connectionTimeout="20000" port="8080" protocol="HTTP/1.1" redirectPort="8443" URIEncoding="UTF-8"/>
+			 
+		万能解决方案
+			//根据html中的name的名字获取用户在input中填写的值
+			String username = request.getParameter("username");
+			//将数据按照ISO8859-1编码后放到字节数组中
+			byte[] bytes = username.getBytes("ISO8859-1");
+			//将字节数组按照UTF-8解码为字符串
+			username = new String(bytes,"UTF-8");
+
+八 HttpResponse接口
+	1 HttpServletResponse简介
+		Web服务器收到客户端的http请求，会针对每一次请求，创建一个用于代表响应的HttpServletResponse类型的response对象，开发者可以将要向客户端返回的数据封装到response对象中。
+	
+	2 HttpServletResponse向客户端发送数据
+		ServletResponse 接口有一个方法 getWriter()，用于获取到一个输出流对象 PrintWriter，该输出流对象是专门用于向客户端浏览器中输出字符数据的，称为标准输出流。
+		
+		package com.harry.servlet;
+		import javax.servlet.ServletException;
+		import javax.servlet.http.HttpServlet;
+		import javax.servlet.http.HttpServletRequest;
+		import javax.servlet.http.HttpServletResponse;
+		import java.io.IOException;
+		import java.io.PrintWriter;
+
+		public class ResponseTest01 extends HttpServlet {
+			@Override
+			protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+				// 设置post请求的字符编码,此方式只对post请求有效
+				req.setCharacterEncoding("UTF-8");
+				// 根据html中的name的名字获取用户在input中填写的value值
+				String username = req.getParameter("username");
+				PrintWriter out = resp.getWriter();
+				resp.setCharacterEncoding("utf-8");
+				resp.addHeader("Content-type","text/html;charset=UTF-8");
+				out.print("用户名" + username + "注册成功！<br>");
+				out.print("感谢您的注册");
+			}
+		}
+	3 HttpServletResponse响应乱码的解决方案
+		方法一：HttpServletResponse 的 setCharacterEncoding(“utf-8”)方法，将编码修改为utf-8，然后再通过setHead(“Content-type”,”text/html;charset=UTF-8″);方法告诉客户端浏览器的编码方式。
+			代码：  response.setCharacterEncoding("UTF-8");
+					response.setHead("Content-type","text/html;charset=UTF-8");
+		方法二：为了简便操作，开发者可以直接使用HttpServletResponse 的
+			setContentType(“text/html;charset=utf-8”)方法，告诉浏览器的编码方式，该方法相当于方法一种的两条代码。
+			代码：response. setContentType("text/html;charset=UTF-8");
+			
+	4 转发
+		转发是指浏览器发送请求到servlet1之后，servlet1需要访问servlet2，因此在服务器内部跳转到的servlet2，转发有时也称为服务器内跳转。整个过程浏览器只发出一次请求，服务器只发出一次响应。所以，无论是servlet1还是servlet2，整个过程中，只存在一次请求，即用户所提交的请求。因此servlet1和servlet2均可从这个请求中获取到用户提交请求时所携带的相关数据。
+		代码示例：
+			创建名为Forward01的servlet:
+				package com.harry.servlet;
+
+				import javax.servlet.ServletException;
+				import javax.servlet.http.HttpServlet;
+				import javax.servlet.http.HttpServletRequest;
+				import javax.servlet.http.HttpServletResponse;
+				import java.io.IOException;
+
+				public class Forward01 extends HttpServlet {
+					@Override
+					protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+						req.setCharacterEncoding("UTF-8");
+						String username = req.getParameter("username");
+						String password = req.getParameter("password");
+						req.setAttribute("username", username);
+						req.setAttribute("password", password);
+						// 转发
+						req.getRequestDispatcher("Other").forward(req, resp);
+
+					}
+				}
+			创建名称为Other的servlet:
+				package com.harry.servlet;
+				import javax.servlet.ServletException;
+				import javax.servlet.http.HttpServlet;
+				import javax.servlet.http.HttpServletRequest;
+				import javax.servlet.http.HttpServletResponse;
+				import java.io.IOException;
+
+				public class Other extends HttpServlet {
+					@Override
+					protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+						String username = (String)req.getAttribute("username");
+						String password = (String)req.getAttribute("password");
+						System.out.println(username);
+						System.out.println(password);
+
+					}
+				}
+	5 重定向
+		重定向是浏览器发送请求到servlet1之后，servlet1需要访问servlet2，但并未在服务器内直接访问，而是由服务器自动向浏览器发送一个响应，浏览器再自动提交一个新的请求，这个请求就是对servlet2 的请求。
+		
+		package com.harry.servlet;
+
+		import javax.servlet.ServletException;
+		import javax.servlet.http.HttpServlet;
+		import javax.servlet.http.HttpServletRequest;
+		import javax.servlet.http.HttpServletResponse;
+		import java.io.IOException;
+
+		public class Redirect01 extends HttpServlet {
+
+			@Override
+			protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+				req.setCharacterEncoding("UTF-8");
+				String username = req.getParameter("username");
+				String password = req.getParameter("password");
+				req.setAttribute("username", username);
+				req.setAttribute("password", password);
+				resp.sendRedirect("other");
+			}
+		}
+		如果想要重定向到另外一个项目的servlet上时，只需要在sendRedirect加上项目的访问名：
+			response.sendRedirect("/other-app/Other");
+	
+	6 重定向和转发的区别
+
+		请求转发
+			浏览器只发出一次请求，收到一次响应
+			请求所转发到的servlet2中可以直接获取到请求中所携带的数据
+			浏览器地址栏显示的为用户所提交的请求路径
+			只能跳转到当前应用的资源中
+		重定向
+			浏览器发出两次请求，接收到两次响应
+			重定向到的servlet2不能直接获取到用户提交请求中所携带的数据
+			浏览器地址栏显示的为重定向的请求路径，而非用户提交请求的路径。也正因为如此，重定向的一个很重要作用是：防止表单重复提交
+			重定向不仅可以跳转到当前应用的其它资源，也可以跳转到到其它应用中资源
+		请求转发与重定向的选择
+			若需要跳转到其它应用，则使用重定向。
+			若是处理表单数据的Servlet1要跳转到另外的Servlet2上，则需要选择重定向。为了防止表单重复提交。
+			若对某一请求进行处理的 Servlet 的执行需要消耗大量的服务器资源（CPU、内存），此时这个 Servlet 执行完毕后，也需要重定向。
+			其它情况，一般使用请求转发。
+			
+九 Servlet的cookie操作
+	在javax.servlet.http包下有个名为Cookie的类，通过该类就可以向客户端设置cookie数据了。
+		package com.harry.servlet;
+
+		import javax.servlet.ServletException;
+		import javax.servlet.http.Cookie;
+		import javax.servlet.http.HttpServlet;
+		import javax.servlet.http.HttpServletRequest;
+		import javax.servlet.http.HttpServletResponse;
+		import java.io.IOException;
+
+		public class CookieTest01 extends HttpServlet {
+			@Override
+			protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+				// 创建cookie对象
+				Cookie cookie1 = new Cookie("username", "admin");
+				Cookie cookie2 = new Cookie("password", "123456");
+				// 将cookie对象添加到响应中
+				resp.addCookie(cookie1);
+				resp.addCookie(cookie2);
+			}
+
+			@Override
+			protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+				super.doPost(req, resp);
+			}
+		}
+		
+	设置绑定路径
+		//手动设置绑定路径
+        cookie1.setPath(request.getContextPath() + "/aaa");
+        cookie2.setPath(request.getContextPath() + "/aaa");
+		此时会将绑定路径设置为：http://localhost:8080/07-03-cs/aaa 即访问的url中包含该路径时才会携带cookie数据。
+		
+	设置cookie的有效时长
+		默认情况下， Cookie 是保存在浏览器的缓存中的，关闭浏览器后Cookie也就消失了。
+		开发者可以通过设置Cookie的有效时长，将Cookie写入到客户端硬盘文件中。
+		可以通过下面的方法设置有效时长
+		public void setMaxAge(int expiry)
+		其中expiry的单位为秒，整型。
+			大于 0，则表示要将 Cookie 写入到硬盘文件中；
+			小于 0，则表示 Cookie 存放在浏览器缓存中，与不设置时长等效；
+			等于 0，则表示 Cookie产生后直接失效。
+			
+		//设置cookie的失效时间
+        cookie1.setMaxAge(60 * 60);//一小时
+        cookie2.setMaxAge(60 * 60 * 24);//一天
+		
+	服务器端获取请求的cookie
+		package com.harry.servlet;
+
+		import javax.servlet.ServletException;
+		import javax.servlet.http.Cookie;
+		import javax.servlet.http.HttpServlet;
+		import javax.servlet.http.HttpServletRequest;
+		import javax.servlet.http.HttpServletResponse;
+		import java.io.IOException;
+
+		/**
+		 * 接收客户端请求携带的cookie
+		 */
+		public class CookieReceive extends HttpServlet {
+			@Override
+			protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+				Cookie[] cookies = req.getCookies();
+				if (cookies == null) {
+					System.out.println("没有cookie");
+				} else {
+					for (Cookie c : cookies) {
+						System.out.println("name" + c.getName());
+						System.out.println("value" + c.getValue());
+					}
+				}
+
+			}
+		}
+		
+	练习题1：
+		实现获取用户上一次访问时间的功能，即当用户访问服务器，如果是非第一次访问的话，需要将上一次访问服务器的时间给用户显示出来。
+		
+		package com.harry.servlet;
+
+		import javax.servlet.ServletException;
+		import javax.servlet.http.Cookie;
+		import javax.servlet.http.HttpServlet;
+		import javax.servlet.http.HttpServletRequest;
+		import javax.servlet.http.HttpServletResponse;
+		import java.io.IOException;
+		import java.io.PrintWriter;
+		import java.text.SimpleDateFormat;
+		import java.util.Date;
+
+		public class CookieExercise extends HttpServlet {
+			@Override
+			protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+				Cookie[] cookies = req.getCookies();
+				resp.setContentType("text/html;charset=UTF-8");
+				PrintWriter out = resp.getWriter();
+				for (int i = 0; cookies != null && i < cookies.length; i++) {
+					if ("lastLogin".equals(cookies[i].getName())) {
+						// 拿到上一次的访问时间
+						long time = Long.parseLong(cookies[i].getValue());
+						out.write("你的上次访问时间是："+ new Date(time).toLocaleString());
+					}
+				}
+				Cookie cookieUsername = new Cookie("username", "admin");
+				Cookie cookieLoginTime = new Cookie("lastLogin", System.currentTimeMillis() + "");
+				cookieLoginTime.setMaxAge(60 * 60);
+				resp.addCookie(cookieLoginTime);
+				resp.addCookie(cookieUsername);
+
+			}
+
+			@Override
+			protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+				super.doPost(req, resp);
+			}
+		}
+	练习题2：
+		实现十天内免登陆的功能，当用户成功登陆后，十天内可以自动登录。用户名和密码直接写在代码中即可。
+		
+		DoLoginServlet 负责处理表单提交的数据：
+			package com.harry.servlet;
+
+			import javax.servlet.ServletException;
+			import javax.servlet.http.Cookie;
+			import javax.servlet.http.HttpServlet;
+			import javax.servlet.http.HttpServletRequest;
+			import javax.servlet.http.HttpServletResponse;
+			import java.io.IOException;
+			import java.io.PrintWriter;
+
+			public class DoLoginServlet extends HttpServlet {
+				@Override
+				protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+					req.setCharacterEncoding("UTF-8");
+					resp.setContentType("text/html;charset=UTF-8");
+					PrintWriter out = resp.getWriter();
+					// 获取表单数据
+					String username = req.getParameter("username");
+					String password = req.getParameter("password");
+					String remember = req.getParameter("remember");
+					System.out.println(password);
+					System.out.println(username);
+					if ("admin".equals(username) && "123456".equals(password)) {
+						out.write("登录成功");
+						// 用户勾选了十天内自动登录
+						if(remember != null){
+							Cookie cookie1 = new Cookie("username", username);
+							Cookie cookie2 = new Cookie("password", password);
+							cookie1.setMaxAge(60 * 60 * 240);
+							cookie2.setMaxAge(60 * 60 * 240);
+							// 设置cookie路径
+							cookie1.setPath("/");
+							cookie2.setPath("/");
+							resp.addCookie(cookie1);
+							resp.addCookie(cookie2);
+						}
+					} else {
+						out.write("登录失败,请重新输入");
+						// 设置2秒后跳转到重新登录
+						resp.setHeader("refresh", "2;url=" + req.getContextPath() + "/login");
+					}
+				}
+				
+		LoginServlt：
+			package com.harry.servlet;
+
+			import javax.servlet.ServletException;
+			import javax.servlet.http.Cookie;
+			import javax.servlet.http.HttpServlet;
+			import javax.servlet.http.HttpServletRequest;
+			import javax.servlet.http.HttpServletResponse;
+			import java.io.IOException;
+			import java.io.PrintWriter;
+
+			public class LoginServle extends HttpServlet {
+				@Override
+				protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+					resp.setContentType("text/html;charset=UTF-8");
+					PrintWriter out = resp.getWriter();
+					Cookie[] cookies = req.getCookies();
+					String username = "";
+					String password = "";
+					for (int i = 0; cookies != null && i < cookies.length; i++) {
+						if("username".equals(cookies[i].getName())){
+							username = cookies[i].getValue();
+						}
+						if("password".equals(cookies[i].getName())){
+							password = cookies[i].getValue();
+						}
+					}
+					// 判断cookie中的用户名密码是否匹配
+					if ("admin".equals(username) && "123456".equals(password)){
+						out.write("登录成功");
+					}
+					out.write("<form action='" + req.getContextPath() + "/doLogin' method='post'>");
+					out.write("用户名：<input type='text' name='username' /><br/>");
+					out.write("密码：<input type='password' name='password'/><br/>");
+					out.write("<input type='checkbox' name='remember' />十天免登陆<br/>");
+					out.write("<input type='submit' value='登录'/><br/>");
+					out.write("</form>");
+				}
+
+				@Override
+				protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+					super.doPost(req, resp);
+				}
+			}
+	
+十 Servlet的Session
+	在javax.servlet.http包下有个HttpSession类，通过该类就可以操作session。
+	获取Session对象的方式：通过调用request对象中的getSession()方法就可以获取Session对象了，不需要手动new创建。
+	
+	session的工作原理
+		服务器会为每个浏览器分配一个session，每个浏览器只能访问自己的session对象，可http协议是无状态的，那服务器是如何识别这些浏览器的呢？
+		服务器对Session对象是以Map的形式进行管理的，每创建一个session对象，服务器都会向该Map中的 key放入一个32位长度的随机串，这个随机串称为JSessionID， 之后将该session对象的引用放入到map的value中。
+		session放入到Map之后，服务器还会自动将”JSESSIONID”作为 name，32位长度的随机串作为value，放到cookie中并发送到客户端。该cookie会默认放到浏览器的缓存中，只要浏览器不关闭就一直存在。
+		当浏览器第二次向服务器发送请求时会携带该cookie，服务器接收到之后会根据JSessionID从Map中找到与之对应的session对象。
+	
+	Session的失效
+		若某个Session 在指定的时间范围内一直未被访问，那么 Session 将超时，即将失效。在 web.xml 中可以通过标签设置 Session 的超时时间，单位为分钟。
+		默认Session 的超时时间为 30 分钟。这个时间并不是从 Session 被创建开始计时的生命周期时长，而是从最后一次被访问开始计时，在指定的时长内一直未被访问的时长。
+		 <!-- 设置失效时间为60分钟 -->
+		 <session-config>
+			  <session-timeout>60</session-timeout>
+		 </session-config>
+		 可以在servlet中调用session中的invalidate()方法使session失效：
+		 session.invalidate();
+		 
+	package com.harry.servlet;
+
+	import javax.servlet.ServletException;
+	import javax.servlet.http.HttpServlet;
+	import javax.servlet.http.HttpServletRequest;
+	import javax.servlet.http.HttpServletResponse;
+	import javax.servlet.http.HttpSession;
+	import java.io.IOException;
+
+	public class SessionTest01 extends HttpServlet {
+		@Override
+		protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+			// 获取session
+			HttpSession session = req.getSession();
+			// 将name存放到session
+			session.setAttribute("name", "admin");
+			 // 获取session里的值
+			String name = (String)session.getAttribute("name");
+			System.out.println(name);
+		}
+
+		@Override
+		protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+			super.doPost(req, resp);
+		}
+	}
+	
+	练习题：假设是一个图书的购物网站，因此创建一个实体类Book：
+		BOOK:
+			package com.harry.servlet.bean;
+
+			public class Book {
+
+				private String id;
+				private String name;
+				private double price;
+				private String author;
+
+				public Book(){ }
+
+				public Book(String id, String name, double price, String author) {
+					this.id = id;
+					this.name = name;
+					this.price = price;
+					this.author = author;
+				}
+				public String getId() {
+					return id;
+				}
+				public void setId(String id) {
+					this.id = id;
+				}
+				public String getName() {
+					return name;
+				}
+				public void setName(String name) {
+					this.name = name;
+				}
+				public double getPrice() {
+					return price;
+				}
+				public void setPrice(double price) {
+					this.price = price;
+				}
+				public String getAuthor() {
+					return author;
+				}
+				public void setAuthor(String author) {
+					this.author = author;
+				}
+				@Override
+				public String toString() {
+					return "Book [id=" + id + ", name=" + name + ", price=" + price
+							+ ", author=" + author + "]";
+				}
+
+			}
+			
+		DBUtil:
+			package com.harry.servlet.util;
+
+			import com.harry.servlet.bean.Book;
+
+			import java.util.HashMap;
+			import java.util.Map;
+
+			public class DBUtil {
+
+				private static Map<String, Book> books = new HashMap<String, Book>();
+
+				static {
+					books.put("1", new Book("1", "java快速入门", 20, "马化腾"));
+					books.put("2", new Book("2", "java进阶之路", 30, "李彦宏"));
+					books.put("3", new Book("3", "java高手速成", 40, "马云"));
+					books.put("4", new Book("4", "java编程之道", 50, "雷军"));
+				}
+
+				//取得全部图书
+				public static Map<String, Book> findAllBooks() {
+					return books;
+				}
+
+				/**
+				 * 根据id查找指定的书
+				 *
+				 * @param id
+				 * @return
+				 */
+				public static Book findBookById(String id) {
+					return books.get(id);
+				}
+			}
+		
+		ShowBookServlet展示所有书籍：
+			package com.harry.servlet;
+
+			import com.harry.servlet.bean.Book;
+			import com.harry.servlet.util.DBUtil;
+
+			import javax.servlet.ServletException;
+			import javax.servlet.http.HttpServlet;
+			import javax.servlet.http.HttpServletRequest;
+			import javax.servlet.http.HttpServletResponse;
+			import java.io.IOException;
+			import java.io.PrintWriter;
+			import java.util.Map;
+
+			public class ShowBookServlet extends HttpServlet {
+				@Override
+				protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+					resp.setContentType("text/html;charset=UTF-8");
+					PrintWriter out = resp.getWriter();
+					// 获取书籍数据
+					Map<String, Book> books = DBUtil.findAllBooks();
+					for(Map.Entry<String, Book> book:books.entrySet()){
+						String url1 = req.getContextPath()+"/AddCart?id="+book.getKey();
+						out.print("<a href='"+url1+"' >"+book.getValue().getName()+"</a><br/>");
+					}
+					String url2 = req.getContextPath()+"/ShowCart";
+					out.print("<a href='"+url2+"'>查看购物车</a> <br/>");
+
+					String url3 = req.getContextPath()+"/ClearCart";
+					out.print("<a href='"+url3+"'>清空购物车</a> <br/>");
+				}
+
+				@Override
+				protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+				}
+			}
+		
+		AddCart添加到购物车:
+			package com.harry.servlet;
+
+			import javax.servlet.ServletException;
+			import javax.servlet.http.HttpServlet;
+			import javax.servlet.http.HttpServletRequest;
+			import javax.servlet.http.HttpServletResponse;
+			import javax.servlet.http.HttpSession;
+			import java.io.IOException;
+			import java.io.PrintWriter;
+			import java.util.HashMap;
+			import java.util.Map;
+
+			public class AddCart extends HttpServlet {
+				@Override
+				protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+					resp.setContentType("text/html;charset=UTF-8");
+					PrintWriter out = resp.getWriter();
+					// 取得图书id
+					String id = req.getParameter("id");
+					// 获取session对象
+					HttpSession session = req.getSession();
+					// 将图书的id作为key， 数量作为value存放到map中
+					Map<String, Integer> map = (Map<String, Integer>) session.getAttribute("shoppingCart");
+					// 说明session是空，即第一次抽向session中存放数据
+					if (map == null) {
+						map = new HashMap<String, Integer>();
+					}
+					// 如果是null的话，则说明还未向购物车添加过该商品
+					if (map.get(id) == null) {
+						map.put(id, 1);
+					} else {
+						// 数量+1
+						map.put(id, map.get(id) + 1);
+					}
+					session.setAttribute("shoppingCart", map);
+					out.write("购物车添加成功");
+				}
+			}
+			
+		ShowCartServlet展示购物车
+			public class ShowCartServlet extends HttpServlet {
+			@Override
+			protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
+				resp.setContentType("text/html;charset=UTF-8");
+				PrintWriter out = resp.getWriter();
+				out.write("您的购物车有以下商品：<br/>");
+				HttpSession session = req.getSession();
+				Map<String, Integer> books = (Map<String,Integer>)session.getAttribute("shoppingCart");
+				if(books == null){
+					out.write("购物车为空");
+					resp.setHeader("refresh", "2;url" + req.getContextPath() + "/showBook");
+					return;
+				}else {
+					for(Map.Entry<String, Integer> book:books.entrySet()){
+						Book b = DBUtil.findBookById(book.getKey());
+						out.write("名称:" + b.getName() + ", 数量:" + book.getValue() + "<br/>" );
+					}
+				}
+
+				}
+			}
+		
+		ClearCartServlet清空购物车：
+			package com.harry.servlet;
+
+			import javax.servlet.ServletException;
+			import javax.servlet.http.HttpServlet;
+			import javax.servlet.http.HttpServletRequest;
+			import javax.servlet.http.HttpServletResponse;
+			import javax.servlet.http.HttpSession;
+			import java.io.IOException;
+			import java.io.PrintWriter;
+
+			public class ClearCartServlet extends HttpServlet {
+				@Override
+				protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+					resp.setContentType("text/html;charset=UTF-8");
+					PrintWriter out = resp.getWriter();
+					HttpSession session = req.getSession();
+					session.removeAttribute("shoppingCart");
+					out.write("购物车清空成功");
+				}
+
+			}
+
+十一 servlet3.0新特性之注解
+	在JavaEE6规范中添加了了Servlet3.0 规范，该规范中允许在定义 Servlet、Filter 与 Listener 三大组件时使用注解，而不用在web.xml 进行注册了。Servlet3.0 规范允许 Web 项目没有 web.xml 配置文件。
+	使用servlet3.0时需要jdk6+，tomcat7+
+	
+	servlet注解
+		在3.0规范中使用@WebServlet()注解注册一个servlet，该注解中有多个属性，常用属性如下：
+		属性名				类型						说明
+		urlPatterns			String[]				相当于url-pattern的值
+		value				String[]				与 urlPatterns 意义相同，不能与 urlPatterns 属性同时使用
+		name				String					相当于servlet-name的值
+		loadOnStartup		int						相当于loadOnStartup，默认值为-1
+		initParams			WebInitParam[]			相当于init-param标签。其类型为另一个注解 WebInitParam 数组
+		
+		package com.harry.servlet;
+
+		import javax.servlet.ServletConfig;
+		import javax.servlet.ServletException;
+		import javax.servlet.annotation.WebInitParam;
+		import javax.servlet.annotation.WebServlet;
+		import javax.servlet.http.HttpServlet;
+		import javax.servlet.http.HttpServletRequest;
+		import javax.servlet.http.HttpServletResponse;
+		import java.io.IOException;
+		import java.util.Enumeration;
+
+		/**
+		 * 使用注解注册servlet
+		 */
+
+		@WebServlet(value = {"/servlet1", "/abc/servlet1"},
+					name = "serlvetname1",
+					loadOnStartup = 2,
+					initParams = {@WebInitParam(name = "teacher", value = "harry"), @WebInitParam(name = "course",value = "java")})
+		public class ServletTest01 extends HttpServlet {
+			@Override
+			protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+				ServletConfig servletConfig = this.getServletConfig();
+				//获取servlet名称
+				String servletName = servletConfig.getServletName();
+				System.out.println(servletName);
+				// 获取初始化参数
+				Enumeration<String> params = servletConfig.getInitParameterNames();
+				while (params.hasMoreElements()){
+					String name = params.nextElement();
+					String value = servletConfig.getInitParameter(name);
+					System.out.println(name +":"+value);
+				}
+			 }
+
+			@Override
+			protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+				super.doPost(req, resp);
+			}
+		}
+		
+	filter注解
+		3.0 规范中使用@WebFilter()注解来注册当前的 Filter 类。目前使用注解无法指定filter的执行顺序，其会默认根据filter的名字的字母顺序执行。
+			package com.harry.filter;
+
+			import javax.servlet.*;
+			import javax.servlet.annotation.WebFilter;
+			import java.io.File;
+			import java.io.IOException;
+
+			/**
+			 * 使用注解注册filter
+			 */
+			@WebFilter(value = {"/*"},
+						filterName = "testFilter")
+			public class FilterTest01 implements Filter {
+				@Override
+				public void init(FilterConfig filterConfig) throws ServletException {
+
+				}
+
+				@Override
+				public void destroy() {
+
+				}
+
+				@Override
+				public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+
+				}
+			}
+			
+	Listener注解
+		Servlet3.0 规范中使用@WebListener()注解来注册当前的 Listener 类。在 Web 工程中创建好 Listener 后，直接在类上添加@WebListener 注解即可完成 Listener 的注册。
+		该注解有一个属性 value，表示对该监听器的描述，使用不多。
+		package com.harry.listener;
+
+		import javax.servlet.ServletRequestListener;
+		import javax.servlet.annotation.WebListener;
+
+		@WebListener
+		public class ListenerTest01 implements ServletRequestListener {
+		}
+		
+十二 servlet3.0新特性之文件上传
+	Servlet3.0 提供了专门的文件上传 API。 HttpServletRequest 的 getPart()方法可以完成单个文件上传，而 getParts()方法可以完成多个文件上传。注意，这两个方法是从 Servlet3.0 开始定义的。
+	getPart
+	方法：Part getPart(String name) throws IOException, ServletException
+	作用：获取 Multipart 请求中指定名称的"部分"。一般这里的参数是上传表单中的"file"表单项的 name 值。
+	
+	getParts
+	方法：java.util.Collection getParts()throws IOException, ServletException
+	作用：获取 Multipart 请求中的所有"部分"。多文件上传时使用该方法。
+
+	Servlet3.0在javax.servlet.http包中新增了Part接口，该接口中常用的方法有：
+	write
+	方法：void write(String fileName) throws IOException
+	作用：将上传文件数据写入到指定的文件中。
+
+	另外在Servlet3.1中的Part接口里面新增了getSubmittedFileName方法用来获取上传的文件名
+
+	代码示例：
+	创建servlet时，需要在Servlet中添加一个@MultipartConfig注解，表示当前 Servlet 可以处理 Multipart 请求。
+		package com.monkey1024.servlet;
+
+		import java.io.File;
+		import java.io.IOException;
+
+		import javax.servlet.ServletException;
+		import javax.servlet.annotation.MultipartConfig;
+		import javax.servlet.annotation.WebServlet;
+		import javax.servlet.http.HttpServlet;
+		import javax.servlet.http.HttpServletRequest;
+		import javax.servlet.http.HttpServletResponse;
+		import javax.servlet.http.Part;
+
+		/**
+		 * 处理上传的servlet
+		 */
+		@WebServlet("/upload")
+		@MultipartConfig //表示当前servlet可以处理multipart请求
+		public class UploadServlet extends HttpServlet {
+			private static final long serialVersionUID = 1L;
+
+			protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+				//获取服务器存放上传文件的路径
+				String path = this.getServletContext().getRealPath("/upload");
+				System.out.println(path);
+				//获取上传文件，photo是html表单中的name
+				Part part = request.getPart("photo");
+				//获取上传文件的名称，这是servlet3.1中加入的方法
+				String fileName = part.getSubmittedFileName();
+
+				//将上传的文件写入到指定的服务器路径中
+				part.write(path + "/" + fileName);
+			}
+
+			protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+				doGet(request, response);
+			}
+
+		}

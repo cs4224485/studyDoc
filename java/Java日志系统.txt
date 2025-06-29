@@ -1,0 +1,389 @@
+一 日志简介
+	tomcat在运行时，会在logs文件夹下生成以.log结尾的文件，该文件就是日志，通过这些日志信息可以快速的定位程序的问题。在一个完整的软件系统中，记录日志是必不可少的一个模块，因为要记录的日志可能会较多，因此该工作是System.out.println()无法完成的。
+	日志信息根据用途与记录内容的不同，分为调试日志、运行日志、异常日志等。
+	在java中用于记录日志的技术有很多，常用的有：
+		logger
+		log4j
+		log4j2
+		logback
+	
+	日志级别
+		为了方便日志信息的输出显示，对日志内容进行了分级管理。 日志级别由高到低 ，共分 6 个级别：
+			fatal(致命的)
+			error
+			warn
+			info
+			debug
+			trace(堆栈)
+			
+
+二 log4j简介
+	log4j是apache旗下的项目，apache已经在2015年8月5日宣布log4j 1.x的版本已经不再更新了，最终版本是log4j 1.2.17的版本，推荐开发者使用log4j2，但是有些稍旧点的项目仍然在使用1.x的版本，所以这里先简单介绍下。
+	jar包的下载可以到其官网中下载：http://logging.apache.org/log4j/1.2/
+	
+	为了控制日志的输出，在Log4j中提供了日志输出控制文件，该文件主要由三个部分构成：
+		日志信息的输出位置：控制日志信息将要输出的位置，是控制台还是文件等。
+		日志信息的输出格式：控制日志信息的显示格式，即以怎样的字符串形式显示。
+		日志信息的输出级别：控制日志信息的显示内容，即显示哪些级别的日志信息。
+		
+	使用log4j记录日志
+		1.导入jar包
+		将log4j-1.2.17.zip文件解压后即可看到log4j-1.2.17.jar文件，将该jar包拷贝到项目中。
+		
+		2.放入日志输出控制文件
+		在src目录下创建log4j.properties文件，将下面内容拷贝到文件中保存。
+		
+			log4j.rootLogger=info,console,file
+
+			#控制台附加器
+			log4j.appender.console = org.apache.log4j.ConsoleAppender
+			log4j.appender.console.Target = System.out
+			log4j.appender.console.layout = org.apache.log4j.PatternLayout
+			log4j.appender.console.layout.ConversionPattern= [%-5p][%d{yyyy-MM-dd HH:mm:ss}]%m%n
+
+			#文件附加器
+			log4j.appender.file = org.apache.log4j.FileAppender
+			log4j.appender.file.File = f:/monkey1024/monkey.log
+			log4j.appender.file.layout = org.apache.log4j.PatternLayout
+			log4j.appender.file.layout.ConversionPattern= [%-5p][%d{yyyy-MM-dd HH:mm:ss}]%m%n
+
+			#滚动文件附加器
+			log4j.appender.rollfile = org.apache.log4j.RollingFileAppender
+			log4j.appender.rollfile.File = f:/monkey1024/monkey.log
+			log4j.appender.rollfile.MaxFileSize = 10KB
+			log4j.appender.rollfile.layout = org.apache.log4j.PatternLayout
+			log4j.appender.rollfile.layout.ConversionPattern= [%-5p][%d{yyyy-MM-dd HH:mm:ss}]%m%n
+		3.代码中实现日志记录
+			package com.monkey1024.test;
+
+			import org.apache.log4j.Logger;
+
+			/**
+			 * log4j
+			 *
+			 */
+			public class Log4jTest01 {
+
+				public static void main(String[] args) {
+					//创建记录日志的对象
+					Logger log = Logger.getLogger(Log4jTest01.class);
+
+					//下面语句会根据log4j.properties中的日志级别输出
+					log.debug("debug信息");
+					log.info("info信息");
+					log.warn("warn信息");
+					log.error("error信息");
+				}
+
+			}
+			
+		上面代码中的日志输出语句，会根据 log4j.properties 文件中日志级别的设置进行输出，会输出到指定位置。 其输出结果是：输出指定级别及其更高级别的信息。如指定 info 级别，则会输出 fatal、 error、 warn、 info 级别的信息。就本例而言，上面代码不会执行 debug()方法。	
+	
+	log4j.properties文件分析
+		日志属性文件 log4j.properties 是专门用于控制日志输出的。其主要进行三方面控制：
+			输出位置：控制日志将要输出的位置，是控制台还是文件等。
+			输出布局：控制日志信息的显示形式
+			输出级别：控制要输出的日志级别。
+			
+		日志属性文件由下面两个对象组成：
+			根日志，即为 Java 代码中的日志记录器，可以控制日志输出级别与添加附加器。
+			附加器，可以设置输出布局、文件位置、文件大小等内容。
+			
+		定义日志附加器 appender
+			附加器的本质是一个接口，其定义语法为：
+			log4j.appender.appenderName =  输出位置
+			
+		常用的附加器实现类
+			org.apache.log4j.ConsoleAppender：日志输出到控制台
+			org.apache.log4j.FileAppender：日志输出到文件
+			org.apache.log4j.RollingFileAppender：当日志文件大小到达指定尺寸的时候将产生一个新的日志文件
+			org.apache.log4j.DailyRollingFileAppender：每天产生一个日志文件
+			
+三 log4j2
+			
+	apache官方已经声明log4j1.x不再更新，建议开发者使用log4j2，它相比1.x在使用上发生了较大的变化。
+	使用log4j2记录日志的步骤
+	
+		1.下载jar包
+			log4j2官网下载：http://logging.apache.org/log4j/2.x/
+			百度网盘下载：http://pan.baidu.com/s/1minAspq
+			下载后需要将下面两个jar包导入到项目中
+				log4j-api-2.9.1.jar
+				log4j-core-2.9.1.jar
+		
+		2.添加日志输出控制文件
+			在log4j2中的配置文件是 XML 格式的文件，不再支持properties 文件。在src目录下创建log4j2.xml文件，里面写上下面内容。
+			<?xml version="1.0" encoding="UTF-8"?>
+			<Configuration status="OFF">
+				<Appenders>
+					<!-- console -->
+					<Console name="Console" target="SYSTEM_OUT">
+						<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+					</Console>
+					<!-- file -->
+					<File name="file" fileName="log/output.log" append="true">
+						<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+					</File>
+					<!-- rollingFile -->
+					<RollingFile name="roolingFlie" fileName="logs/app.log"
+						filePattern="logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz">
+						<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+						<SizeBasedTriggeringPolicy size="1kb" />
+					</RollingFile>
+				</Appenders>
+				<Loggers>
+					<Root level="info">
+						<AppenderRef ref="Console" />
+					</Root>
+				</Loggers>
+			</Configuration>
+			
+		3.编写日志记录代码
+			
+			package com.harry.test;
+
+			import org.apache.logging.log4j.LogManager;
+			import org.apache.logging.log4j.Logger;
+
+			public class Log4j2Test {
+				public static void main(String[] args) {
+					//创建记录日志的对象
+					Logger log = LogManager.getLogger(Log4j2Test.class);
+
+					//下面语句会根据log4j2.xml中的日志级别输出
+					log.debug("debug信息");
+					log.info("info信息");
+					log.warn("warn信息");
+					log.error("error信息");
+
+
+				}
+			}
+	日志输出控制文件分析
+		若开发者没有设置 log4j2.xml，则系统会使用默认的日志配置：只会输出到控制台 error 级别的信息。
+		configuration标签
+			configuration标签的 status 属性用于设置 Log4j2 自身运行的日志显示级别，一般为OFF，不显示,也可以设置为 ERROR、DEBUG 等其它级别。
+		Console标签
+			Console标签的 target 属性用于设置输出的目标形式，其值一般为：SYSTEM_OUT 或 SYSTEM_ERR
+			
+		File标签
+			File标签的 fileName 属性用于设置文件的文件保存路径及文件名。如本例的意思是，日志文件名为 output.log，将其存放在当前项目的根目录下的 log 子目录中,如果log目录不存在会自动创建。
+			append 属性用于设置是否以追加方式将日志写入文件中。
+		
+		RollingFile标签
+			fileName 指定存放目录及第一个日志文件名。filePattern 指定新创建的日志文件的文件名。本例还会对文件进行压缩。
+			SizeBasedTriggeringPolicy子标签用于指定每一个日志文件最大文件大小。当达到这个指定值后，会自动再新建一个日志文件。
+		
+		loggers标签
+			用于配置根Logger 对象，用来指定所使用的日志记录器，及显示的级别。
+			其子标签root用于指定所使用的日志记录器。该子标签的属性 level 用于指定显示级别，主要是通过root的子标签appender-ref来引用appenders中定义好的记录器。
+			需要注意的是，只要在appenders中定义了File、 RollingFile等，且在其中指定了日志存放的目录，无论是否在appender-ref中引用，这些目录都会自动创建。
+			
+四 日志规范slf4j
+	在实际应用当中，不同的系统可能使用了不同的库来记录日志。比如你使用log4j2开发了一款产品，而购买你产品的用户所使用的系统是jdk的Logging时，你可能需要对千上万的log4j2的调用进行修改，这肯定是一件费时费力的事情。为了解决该问题，slf4j诞生了。
+	slf4j，全称是Simple Logging Facade for Java，中文是简单日志门面。它仅仅是一种规范，一个接口，不是具体的日志解决方案，不做具体的日志服务。 Log4j和Log4j2以及后面要学习的logback都是 slf4j 的一种具体实现。
+	slf4j 有自己单独的一套 API，这套 API 与具体的日志实现技术的 API 是不同的。为了能使 slf4j 的 API 与具体日志实现技术 API 结合到一起，在 slf4j 与具体日志技术之间，还需要一个连接的 jar包。这个jar包在 sfl4j 框架中存放着。
+	
+	将log4j改成slf4j
+		1.导入相关jar包
+			log4j-1.2.17.jar
+				官网中下载：http://logging.apache.org/log4j/1.2/
+				百度网盘下载：http://pan.baidu.com/s/1kU4WZWz
+				将文件解压后即可看到log4j-1.2.17.jar文件
+			slf4j-api-1.7.25.jar（核心包）
+			slf4j-log4j12-1.7.25.jar（连接slf4j和log4j的包，将来切换到其他日志库时，只需更换该jar包）
+				官网下载：https://www.slf4j.org/download.html
+				百度网盘下载：http://pan.baidu.com/s/1kVSnPjD
+				下载解压后及可找到上面两个jar包。
+		2.加入日志输出控制文件log4j.properties文件
+			将之前写的配置文件拷贝过来即可
+			
+		3.代码中实现日志记录
+			通过LoggerFactory获取创建记录的日志对象，导包时需要导入org.slf4j下的类
+			
+			import org.slf4j.Logger;
+			import org.slf4j.LoggerFactory;
+
+			public class Slf4jTest01 {
+
+				public static void main(String[] args) {
+					//创建记录日志的对象
+					Logger log = LoggerFactory.getLogger(Slf4jTest01.class);
+
+					log.debug("debug信息");
+					log.info("info信息");
+					log.warn("warn信息");
+					log.error("error信息");
+
+				}
+
+			}
+			
+	将log4j2改成slf4j
+		在slf4j的1.7.25（含）版本之前，没有提供log4j2相关的jar，不过在log4j2中提供了相关的jar包。
+		1.导入相关jar包
+			log4j-api-2.9.1.jar
+			log4j-core-2.9.1.jar
+			log4j-slf4j-impl-2.9.1.jar
+				log4j2官网下载：http://logging.apache.org/log4j/2.x/
+				百度网盘下载：http://pan.baidu.com/s/1minAspq
+				注意在导入时不能同时导入log4j-slf4j-impl-2.9.1.jar和log4j-to-slf4j-2.9.1.jar
+			slf4j-api-1.7.25.jar
+				官网下载：https://www.slf4j.org/download.html
+				百度网盘下载：http://pan.baidu.com/s/1kVSnPjD
+		2.添加日志输出控制文件log4j2.xml
+			将之前写过的拷贝过来
+			
+		3.编写日志记录代码
+			通过LoggerFactory获取创建记录的日志对象，导包时需要导入org.slf4j下的类
+			
+			import org.slf4j.Logger;
+			import org.slf4j.LoggerFactory;
+
+			/**
+			 * slf4j
+			 *
+			 */
+			public class Slf4jTest02 {
+
+				public static void main(String[] args) {
+					//创建记录日志的对象
+					Logger log = LoggerFactory.getLogger(Slf4jTest02.class);
+
+					log.debug("debug信息");
+					log.info("info信息");
+					log.warn("warn信息");
+					log.error("error信息");
+
+
+				}
+
+			}
+五 logback简介
+	logback是log4j作者的开发的又一个记录日志的开源技术，相比于log4j而言，logback在很多方面都有很大的提升。logback分为三个模块：logback-core, logback-classic和logback-access。其中 logback-core是另外两个的基础模块，logback-classic是log4j的升级版本，同时也实现了SLF4j的API，因此可以方便的使用SLF4j，还有一点要说的就是SLF4j和logback的作者是同一个人，所以说logback是原生的实现了SLF4j。logback-access集成了一些servlet容器，比如tomcat
+	1.下载jar包
+		logback官网下载：https://logback.qos.ch/download.html
+		百度网盘下载：http://pan.baidu.com/s/1o7RROpG
+		下载完毕解压后，需要将下面三个jar包导入到项目中：
+			logback-access-1.2.3.jar
+			logback-classic-1.2.3.jar
+			logback-core-1.2.3.jar
+			
+		如果要是用slf4j的话需要下载slf4j的jar包，因为slf4j和logback无缝集成，所以这里不用下载slf4j连接logback的jar包了。
+	
+	2.添加日志输出控制文件
+		在src目录下创建一个logback.xml文件，里面写上下面内容：
+			<?xml version="1.0" encoding="UTF-8" ?>
+
+			<configuration scan="true" scanPeriod="3 seconds" DEBUG="true">
+
+				<statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener" />
+
+				<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+					<encoder>
+						<pattern>%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+						</pattern>
+					</encoder>
+				</appender>
+
+
+				<appender name="FILE" class="ch.qos.logback.core.FileAppender">
+					<file>file.log</file>
+					<append>true</append>
+					<encoder>
+						<pattern>%-4relative [%thread] %-5level %logger{35} - %msg%n
+						</pattern>
+					</encoder>
+				</appender>
+
+				<appender name="ROLLINGFILE"
+					class="ch.qos.logback.core.rolling.RollingFileAppender">
+					<file>mylog.txt</file>
+					<rollingPolicy
+						class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+						<!-- rollover daily -->
+						<fileNamePattern>mylog-%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
+						<!-- 每个日志文件大小不超过100MB，在日志文件总大小不超过20GB的情况下保存60天， -->
+						<maxFileSize>100MB</maxFileSize>
+						<maxHistory>60</maxHistory>
+						<totalSizeCap>20GB</totalSizeCap>
+					</rollingPolicy>
+					<encoder>
+						<pattern>%d{HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n
+						</pattern>
+					</encoder>
+				</appender>
+
+				<root level="INFO">
+					<appender-ref ref="STDOUT" />
+				</root>
+
+			</configuration>
+			
+	3.编写日志记录代码
+		因为logback原生就实现了SLF4j的API，所以这里使用SLF4j。
+			import org.slf4j.Logger;
+			import org.slf4j.LoggerFactory;
+
+			import ch.qos.logback.classic.LoggerContext;
+			import ch.qos.logback.core.status.OnConsoleStatusListener;
+			import ch.qos.logback.core.status.StatusManager;
+
+			public class LogbackTest01 {
+
+				public static void main(String[] args) {
+					// 创建记录日志的对象
+					Logger log = LoggerFactory.getLogger(Slf4jTest01.class);
+
+					log.debug("debug信息");
+					log.info("info信息");
+					log.warn("warn信息");
+					log.error("error信息");
+
+				}
+
+			}
+			
+	日志输出控制文件分析
+		configuration
+			scan=”true”表示logback会自动加载修改后的xml配置文件，默认情况下，每隔一分钟扫描一次，可以通过scanPeriod=”3 seconds”设置为每3秒扫描一次。
+			DEBUG=”true”该配置并不是设置日志级别为debug，而是会打印logback内部运行的一些信息，可以查看logback的运行状态，默认是false。
+			
+		statusListener
+			可以通过设置监听器来监听logback内部运行的信息和状态。
+		
+		appender
+			可以编写多个appender来实现不同的日志输出方式。
+			其中name属性用于指定appender的名称，即给appender命名
+			class属性用于指定日志的输出方式。
+				ch.qos.logback.core.ConsoleAppender：将日志信息输出到控制台
+				ch.qos.logback.core.FileAppender：日志输出到文件
+				ch.qos.logback.core.rolling.RollingFileAppender：当日志文件大小到达指定尺寸的时候将产生一个新的日志文件。
+				
+		encoder
+			在logback0.9.19版本中引入了encoder来替代layout。该标签默认使用PatternLayoutEncoder，其中pattern标签可以设置日志的输出格式。
+		
+		file
+			该标签在appender标签下，用于指定输出日志的文件名
+		
+		append
+			该标签在appender标签下，是否以追加的方式写出到日志文件中。
+			
+		rollingPolicy
+			该标签在appender标签下，用来指定产生新文件的方式。
+			常用的有SizeAndTimeBasedRollingPolicy（根据日期和文件大小产生新的文件）和FixedWindowRollingPolicy（根据文件大小产生新的文件）
+			
+		maxFileSize
+			该标签在rollingPolicy下，当文件大小超过该标签中指定的大小时会创建新的文件，例如：5kb，5MB，5GB，默认单位是字节b，如果只写500的话，则表示500b
+		
+		maxHistory
+			该标签在rollingPolicy下，用来指定日志保存的天数。
+		
+		totalSizeCap
+			该标签在rollingPolicy下，保存日志的总大小，通常写在maxHistory的后面。
+			
+		level
+			该标签在root下，用来表示日志的打印级别
+		
+		appender-ref
+			该标签在root下，用来添加appender。

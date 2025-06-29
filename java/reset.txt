@@ -1,0 +1,629 @@
+restful风格中spring mvc常用注解
+	@RestController
+	我们通常使用ajax+json实现restful架构风格，请求和响应的数据都使用json格式，那就需要在controller的每个方法上加上@ResponseBody来标注该方法返回值放到响应体中，这样就不太方便了，此时就可以使用@RestController注解来代替之前的@Controller注解，这样就标注了当前controller中的每个方法的返回值要放到响应体中，就不用在每个方法上写@ResponseBody注解了。
+	@RequestBody
+	restful风格的请求数据是使用json格式，此时我们在要接收请求参数的javabean前面添加@RequestBody就可以将请求的数据赋值到相应的bean属性中。
+	@GetMapping
+	该注解用来替代RequestMapping，特点是@GetMapping只处理get方式的请求。
+	@PostMapping
+	该注解用来替代RequestMapping，特点是@PostMapping只处理post方式的请求。
+	@PutMapping
+	该注解用来替代RequestMapping，特点是@PutMapping只处理put方式的请求。
+	@DeleteMapping
+	该注解用来替代RequestMapping，特点是@DeleteMapping只处理delete方式的请求。
+	
+Restful架构风格示例
+	前端和后端的数据传输都使用json格式了，所以需要引入spring mvc默认使用的jackson相关的jar包：
+		<dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+		
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>5.0.4.RELEASE</version>
+        </dependency>
+		
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.62</version>
+        </dependency>
+		
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.10.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.10.0</version>
+        </dependency>
+		
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.10.0</version>
+        </dependency>
+		
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-parameter-names</artifactId>
+            <version>2.9.4</version>
+        </dependency>
+		
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jdk8</artifactId>
+            <version>2.9.4</version>
+        </dependency>
+		
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.9.4</version>
+        </dependency>
+		
+	要实现restful风格，需要修改web.xml文件里面的中央控制器的url匹配方式，不能是*.do之类的了，要改成/
+		<!--字符编码过滤器-->
+		<filter>
+			<filter-name>characterEncodingFilter</filter-name>
+			<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+
+			<!--指定字符编码-->
+			<init-param>
+				<param-name>encoding</param-name>
+				<param-value>utf-8</param-value>
+			</init-param>
+
+			<!--强制指定字符编码，即如果在request中指定了字符编码，那么也会为其强制指定当前设置的字符编码-->
+			<init-param>
+				<param-name>forceEncoding</param-name>
+				<param-value>true</param-value>
+			</init-param>
+		</filter>
+		<filter-mapping>
+			<filter-name>characterEncodingFilter</filter-name>
+			<url-pattern>/*</url-pattern>
+		</filter-mapping>
+
+		<!-- 注册spring MVC中央控制器 -->
+		<servlet>
+			<servlet-name>springMVC</servlet-name>
+			<!-- spring MVC中的核心控制器 -->
+			<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+			<init-param>
+				<param-name>contextConfigLocation</param-name>
+				<param-value>classpath:springmvc.xml</param-value>
+			</init-param>
+			<load-on-startup>1</load-on-startup>
+		</servlet>
+		<servlet-mapping>
+			<servlet-name>springMVC</servlet-name>
+			<url-pattern>/</url-pattern>
+		</servlet-mapping>
+   需要在springmvc的配置文件中添加静态资源，除此之外还需要设置json格式的字符编码，否则可能会在响应时出现乱码格式，这是因为我们响应的是json数据，此时spring mvc会使用StringHttpMessageConverter类进行转换，而该类中默认的字符编码是ISO_8859_1，这样就会导致响应头中出现Content-Type: text/plain;charset=ISO-8859-1，即使你使用了spring mvc中自带的编码过滤器也会出现乱码问题，因为在字符编码过滤器中没有设置响应的Content-Type，所以最好在配置文件中设置json格式的字符编码：
+		<!-- 视图解释类 -->
+		<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+			<property name="prefix" value="/jsp/"/>
+			<property name="suffix" value=".jsp"/>
+		</bean>
+
+		<!--解决返回json数据乱码问题-->
+		<bean id="stringHttpMessageConverter"
+			  class="org.springframework.http.converter.StringHttpMessageConverter">
+			<property name="supportedMediaTypes">
+				<list>
+					<value>text/plain;charset=UTF-8</value>
+					<value>application/json;charset=UTF-8</value>
+				</list>
+			</property>
+		</bean>
+		<mvc:annotation-driven>
+			<mvc:message-converters>
+				<ref bean="stringHttpMessageConverter" />
+			</mvc:message-converters>
+		</mvc:annotation-driven>
+
+
+		<!-- 注册组件扫描器 -->
+		<context:component-scan base-package="com.harry.*"/>
+		<mvc:default-servlet-handler/>
+
+		<!--静态资源-->
+		<mvc:resources mapping="/images/**" location="/images/" />
+		<mvc:resources mapping="/js/**" location="/js/" />
+		<mvc:resources mapping="/css/**" location="/css/" />
+		<mvc:resources mapping="/html/**" location="/html/" />
+		
+	这里不涉及数据库方面的操作，因此还是使用之前的DataUtil.java工具类来提供数据。下面是rest风格的controller的写法，一个rest风格的url中是不能包含动词的（当然你写动词了也不会出问题），因为在rest风格眼中，互联网中的任何一个资源都是一个事物。
+		
+		DataUtil:
+			package com.harry.util;
+
+			import com.harry.bean.User;
+
+			import java.time.LocalDate;
+			import java.util.HashMap;
+			import java.util.Iterator;
+			import java.util.Map;
+			import java.util.Set;
+
+			/**
+			 * 模拟生成数据的工具类
+			 */
+			public class DataUtil {
+				private static HashMap<String, User> dataMap = new HashMap<>();
+
+				// 模拟初始化数据
+				static {
+					User user1 = new User("jack", "1888888888", "北京", LocalDate.of(2012, 01, 01));
+					User user2 = new User("harry", "1666666666", "上海", LocalDate.of(2018, 04, 01));
+					User user3 = new User("andy", "1999999999", "深圳", LocalDate.of(2017, 11, 11));
+					dataMap.put("1", user1);
+					dataMap.put("2", user2);
+					dataMap.put("3", user3);
+				}
+
+				/**
+				 * 查询全部数据
+				 *
+				 * @return
+				 */
+				public static HashMap<String, User> findAll() {
+					return dataMap;
+				}
+
+				/**
+				 * 根据id进行查询
+				 *
+				 * @param id
+				 * @return
+				 */
+				public static User findUserById(String id) {
+					return dataMap.get(id);
+				}
+
+				public static void create(User user) throws Exception {
+					// 遍历map找到key的最大值
+					Set<Map.Entry<String, User>> entries = dataMap.entrySet();
+					Iterator<Map.Entry<String, User>> iterator = entries.iterator();
+					int max = 3;
+					while (iterator.hasNext()) {
+						Map.Entry<String, User> next = iterator.next();
+						int i = Integer.parseInt(next.getKey());
+						if(max < i){
+							max = i;
+						}
+					}
+					// 将最大值做自增运算,然后作为key放到map中
+					dataMap.put(++max + "", user);
+				}
+
+				public static void update(String id, User user) throws Exception {
+					dataMap.put(id, user);
+				}
+
+				/**
+				 * 删除用户
+				 * @param id
+				 * @throws Exception
+				 */
+				public static void Adelete(String id) throws Exception{
+					dataMap.remove(id);
+				}
+
+			}
+
+		
+		UserRestController:
+			import java.util.Date;
+			import java.util.HashMap;
+
+			/**
+			 * 基于restful风格的增删改查
+			 */
+			@RestController
+			public class UserRestController {
+				/**
+				 * 查询所有用户
+				 * @return
+				 * @throws Exception
+				 */
+				@GetMapping("/users")
+				private String findAll() throws Exception{
+					HashMap<String, User> allUser = DataUtil.findAll();
+					return JSON.toJSONString(allUser);
+				}
+
+				/**
+				 * 根据id查找
+				 * @param id
+				 * @return
+				 * @throws Exception
+				 */
+				@GetMapping("/users/{id}")
+				public String findById(@PathVariable String id) throws Exception{
+					User user = DataUtil.findUserById(id);
+					return JSON.toJSONString(user);
+				}
+
+				@PostMapping("/users")
+				public String create(@RequestBody User user){
+					try {
+						DataUtil.create(user);
+					} catch (Exception e) {
+						e.printStackTrace();
+						return JSON.toJSONString("fail");
+					}
+					return JSON.toJSONString("success");
+				}
+
+				@PutMapping("/users/{id}")
+				public String update(@PathVariable String id,  @RequestBody User user){
+					try {
+						DataUtil.update(id, user);
+					} catch (Exception e) {
+						e.printStackTrace();
+						return JSON.toJSONString("fail");
+					}
+					return JSON.toJSONString("success");
+				}
+
+				@DeleteMapping("/users/{id}")
+				public String delete(@PathVariable String id){
+					try {
+						DataUtil.delete(id);
+					} catch (Exception e) {
+						e.printStackTrace();
+						return JSON.toJSONString("fail");
+					}
+					return JSON.toJSONString("success");
+				}
+			}
+		
+	在webapp目录下创建html文件夹：
+	user_list.html:
+		<!DOCTYPE html>
+		<html lang="zh">
+		<head>
+			<meta charset="utf-8">
+			<meta http-equiv="X-UA-Compatible" content="IE=edge">
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+			<title>monkey1024</title>
+			<link href="../css/bootstrap.css" rel="stylesheet">
+
+		</head>
+		<body>
+		<div class="container theme-showcase" role="main">
+			<div id="msg">
+
+			</div>
+			<div class="page-header">
+				<input type="text" name="id"  id="user-id" placeholder="请输入id">
+				<button id="query" type="button" class="btn btn-sm btn-primary">查询</button>
+				<button id="add" type="button" class="btn btn-sm btn-success">添加</button>
+			</div>
+			<div class="row">
+				<div class="">
+					<table class="table table-striped">
+						<thead>
+						<tr>
+							<th>编号</th>
+							<th>姓名</th>
+							<th>手机</th>
+							<th>生日</th>
+							<th>地址</th>
+							<th>操作</th>
+						</tr>
+						</thead>
+						<tbody id="tbody">
+
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+		<script src="../js/jquery-3.3.1.min.js"></script>
+		<script src="../js/bootstrap.js"></script>
+		<script>
+			var userOpt = {
+				init: function () {
+					this.getAll();
+					this.bindAdd();
+					this.bindModify();
+					this.bindDelete();
+					this.bindQuery()
+				},
+				getAll: function () {
+					$.ajax({
+						url: "/users",
+						type: "get",
+						dataType: "json",
+						success: function (result) {
+							var dataTR = "";
+							$.each(result, function (index, value) {
+								dataTR +=
+									"<tr>" +
+									"<td>" + index + "</td>" +
+									"<td>" + value.name + "</td>" +
+									"<td>" + value.phone + "</td>" +
+									"<td>" + value.birthday + "</td>" +
+									"<td>" + value.address + "</td>" +
+									"<td>" +
+									"<button type='button' class='btn btn-sm btn-info' id='delete' >删除</button>" +
+									"<button type='button' class='btn btn-sm btn-warning' id='modify'>修改</button>" +
+									"</td>" +
+									"</tr>";
+							});
+							$("#tbody").html(dataTR);
+						}
+					});
+				},
+				bindAdd:function () {
+					$("#add").click(function () {
+						window.location.href = "/html/user_add.html"
+					})
+				},
+				bindModify:function () {
+					$("#tbody").on("click", "#modify", function () {
+						var userId = this.parentNode.parentNode.firstChild.innerHTML;
+						window.location.href = "/html/user_update.html?id=" + userId;
+					})
+				},
+				bindDelete:function(){
+					var that = this;
+					$('#tbody').on("click", "#delete", function () {
+						var flag = confirm("是否删除？");
+						if (flag){
+							that.deleteUser(this);
+						}
+
+					})
+				},
+				deleteUser:function (obj) {
+					var userId = obj.parentNode.parentNode.firstChild.innerHTML;
+					$.ajax({
+						url:"/users/"+userId,
+						type:"delete",
+						dataType:"json",
+						success:function (result) {
+							if(result == "success"){
+								userOpt.getAll();
+								var msg = "<div class=\"alert alert-info\" role=\"alert\">删除成功!</div>"
+								$("#msg").html(msg);
+								setTimeout(function () {
+								  $("#msg").empty();
+								},2000)
+							}else {
+								var msg = "<div class=\"alert alert-warning\" role=\"alert\">删除失败!</div>"
+								$("#msg").html(msg);
+								setTimeout(function () {
+									$("#msg").empty();
+								},2000)
+							}
+						}
+					})
+				},
+				getUserById:function (userId) {
+					$.ajax({
+						url:"/users/"+userId,
+						type:"get",
+						dataType:"json",
+						success:function (result) {
+							var  dataTR =
+								"<tr>" +
+								"<td>" + userId + "</td>" +
+								"<td>" + result.name + "</td>" +
+								"<td>" + result.phone + "</td>" +
+								"<td>" + result.birthday + "</td>" +
+								"<td>" + result.address + "</td>" +
+								"<td>" +
+								"<button type='button' class='btn btn-sm btn-info' >删除</button>" +
+								"<button type='button' class='btn btn-sm btn-warning' >修改</button>" +
+								"</td>" +
+								"</tr>";
+
+							$("#tbody").html(dataTR);
+						}
+					});
+				},
+				bindQuery:function () {
+					$("#query").click(function () {
+						var userId = $("#user-id").val();
+						if(userId != ""){
+							userOpt.getUserById(userId);
+						}else {
+							userOpt.getAll();
+						}
+					})
+				}
+			};
+			$(function () {
+				userOpt.init();
+			})
+
+		</script>
+		</body>
+		</html>
+		
+	user_add.html:
+		<!DOCTYPE html>
+		<html lang="zh">
+		<head>
+			<meta charset="utf-8">
+			<meta http-equiv="X-UA-Compatible" content="IE=edge">
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+			<title>monkey1024</title>
+			<link href="../css/bootstrap.css" rel="stylesheet">
+		</head>
+		<body>
+		<div class="page-header"></div>
+		<div class="container">
+			<div id="msg">
+
+			</div>
+			<form id="user-form"  style="max-width: 330px;padding: 15px;margin: 0 auto;">
+				<div class="form-group">
+					<label for="name">姓名:</label>
+					<input type="text" class="form-control" id="name" name="name">
+				</div>
+				<div class="form-group">
+					<label for="phone">手机:</label>
+					<input type="text" class="form-control" id="phone" name="phone">
+				</div>
+				<div class="form-group">
+					<label for="birthday">生日:</label>
+					<input type="date" class="form-control" id="birthday" name="birthday">
+				</div>
+				<div class="form-group">
+					<label for="address">地址:</label>
+					<input type="text" class="form-control" id="address" name="address">
+				</div>
+
+				<button id="add-submit"  class="btn btn-sm btn-success"  >提交</button>
+			</form>
+		</div>
+		<script src="../js/jquery-3.3.1.min.js"></script>
+		<script src="../js/bootstrap.js"></script>
+		<script>
+			var userAdd = {
+				init:function () {
+					this.bindSubmit();
+				},
+				bindSubmit:function () {
+
+					$("#add-submit").click(function (event) {
+					   event.preventDefault();
+					   var jsonForm = $("#user-form").serializeArray();
+					   console.log(jsonForm);
+					   var jsonDate = {};
+					   $.each(jsonForm, function (i,v) {
+						   jsonDate[v.name] = v.value;
+					   });
+					   console.log(jsonDate);
+					   var params = JSON.stringify(jsonDate);
+						$.ajax({
+							url:"/users",
+							type:"post",
+							data:params,
+							dataType:"json",
+							contentType:"application/json",
+							success:function (res) {
+								if(res == "success"){
+									window.location.href = "/html/user_list.html";
+								}else {
+									var msg = "<div class=\"alert alert-warning\" role=\"alert\">添加失败！</div>"
+									$("#msg").html(msg);
+									setTimeout(function () {
+									  $("#msg").empty();
+									},20000)
+								}
+							}
+						})
+					})
+				}
+			};
+
+		$(function () {
+			userAdd.init();
+		})
+		</script>
+		</body>
+		</html>
+		
+	user_update.html
+		<!DOCTYPE html>
+		<html lang="zh">
+		<head>
+			<meta charset="utf-8">
+			<meta http-equiv="X-UA-Compatible" content="IE=edge">
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+			<title>monkey1024</title>
+			<link href="../css/bootstrap.css" rel="stylesheet">
+		</head>
+		<body>
+		<div class="page-header"></div>
+		<div class="container">
+			<form id="user-form" style="max-width: 330px;padding: 15px;margin: 0 auto;">
+				<input type="hidden" id="id" name="id">
+				<div class="form-group">
+					<label for="name">姓名:</label>
+					<input type="text" class="form-control" id="name" name="name">
+				</div>
+				<div class="form-group">
+					<label for="phone">手机:</label>
+					<input type="text" class="form-control" id="phone" name="phone">
+				</div>
+				<div class="form-group">
+					<label for="birthday">生日:</label>
+					<input type="date" class="form-control" id="birthday" name="birthday">
+				</div>
+				<div class="form-group">
+					<label for="address">地址:</label>
+					<input type="text" class="form-control" id="address" name="address">
+				</div>
+
+				<button id="add-submit"  class="btn btn-sm btn-success" >提交</button>
+			</form>
+		</div>
+		<script src="../js/jquery-3.3.1.min.js"></script>
+		<script src="../js/bootstrap.js"></script>
+
+		<script>
+			$(function () {
+				bindUpdate();
+				// 从url中获取携带的参数
+				var userId = location.search.split("=")[1];
+				$("#id").val(userId);
+				function bindUpdate(){
+					$("#add-submit").click(function (event) {
+						event.preventDefault();
+						var jsonForm = $("#user-form").serializeArray();
+						console.log(jsonForm);
+						var jsonDate = {};
+						$.each(jsonForm, function (i,v) {
+							jsonDate[v.name] = v.value;
+						});
+						console.log(jsonDate);
+						var params = JSON.stringify(jsonDate);
+						$.ajax({
+							url:"/users/"+userId,
+							type:"put",
+							data:params,
+							dataType:"json",
+							contentType:"application/json",
+							success:function (res) {
+								if(res == "success"){
+									window.location.href = "/html/user_list.html";
+								}else {
+									var msg = "<div class=\"alert alert-warning\" role=\"alert\">添加失败！</div>"
+									$("#msg").html(msg);
+									setTimeout(function () {
+										$("#msg").empty();
+									},20000)
+								}
+							}
+						})
+					})
+				}
+				// 查询要修改的数据
+				$.ajax({
+					url:"/users/"+userId,
+					type:"get",
+					dataType:"json",
+					success:function (result) {
+						$("#name").val(result.name);
+						$("#phone").val(result.phone);
+						$("#address").val(result.address);
+						$("#birthday").val(result.birthday);
+					}
+				})
+			})
+		</script>
+		</body>
+		</html>

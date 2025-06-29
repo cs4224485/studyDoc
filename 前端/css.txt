@@ -1,0 +1,350 @@
+﻿一 CSS介绍
+CSS是指层叠样式表(Cascading Style Sheets)，样式定义如何显示HTML元素，样式通常又会存在于样式表中。
+使用css的目的是控制html各种元素使网页展示美观精致
+
+二 css引入方式
+	1 行内式
+	   <p style="background-color:red">hello world</p>
+	2 嵌入式
+		<head>
+			<meta charset="utf-8">
+			<title>title</title>
+			<style>
+				div{
+					background-color:red;
+				}
+			</style>
+		</head>
+	3 链接式
+		将一个.css文件引入到html文件中
+		<link href="mystyle.css" rel="stylesheet" type="text/css"/>
+	4 外联样式表 @import url()方式 导入式
+		@import url(other.css)
+	
+三 CSS选择器
+	1  基本选择器
+		*: 通用元素选择器，匹配任何元素  *  { margin 0; padding 0;}
+		E: 便签选择器，匹配所有使用E标签的元素 p{color：green；}
+		.info和E.info: class选择器，匹配所有class属性中包含info的元素
+		#info和E#info: id选择器， 匹配所有id属性等于info的元素  
+	2  组合选择器
+		E,F     多元素选择器(群组选择器)，同时匹配所有E元素或F元素，E和F直接用逗号分隔          div,p { color:red; }
+		E F     后代元素选择器，匹配所有属于E元素后代的F元素，E和F之间用空格分隔    li a { font-weight:bodf; }
+		E > F   子元素选择器，匹配所有E元素的子元素F                                  div > p { color：green; }
+		E + F   毗邻选择器,匹配所有紧随E元素之后的同级元素F
+	3  属性选择器
+		E[att] 匹配所有具有att属性的E元素，不考虑他的值   p[title]    { color:red; }
+		E[att=val] 匹配所有att属性等于"val"的E元素
+		E[att~=val] 匹配所有att属性具有多个空格分隔的值，其中一个值属于val的E元素    td[class~="name"]  {color:#f00;}
+		E[att^=val] 匹配属性值以指定开头的每个元素                                     div[class^="test"] { background:red; }
+		E[att$=val] 匹配属性值以指定结尾的每个元素
+		E[att*=val] 匹配属性值中包含指定值的每个元素
+		p：before   在每个<p>元素的内容之前插入内容                                    p:before{ content:"hello";color:red;}
+		p：after    在每个<p>元素的内容之后插入内容 
+	嵌套注意规则
+		1 块及元素可以包含内联元素或某些块级元素，但内联元素不能包含块级元素，它只能包含其他内联元素
+		2 块级元素不能放在p里面
+		3 有几个特殊的块级元素只能包含内联元素，不能包含块级元素。 如h1，h2,h3,h4,p,dt
+		4 li内可以包含div
+		5 块级元素与块级元素并列内联元素与内联元素并列
+	CSS选择权重总结：先看有没有选中,如果选中了就数数(id,class,标签的数量)谁的权重大就显示谁的属性
+		如果没有被选中，权重为0
+		如果属性都是被继承下来的权重都是0"就近原则":即谁描述的近就显示谁的属性
+		
+四 CSS伪类以及伪元素
+	a:link      未单击访问时的超链接样式
+	a:visited   单击访问后超链接样式
+	a:hover		鼠标悬浮其上的超链接样式
+	a:active	鼠标单机未释放的超链接样式
+	input：focus  当专注到输入框的样式
+	div ul li:first-child    选中li标签的第一个元素
+	div ul li：nth-child(3)  选中当前指定的元素 数值从1开始
+	div ul li：nth-child(n)   n表示选中索引从0开始 0的时候表示没有选中
+	div ul li：nth-child(2n)  所有偶数
+	div ul li：nth-child(2n-1)所有基数			 
+	
+	css伪元素选择器
+		 first-lette      用于为文本首字母设置特殊样式
+		 before			  用于在元素内容前面插入新内容
+		 after			  用于在元素内容后面插入新内容，在布局时可以用来清除浮动
+	
+五 CSS样式处理
+		1 字体样式
+			font-family			设置字体类型
+			font-size			设置字体大小
+			font-style			设置字体风格
+			font-weight			设置字体粗细
+			font				在一个声明中设置所有字体属性
+		2 文本样式
+			color				设置文本颜色
+			text-align			设置元素水平对齐方式
+			text-indent			设置首行文本的缩进
+			line-height			设置文本的行高事项单行垂直居中
+			text-decoration		设置文本的装饰
+		3 背景样式
+			background-color     设置背景颜色
+			background-image	 设置背景图像路径
+			backgroup-repeat	 设置背景重复方式
+			backgroup-position	 设置背景定位
+		
+六 CSS盒子模型
+
+	盒模型：在网页中基本都会显示一些方方正正的盒子，这种盒子被称为盒子模型。
+	重要属性：width height padding border margin
+	weight,height: 指的是内容宽高 而不是整个盒子真实的宽高
+	盒子模型的计算: 如果想保证盒子的真实宽度， 加width应该减少padding， 减width应该加padding
+	
+	
+	1 边框 boder										
+	     border-top-style     上边框样式 			
+		 border-right-style   右边框样式
+		 border-bottom-style  下边框样式
+		 border-left-style	  左边框样式
+		 border-style		  设置四个边框样式
+	
+	2 内边距padding
+		padding控制的是盒子内容到盒子border之间的距离，设置了padding值是额外加载原来大小之上的width+padding，如果不想给不实现大小，
+		那么就在width减去padding方向对应的值
+	3 外边距margin
+		外边距控制的是元素与元素之间的距离，margin也有四个方向，会改变实际大小背景色不会渲染到marigin区域，但是这个区域也属于盒子一部分
+		使用margin: 0 auto  水平居中盒子
+		使用条件：1 必须由width,要明确width,文字水平居中使用text-align:center
+				  2 只有标准流下的盒子才能使用margin:0 auto, 当一个盒子浮动了，固定定位或绝对定位了就无法使用margin: 0 auto
+				  3 margin:0 auto居中盒子而不是居中文本
+		
+七 CSS页面浮动
+	文档流：可见元素在文档中显示位置
+	浮动产生的效果：
+		浮动可以使元素按指定位置排列，直到遇到父元素的边界或另一个元素的边界停止
+		如果父元素没有足够的空间那么第三个盒子紧贴着第二个盒子，第二个盒子紧贴第一个盒子， 第一个贴着边
+		如果没有足够的空间那么会靠着第一个盒子，如果没有足够的空间靠着第一个盒子，自己会往边贴
+	浮动效果
+        1 浮动可以使元素脱离文档流，不占位置
+        2 浮动会使元素提升层级
+		3 浮动可以使块元素在一行内排列 不设置宽高时可以使元素适应内容
+		4 浮动可以使行内元素支持宽高 所有便签一旦设置浮动都不区分行内和块状元素
+	浮动产生的问题：
+		父元素不设置高度，子元素设置浮动之后，不会撑开父元素的高度,那么此时父盒子没有高度了。如果在次父盒子下面还有一个标准流的盒子，那么就会影响页面的布局。
+		所以我们要解决浮动带来的页面布局错乱问题------清除浮动。
+	清除浮动的方法：
+		1 父元素设置高度是，子元素设置了浮动不会撑开父元素的高度，子元素不占位置
+		2 给浮动元素最后一个加一个空的块级元素，且改元素不浮动，设置clear:both
+		3 给最后一个盒子添加 visibility: hidden; clear:both; display: block; content:"" height:0; 官方推荐
+		4 给父元素添加overflow:hidden
+	浮动：float
+		left     元素向左浮动       /*左浮动 左侧为起始，从左往右依次排列*/
+		right	 元素向右浮动		/*右浮动 右侧为起始，从左往右依次排列*/
+	
+八 CSS页面布局相关属性
+	
+	1 Overflow属性
+		visible     默认值，内容不会被修剪,会呈现在盒子之外
+		hidden		内容会被修剪，并其余内容不可见
+		scroll		内容会被修剪，但是浏览器会显示滚动条以便查看其余内容
+		auto      	如果内容被修剪，则浏览器会显示滚动以便查看其余内容
+		
+	2 display属性
+		控制元素的显示和隐藏
+		块级元素与行内元素的转变
+		none   			设置元素不会被显示
+		inline			元素会被显示为内联元素
+		block			元素会被显示为块级元素
+		inline-block    行内块元素
+		visibility：hidden  隐藏标签但是仍然占用位置
+
+	3 position属性	
+		static  	   默认值,没有定位
+		relative	   相对定位		
+			特点：1 不脱标  2 形影分离  3 老家流坑  用处：1微调页面信息 2 做绝对定位的参考位置
+			相对自身原来位置进行偏移，设置相对定位的盒子会相对它原来的位置，通过指定偏移到达新的位置
+			设置了相对定位的网页元素，无论是在标准流还是在浮动流中，都不会对它的父级元素和相邻元素有任何影响，它只只对自身原来的位置进行偏移
+		absolute	   绝对定位          
+			在没有父级元素定位时，以浏览器的左上角为基准，有父级的情况下，父级设置相对定位，子级设置绝对定位，是以父盒子为基准进行定位
+			可以提升层级关系
+			脱离文档流
+		fixed	固定定位  特性：1 脱离标准流  2 提升层级 3 固定不变 不会随着页面滚动而滚动
+				参考点： 设置固定定位用top描述，那么是以浏览器左上角为参考点， 如果用bottom描述那么是以浏览器的左下角为参考点
+				绝对定位居中的办法: 设置子元素的绝对定位,left：50%， margin-left等于元素宽度的一半实现绝对定位盒子居中
+	
+	4   z-index   (1) z-index值表示谁压着谁，数值大的亚盖住数值小的，
+	              (2) 只有定位了的元素才能有z-index， 也就是说不管相对定位，绝对定位，固定定位，都可以使用z-index，而浮动元素不能使用。
+				  (3) z-index值没有单位就是一个正整数
+				  (4) 如果大家都没有z-index值或者z-index值一样那么谁写在html的后面谁在上面压着谁，定位了的元素永远压住没有定位的元素
+				  (5) 从父现象
+			 
+九 几个css布局案例
+	1 使用hover做浮动选项栏
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<title>Title</title>
+			<style type="text/css">
+				*{margin: 0;padding: 0}
+				.page-header{
+					height: 48px;
+					background-color: #303a40;
+					color: white;
+					line-height: 48px;
+				}
+				.page-body .body-menu{
+					position: absolute;
+					top: 48px;
+					bottom: 0;
+					left: 0;
+					width: 200px;
+					border: 1px solid;
+				}
+				.page-body .body-content{
+					position: absolute;
+					top: 50px;
+					bottom: 0;
+					left: 205px;
+					right: 0;
+
+					border: 1px solid rebeccapurple;
+				}
+
+				.page-header .logo{
+					float: left;
+					width: 200px;
+					text-align: center;
+				}
+
+				.page-header .user{
+					float: right;
+					padding: 0 40px;
+					height: 48px;
+					position: relative;
+				}
+				.page-header .user:hover{
+					background-color: #EBA702;
+				}
+
+				.page-header .user:hover .more{
+					display: block;
+
+				}
+				.page-header .user .more{
+					position: absolute;
+					top: 48px;
+					right: 0;
+					width: 200px;
+					border: 1px solid green;
+					background-color: grey;
+					display: none;
+					z-index: 999;
+				}
+				 .page-header .user .more a{
+					 display: block;
+				 }
+				.page-header .picture img{
+					width: 30px;
+					height: 30px;
+					margin-top: 7px;
+					border-radius: 50%;
+				}
+			</style>
+		</head>
+		<body>
+			<div class="page-header">
+				<div class="logo">python</div>
+				<div class="user">
+					<a href="javascript:" class="picture">
+						<img src="二维码.png">
+					</a>
+					<div class="more" style="">
+						<a>注销</a>
+						<a>我的信息</a>
+					</div>
+				</div>
+			</div>
+			<div class="page-body">
+				<div class="body-menu"></div>
+				<div class="body-content"></div>
+			</div>
+		</body>
+	</html>
+	
+	2 后台管理系统页面布局
+		<!DOCTYPE html>
+		<html lang="en">
+			<head>
+				<meta charset="UTF-8">
+				<title>Title</title>
+				<style type="text/css">
+					*{margin: 0; padding: 0}
+					.menu{
+						position:absolute;
+						left: 200px;
+						width: 220px;
+						top: 48px;
+						bottom: 0;
+						border: 1px solid red;
+					}
+					.fixed{
+						position:fixed;
+						top:0;
+					}
+					
+					.menu a{
+						display: block;
+					}
+				   .menu a.active{
+						background-color: #1eb1af;
+					}
+				</style>
+			</head>
+			<body>
+				<div style="height: 48px;background-color: #303a40"></div>
+				<div class="menu">
+					<a num="menu1" class="">菜单一</a>
+					<a num="menu2">菜单二</a>
+					<a num="menu3">菜单三</a>
+					<a num="menu4">菜单四</a>
+				</div>
+				<div id="content" style="position:absolute;left: 430px;  top: 48px;bottom: 0; right:200px; border: 1px solid green">
+					<div id="menu1" class="level1" style="height: 500px;background-color: rebeccapurple"></div>
+					<div id="menu2" class="level1" style="height: 900px;background-color: #303a40"></div>
+					<div id="menu3" class="level1" style="height: 1000px;background-color: #84a42b;"></div>
+					<div id="menu4" class="level1" style="height: 800px;background-color: blue;"></div>
+				</div>
+			</body>
+			<script src="jquery-3.3.1.js"></script>
+			<script type="text/javascript">
+				$(function () {
+
+					$(document).scroll(function () {
+						var scrollTop = $(document).scrollTop();
+						if(scrollTop>48){
+							$('.menu').addClass('fixed')
+						}else {
+							$('.menu').removeClass('fixed');
+							$('.menu a').eq(0).removeClass('active')
+						}
+
+
+						$('#content').children().each(function () {
+							var eleTop = $(this).offset().top;
+							var winTop = eleTop -scrollTop;
+							var winBottomTop = eleTop + $(this).height() - scrollTop;
+
+							// 滚动高度
+							// 文档高度
+							// 窗口的高度
+							// 最底部 = 文档高度-窗口高度
+							var docHeight = $(document).height();
+							var winHeight = $(window).height();
+							if(docHeight - winHeight == scrollTop){
+								$('.menu a:last').addClass('active').siblings().removeClass('active')
+							}else if (winTop<=0 && winBottomTop>=0){
+								var id = $(this).attr('id');
+								$('.menu a[num='+$(this).attr('id')+']').addClass('active').siblings().removeClass('active')
+							}
+						})
+					})
+				});
+
+			</script>
+		</html>
+			

@@ -1,0 +1,84 @@
+一 什么是git
+	git是一个用于帮助用户实现版本控制的软件
+	
+2 常用命令
+	git init								初始化
+	git status								查看当前文件夹的状态
+	git add	文件名							对指定文件进行版本控制
+	git add .								对指定文件夹下的所有文件及子目录进行版本控制
+	git commit -m '详细的描述信息'			创建提交记录
+	git log	
+	git reflog								查看版本记录
+	git rest --hard 提交记录(版本号)		回退一个版本
+	git checkout						
+	
+3 git satsh功能
+	帮助我们暂时存储已经开发一些功能的代码， 继续做其他事情，做完之后 再回来继续开发
+	
+	git stash								将当前工作区发生改动的(红色的)的文件暂时先放到一个地方
+	git stash pop							将第一个记录从“某个地方”重新拿到工作区(可能有冲突)
+	git stash list							查看某个地方存储的所有记录
+	git stash clear							清除“某个地方”
+	git stach drop							编号，删除指定编号的角记录
+	git stach apply							编号，将指定编号记录从“某个地方”重新拿到工作区(可能有冲突)
+
+4 branch
+	git branch dev							创建分支
+	git checkout dev						切换到一个分支
+	git branch -d bug						删除一个分支
+	git merge bug							合并一个分支(可能有冲突)
+	
+
+5 从github上传下载
+	git remote add origin [别名]			给下载链接起一个别名
+	git push origin dev						上传代码
+	git clone url							下载代码      # 只把master克隆下来了
+	get pull origin dev	
+		# 等价于
+		git fetch orgin master
+		git merge orgin/dev
+	
+	get pull origin master
+		# 等价于
+		git fetch orgin master
+		git merge orgin/master
+	
+
+二 多人协同开发
+	
+	1 允许多人协同开发
+		- 合作者
+		- 创建组织
+	
+	2 分支
+		各自向各自的分支提交代码 然后在进行合并
+		- mastar
+		- dev
+		- harry
+		- sam
+	3 规则
+		- 一起合并
+		- 合并时间： 1至两天合并一次
+		
+三 其他
+	1 不用反复输入用户名密码登录
+		HTTPS:
+			git remote add origin https://用户名:密码@github/cs/dbhot.git
+		SSH:
+			git@github.commit:cs/dbhot.git
+	2 忽略管理某些文件
+		创建 .gitignore文件
+	
+	3 版本相关命令
+		git tag -a v1.0 -m "版本介绍"            本地创建Tag
+		git show v1.0							 查看
+		git tags -n								 查看本地Tag
+		git tags -l 'v1.4.2.*'					 查看本地Tag 模糊匹配
+		git push origin :refs/tags/v0.2			 更新远程tag
+		git checkout v.10						 切换tag
+		git fetch origin tag v1.2	
+		
+		git push origin -- tags
+		git pull origin -- tags
+		
+		git clone -branch v0.1

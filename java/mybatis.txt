@@ -1,0 +1,1708 @@
+一 mybatis简介
+	myBatis是一个持久层框架，主要作用就是在java中操作数据库，其实就是在jdbc的基础上进行了封装，使用mybatis之后，开发者不用再花费精力去处理诸如注册驱动、创建Connection、配置Statement等繁琐过程。与之前学习的spring mvc要运行在web容器不同，mybatis不需要web容器，在c/s架构和b/s架构下均可运行。早期叫做iBatis，后来改名为myBatis，官网：http://www.mybatis.org/mybatis-3/
+	在官网上有中文版的介绍和文档，mybatis同时支持xml和注解，这里xml用的多一些。
+	
+二 第一个mybatis程序
+	1.创建一个web的maven项目，添加mybatis的依赖jar包和mysql的数据库驱动，为了查看具体的sql信息，需要添加log4j：
+		<dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mybatis</groupId>
+            <artifactId>mybatis</artifactId>
+            <version>3.5.2</version>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.17</version>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+		
+		除了mybatis的jar包之外，为了方便调试，这里要使用junit，其相关依赖jar包在你使用骨架创建maven项目的时候会自动加入的。
+		另外还需要在pom.xml文件中的build标签下添加：
+		<resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+        </resources>
+		因为后面我们要在dao包下编写xml文件，如果不添加上面内容的话，maven是不会将xml文件发布到编译后的classes目录下，这样就会导致mybatis到不到该文件。
+	
+	2.创建一个Student实体类：
+		public class Student {
+
+			private int id;
+
+			private String name;
+
+			private int age;
+
+			private double score;
+
+			//省略getter和setter
+		}
+		
+	3.创建数据库表
+		CREATE TABLE `learnmybatis`.`t_student` (
+		  `id` INT NOT NULL AUTO_INCREMENT,
+		  `name` VARCHAR(20) NULL,
+		  `age` INT NULL,
+		  `score` DOUBLE NULL,
+		  PRIMARY KEY (`id`));
+	
+	4.定义一个dao的接口：
+		package com.harry.dao;
+
+		import com.harry.bean.Student;
+
+		public interface StudentDao {
+			void insertStudent(Student student);
+		}
+		
+	5.添加映射文件
+		映射文件，一般称之为mapper，主要是在里面编写SQL语句，里面具体配置，后面会详细讲解。暂时先照着下面的写，dtd约束可以直接拷贝下面的内容。mapper的文件名随意，一般会跟dao接口放在同一个包下，这里映射文件名称定为StudentMapper.xml
+		<?xml version="1.0" encoding="UTF-8" ?>
+		<!DOCTYPE mapper
+				PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+				"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+		<mapper namespace="harry">
+			<!--parameterType可省略-->
+			<insert id="insertStudent" parameterType="com.harry.bean.Student">
+				INSERT INTO t_student(name,age,score) VALUES (#{name},#{age},#{score})
+			</insert>
+		</mapper>
+		mybatis会检测到student类型的对象，所以parameterType一般不用指定，values后面的#{}中的内容是Student的属性名。
+		
+	6.添加mybatis的主配置文件
+		主配置文件的名称同样也是可以随意命名的，这里就将其命名为mybatis.xml，将这个配置文件放到maven项目中的resources目录下。
+		<?xml version="1.0" encoding="UTF-8" ?>
+		<!DOCTYPE configuration
+				PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+				"http://mybatis.org/dtd/mybatis-3-config.dtd">
+		<configuration>
+			<environments default="development">
+				<environment id="development">
+					<transactionManager type="JDBC"/>
+					<dataSource type="POOLED">
+						<property name="driver" value="com.mysql.jdbc.Driver"/>
+						<property name="url" value="jdbc:mysql://192.168.0.108:3306/learnmybatis?useSSL=false"/>
+						<property name="username" value="harry.cai"/>
+						<property name="password" value="123456"/>
+					</dataSource>
+				</environment>
+			</environments>
+			<mappers>
+				<!--注册映射文件-->
+				<mapper resource="com/harry/dao/StudentMapper.xml"/>
+			</mappers>
+		</configuration>
+	
+	7.查看日志
+		mybatis支持下面的日志处理：
+			SLF4J
+			Apache Commons Logging
+			Log4j 2
+			Log4j
+			JDK logging
+			
+		在其官方文档中使用了Log4j作为的示例，因此这里我们也使用log4j进行处理。在resources目录下创建log4j.properties文件，里面加上下面内容：
+			##查看harry的namespace下的sql语句
+			log4j.logger.harry=debug,console
+
+			#控制台附加器
+			log4j.appender.console = org.apache.log4j.ConsoleAppender
+			log4j.appender.console.Target = System.out
+			log4j.appender.console.layout = org.apache.log4j.PatternLayout
+			log4j.appender.console.layout.ConversionPattern= [%-5p][%d{yyyy-MM-dd HH:mm:ss}]%m%n
+			
+	8.创建接口的实现类
+		创建StudentDao接口的实现类：
+			package com.harry.dao.Impl;
+
+			import com.harry.bean.Student;
+			import com.harry.dao.StudentDao;
+			import org.apache.ibatis.io.Resources;
+			import org.apache.ibatis.session.SqlSession;
+			import org.apache.ibatis.session.SqlSessionFactory;
+			import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+
+			import java.io.IOException;
+			import java.io.InputStream;
+
+			public class StudentDaoImpl implements StudentDao {
+				private SqlSession sqlSession;
+
+				@Override
+				public void insertStudent(Student student) {
+					try {
+						//读取主配置文件
+						InputStream input = Resources.getResourceAsStream("mybatis.xml");
+						//创建SqlSessionFactory对象
+						SqlSessionFactory sessionFactory = new SqlSessionFactoryBuilder().build(input);
+						//创建SqlSession对象
+						sqlSession = sessionFactory.openSession();
+						//新增数据操作
+						sqlSession.insert("insertStudent", student);
+						//提交SqlSession
+						sqlSession.commit();
+
+					} catch (IOException e) {
+						e.printStackTrace();
+					} finally {
+						if (sqlSession != null){
+							sqlSession.close();
+						}
+					}
+				}
+			}
+	
+	9.创建测试类，这里使用了junit：
+		import com.harry.bean.Student;
+		import com.harry.dao.Impl.StudentDaoImpl;
+		import com.harry.dao.StudentDao;
+		import org.junit.Test;
+
+		public class StudentTest01 {
+
+			@Test
+			public void insertStudent(){
+				StudentDao studentDao = new StudentDaoImpl();
+				Student student = new Student("刘德华", 52, 98.50);
+
+				studentDao.insertStudent(student);
+			}
+		}
+		
+三 代码重构
+	在第一个mybatis程序中，获取SqlSession对象的操作比较复杂，此时可以考虑将过去SqlSession对象的操作封装成一个方法。SqlSession对象是由SqlSessionFactory对象创建的，SqlSessionFactory是线程安全的，所以可以使用单例模式来创建SqlSessionFactory对象。
+	1.创建一个MyBatisUtil工具类：
+		/**
+		 * DCL的单例模式
+		 */
+		public class MyBatisUtil {
+			//不需要将构造方法私有化，因为这里的单例只是保证外界使用当前工具时创建一个SqlSessionFactory对象就行
+			// private MyBatisUtil() {
+			//
+			//    }
+			private static volatile SqlSessionFactory sqlSessionFactory;
+
+			public static SqlSession getSqlSession() {
+				try {
+					if (sqlSessionFactory == null) {
+						// 读取主配置文件
+						InputStream input = Resources.getResourceAsStream("mybatis.xml");
+						synchronized (MyBatisUtil.class){
+							if(sqlSessionFactory == null){
+							   sqlSessionFactory = new SqlSessionFactoryBuilder().build(input);
+							}
+						}
+					}
+				} catch(IOException e){
+						e.printStackTrace();
+					}
+				return sqlSessionFactory.openSession();
+			}
+		}
+		上面的单例模式比较特殊，里面无需将构造方法私有化，至于MyBatisUtil这个类创建几个对象无所谓，他只要保证其内部只创建一个SqlSessionFactory对象就行，这里只是将单例模式应用在创建SqlSessionFactory对象上。
+		
+	2.修改StudentDaoImpl类：
+		public class StudentDaoImpl implements StudentDao {
+		private SqlSession sqlSession;
+
+		@Override
+		public void insertStudent(Student student) {
+			try {
+				//创建SqlSession对象
+				sqlSession = MyBatisUtil.getSqlSession();
+				//新增数据操作
+				sqlSession.insert("insertStudent", student);
+				//提交SqlSession
+				sqlSession.commit();
+			} finally {
+				if (sqlSession != null){
+					sqlSession.close();
+				}
+				}
+			}
+		}
+		
+	3.从配置文件中读取数据库的信息
+		一般情况下为了便于管理，都会将数据库的一些信息放到配置文件中，mybatis.xml配置文件会从该配置文件中读取相关的信息。
+		在resources目录下创建db.properties配置文件，里面填写下面内容：
+			jdbc.driverClass=com.mysql.jdbc.Driver
+			jdbc.url=jdbc:mysql://192.168.0.108:3306/learnmybatis?useSSL=false
+			jdbc.username=harry.cai
+			jdbc.password=123456
+		将以上配置文件注册到mybatis.xml中，并修改一些内容：
+			<properties resource="db.properties"/>
+			<environments default="development">
+				<environment id="development">
+					<transactionManager type="JDBC"/>
+					<dataSource type="POOLED">
+						<property name="driver" value="${jdbc.driverClass}"/>
+						<property name="url" value="${jdbc.url}"/>
+						<property name="username" value="${jdbc.username}"/>
+						<property name="password" value="${jdbc.password}"/>
+					</dataSource>
+				</environment>
+			</environments>
+			<mappers>
+				<!--注册映射文件-->
+				<mapper resource="harry/dao/StudentMapper.xml"/>
+			</mappers>
+			
+			
+四 mybatis配置文件主要作用
+
+	注册db.properties属性文件，以便使用
+	注册实体类（JavaBean）的全限定性类名的别名
+	配置MyBatis运行环境，即数据源与事务管理器
+	注册映射文件mapper
+	
+	1.注册db.properties属性文件
+		我们在mybatis.xml文件中添加了下面配置：
+			<properties resource="db.properties"/>
+		这个配置的作用就是注册db.properties属性文件，这样子就可以获取里面的数据库信息了。
+		
+	2.注册实体类（JavaBean）的全限定性类名的别名
+		因为在写mapper配置文件的时候，需要写上一些javabean类的全限定名，这样子就不太方便，此时就可以使用typeAliases标签设置该javabean类的别名，这样子就不用再写包名了，减少冗余。
+			<typeAliases>
+				<!-- 方式一：这种配置不方便 -->
+				<!-- <typeAlias type="harry.bean.Student" alias="student"/>-->
+				<!-- 方式二：mybatis会在这个包下搜索需要的javabean -->
+				<package name="harry.bean"/>
+			</typeAliases>
+		这样子，在mapper配置文件中就可以直接使用student来代替之前的com.harry.bean.Student
+	
+	3.配置MyBatis的运行环境
+		运行环境的切换
+		一个稍具规模的项目在开发的时候都会有多个环境，即多个数据库，在开发阶段连接数据库A（或者是本地的数据库），集成测试阶段使用数据库B，项目上线后使用数据库C，此时在mybatis中配置选择哪个数据库。
+		<!--生产环境-->
+		<environment id="online">
+			<transactionManager type="JDBC"/>
+			<dataSource type="POOLED">
+				<property name="driver" value="${jdbc.online.driver}"/>
+				<property name="url" value="${jdbc.online.url}"/>
+				<property name="username" value="${jdbc.online.user}"/>
+				<property name="password" value="${jdbc.online.password}"/>
+			</dataSource>
+		</environment>
+		在environments标签中有两个environment子标签表示了两个数据库，此时可以在environments中使用default属性来指定使用哪一个数据库，这样子，在切换环境的时候，只需要修改default的属性即可。
+			ransactionManager标签
+				该标签用于指定MyBatis所使用的事务管理器。 MyBatis 支持两种事务管理器类型：
+					JDBC
+					该事务器就是我们之前通过Connection的commit()方法提交，通过rollback()方法回滚，默认是需要手动提交的。
+					MANAGED
+					由容器来管理事务的整个事务的生命周期，默认情况下会关闭连接，将来学习spring框架之后，就不用在配置事务管理器了，spring会使用自带的管理器。
+			
+			dataSource标签
+				该项主要用于配置数据源和数据库连接基本属性，有以下三种内建的数据源类型：
+					UNPOOLED
+					该配置表示不使用连接池，每次请求都会创建一个数据库连接，使用完毕后再关闭。当项目对数据库性能要求不大的时候，可以使用该配置。
+					POOLED
+					改配置表示使用mybatis自带的数据库连接池，可以在dataSource下的property属性中设置数据库连接池的基本信息，该部分可以在mybatis的官网中看到。
+					JNDI
+					配置外部数据源
+					
+	4.mapper映射器
+		映射器的作用就是在告诉mybatis.xml配置文件我们编写的mapper所在的路径，一共有四种写法：
+		第一种：
+			<mappers>
+				<!--注册映射文件-->
+				<mapper resource="harry/dao/StudentMapper.xml"/>
+			</mappers>
+		
+		第二种：
+			<mappers>
+				<!--使用完全限定资源定位符（URL）-->
+				<mapper url="F:///monkey1024/StudentMapper.xml"/>
+			</mappers>
+			
+		第三种:
+			该方式的使用，需要满足以下几个要求：
+			（1）映射文件名要与 Dao 接口名称相同
+			（2）映射文件要与接口在同一包中
+			（3）映射文件中的 namespace 属性值为 Dao 接口的全类名
+			<mappers>
+				<!--使用映射器接口实现类的完全限定类名-->
+				<mapper class="com.harry.dao.StudentDao"/>
+			</mappers>
+			
+		第四种：
+			这种方式的使用需要满足以下几个条件：
+			（1）dao 使用 mapper 动态代理实现
+			（2）映射文件名要与 Dao 接口名称相同
+			（3）映射文件要与接口在同一包中
+			（4）映射文件中的 namespace 属性值为 Dao 接口的全类名
+			<mappers>
+				<!--将包内的映射器接口实现全部注册为映射器-->
+				<package name="com.harry.dao"/>
+			</mappers>
+
+五 MyBatis单表操作分析
+
+	1.添加操作分析
+		在之前的我们编写了第一个MyBatis程序，就是实现了一个向数据库中的添加操作，下面来分析一下：
+			<insert id="insertStudent" parameterType="student">
+				INSERT INTO t_student(name,age,score) VALUES (#{name},#{age},#{score})
+			</insert>
+		id：该SQL语句的唯一标识，可被用来代表该sql语句，在Java代码中要使用该标识。
+		parameterType:传入参数的类型，MyBatis会推断出传入参数的类型，因此可以不用配置。
+		{ }：里面需要填写javabean中的属性，其底层是通过反射机制，调用bean类相关属性的get方法来获取值的。
+		
+		在dao的实现类中，我们手动进行了事务的提交：
+			@Override
+			public void insertStudent(Student student) {
+				try {
+					//创建SqlSession对象
+					sqlSession = MyBatisUtil.getSqlSession();
+					//新增数据操作
+					sqlSession.insert("insertStudent", student);
+					//提交SqlSession
+					sqlSession.commit();
+				} finally {
+					if (sqlSession != null){
+						sqlSession.close();
+					}
+				}
+			}
+		
+		如果想要改成自动的话，可以在MyBatisUtil中的下面openSession方法里面传入true，这样mybatis就会自动提交事务了，如果传入false或者没有传入任何参数，他是不会自动提交事务的。
+			//自动提交事务
+			sqlSessionFactory.openSession(true);
+
+			//不自动提交事务
+			sqlSessionFactory.openSession(false);
+			sqlSessionFactory.openSession();
+			
+		获取主键
+			在之前的示例中，我们使用了mysql主键自增的策略，当插入数据库后，我们才能获取到该数据的主键，获取主键的操作可以使用下面方式：
+			<mapper namespace="harry">
+				<!--parameterType可省略-->
+				<insert id="insertStudent" parameterType="student">
+					INSERT INTO t_student(name,age,score) VALUES (#{name},#{age},#{score})
+					<!-- 获取自增主键 -->
+					<selectKey resultType="int" keyProperty="id" order="AFTER">
+						SELECT @@identity
+					</selectKey>
+				</insert>
+			</mapper>
+			
+		这样子在mybatis完成插入数据后，会将该数据的主键查询出来，重写Student的toString方法，然后通过下面示例可以看到被插入student数据的主键：
+			@Test
+			public void insertStudent(){
+				StudentDao studentDao = new StudentDaoImpl();
+				Student student = new Student("harry2", 52, 98.50);
+				// id的默认值是0
+				System.out.println(student);
+				studentDao.insertStudent(student);
+				// 可以获取到id的值
+				System.out.println(student);
+			}
+		这样子在完成插入数据后就不用再单独去数据库中把主键查询出来了，通过上面的配置，mybatis会帮我们做这件事。那么mybatis是如何获取
+			try(SqlSession sqlSession = MyBatisUtil.getSqlSession()) {
+				//新增数据操作
+				sqlSession.insert("insertStudent", student);
+				System.out.println("提交数据库之前:" + student);
+				//提交SqlSession
+				sqlSession.commit();
+
+			}
+			
+		当执行插入操作的时候，可以看到在提交事务之前，其实已经获取到这个主键id的，就是说不管是提交还是回滚，这个主键都是先获取到的。当执行sql语句之后，数据库就会给该条数据分配一个主键，倘若回滚的话，这个主键就不能用了，下次再执行插入操作时，会在该id之后再分配一个id。由此可以得出一个结论就是主键的生成跟事务没有关系，只要执行了sql语句，mysql就会为其分配一个主键。
+	
+	2.单表的删除
+		这里的删除还是在之前示例的基础上进行编写，先在StudentMapper.xml中添加删除操作的SQL语句：
+			<!-- 这里的#{id}只是起到暂未符的作用-->
+			<delete id="deleteStudent">
+				DELETE FROM t_student where id=#{id}
+			</delete>
+			
+		先之后StudentDao接口中添加deleteStudent的方法，然后在其实现类中实现该方法：
+			@Override
+			public void deleteStudent(int id) {
+				try {
+					SqlSession sqlSession = MyBatisUtil.getSqlSession();
+					sqlSession.delete("deleteStudent", id);
+					sqlSession.commit();
+				}finally {
+					if (sqlSession != null){
+						sqlSession.close();
+						}
+					}
+				
+				}
+				
+		在测试类中，为了避免每个方法中都要创建StudentDao类型的对象，我们添加一个方法用来初始化其对象并添加删除操作的方法：
+			public class StudentTest01 {
+
+				private StudentDao studentDao;
+
+				@Before
+				public void initStudentDao(){
+					studentDao = new StudentDaoImpl();
+				}
+				@Test
+				public void insertStudent(){
+					Student student = new Student("harry2", 52, 98.50);
+					studentDao.insertStudent(student);
+				}
+
+				@Test
+				public void deleteStudent(){
+					// 删除id是2的数据
+					studentDao.deleteStudent(7);
+				}
+			}
+			
+	3.修改数据
+		在mapper中添加修改SQL
+			<update id="updateStudent">
+				UPDATE t_student set name=#{name},age=#{age},score=#{score} where id=#{id}
+			</update>
+			
+		在StudentDao中添加updateStudent方法并在StudentDaoImple中实现该方法：
+			@Override
+			public void updateStudent(Student student) {
+				try {
+					//创建SqlSession对象
+					sqlSession = MyBatisUtil.getSqlSession();
+					//新增数据操作
+					sqlSession.update("updateStudent", student);
+					//提交SqlSession
+					sqlSession.commit();
+				} finally {
+					if (sqlSession != null){
+						sqlSession.close();
+					}
+				}
+			}
+		在测试类中添加下面方法进行测试：
+			@Test
+			public void updateStudent(){
+				Student student = new Student("蔡爽", 25, 100);
+				student.setId(5);
+				studentDao.updateStudent(student);
+			}
+			
+	4.单表查询
+		在StudentMapper.xml中添加查询的sql语句：
+			<!-- resultType要写上单条数据对应的类 -->
+			<select id="selectAllStudent" resultType="student">
+				select id,name,age,score from t_student
+			</select>
+			
+		其中resultType表示该SQL语句的返回的每一条的数据类型，因为在mybatis.xml文件中添加了类的别名
+			<typeAliases>
+				<package name="harry.bean"/>
+			</typeAliases>
+		
+		在StudentDao中添加查询的方法，然后再StudentDaoImpl中重写：
+			@Override
+			public List<Student> selectAllStudent() {
+				try {
+					List<Student> result = null;
+					SqlSession sqlSession = MyBatisUtil.getSqlSession();
+					result = sqlSession.selectList("selectAllStudent");
+					return result;
+				}finally {
+					if (sqlSession != null){
+						sqlSession.close();
+					}
+				}
+			}
+			
+		在测试类中添加下面内容：
+			
+	5.单个对象查询
+		上面的示例查询出了数据库中的所有Student对象，有时候我们只需要查询出某一条数据，请看如下示例，在mapper中添加下面SQL语句，这里我们根据传入的主键id进行查询：
+		<select id="selectStudentById" resultType="student">
+			SELECT id,name,age,score FROM t_student where id=#{id}
+		</select>
+		
+			@Test
+			public void selectAllSstudent(){
+				List<Student> students = studentDao.selectAllStudent();
+				students.forEach((student -> {
+					System.out.println(student);
+				}));
+			}
+		在StudentDaoImpl中添加下面方法：
+			@Override
+			public Student selectStudentById(int id) {
+				Student student = null;
+				try{
+					SqlSession sqlSession = MyBatisUtil.getSqlSession();
+					student = sqlSession.selectOne("selectStudentById", id);
+					return student;
+				}finally {
+					if (sqlSession != null){
+						sqlSession.close();
+					}
+				}
+			}	
+		
+		在测试类中进行测试，查询学生id是10的数据：
+			@Test
+			public void selectStudentById(){
+				Student student = studentDao.selectStudentById(10);
+				System.out.println(student);
+			}
+			
+	6.模糊查询
+		下面以Student类中的name属性来演示模糊查询，在mapper文件中添加SQL：
+			<select id="selectStudentByName" resultType="student">
+				SELECT id,name,age,score FROM t_student where name like '%' #{name} '%'
+			</select>
+		
+		需要注意的是，这里面的’%’ #{name} ‘%’之间是没有+号的，即这里的字符串拼接不需要+号，而是需要空格。
+		
+		在StudentDaoImp中添加下面方法：
+			@Override
+			public Student selectStudentByName(String name) {
+				Student student = null;
+				try{
+					SqlSession sqlSession = MyBatisUtil.getSqlSession();
+					student = sqlSession.selectOne("selectStudentByName", name);
+					return student;
+				}finally {
+					if (sqlSession != null){
+						sqlSession.close();
+					}
+				}
+			}
+			
+		在测试类中进行测试：
+			@Test
+			public void selectStudentByName(){
+				List<Student> students = studentDao.selectStudentByName("富");
+				students.forEach((student)->{
+					System.out.println(student);
+				});
+				
+		模糊查询的另一种写法
+			其实在上面mapper中的sql语句我们还可以使用$进行操作：
+			<select id="selectStudentByName" resultType="student">
+				SELECT id,name,age,score FROM t_student where name like '%${value}%'
+			</select>
+		$和#的区别
+			#其实是占位符，通过控制台打印的sql语句可以看出，他是以?进行占位的，类似JDBC的PreparedStatement，可以防止SQL注入的问题，在上面的sql语句中我们写的是#{id}，实际上#{}里面的内容可以写成其他字符串#{xxx}，这里只是起着占位符的作用,mybatis会将sqlSession.selectList或sqlSession.selectOne等方法中的第二个参数赋值进去。因此如果sql语句需要获取用户的输入从而进行动态拼接的话，就需要使用#{}。
+			$是字符串拼接，参数会被直接拼接到SQL语句中，该方式会有SQL注入问题，如果SQL语句有我们程序员直接写好，不需要用户输入的话，可以使用${}，不过一般还是建议使用#{}。
+	
+	7.mybatis中的字段名与属性名不一致的情况
+		在实际开发中有时候会遇到数据库表中的字段名与实体类中的属性名不一致的情况，例如在t_student表中有一个字段名叫做password，然后在其对应的Student实体类中叫做pwd，此时要想进行查询操作的话，可以通过以下两种方式解决
+		在SQL语句中使用别名
+			<select id="selectStudentById" resultType="student">
+				SELECT id,name,age,score,password pwd FROM t_student where id=#{id}
+			</select>
+			
+		使用结果映射 resultMap
+			这里的resultMap实际上是将数据库表中的字段与实体类中的属性建立一个映射关系，这样子，即使两者名字不一致，mybatis也会根据resultMap中的映射关系正常执行。
+			    <resultMap id="studentMapper" type="student">
+					<id column="id" property="id"/>
+					 <result column="password" property="pwd"/>
+					<result column="age" property="age"/>
+				</resultMap>
+		
+				<select id="selectStudentByPwd" resultMap="studentMapper">
+					select id,name,age,score,password from t_student where id=#{id}
+				</select>
+		上面示例中通过resultMap来创建了映射关系，id设置为studentMapper，然后在select查询语句中指定属性resultMap的值为studentMapper，这样子就不用在SQL语句中使用别名了。一般在较为复杂的SQL语句中会使用resultMap。
+		在resultMap中添加了一个id的属性来指定主键，这样子可以提高mybatis的查询性能。resultMap中的type属性用来指定要映射的实体类。
+
+六 mapper动态代理
+	mapper的动态代理
+		在之前的例子中，我们在dao接口的实现类中写了一些获取sqlSession并调用其方法的代码，这些代码实际上没有什么实质的作用，具体SQL方面的操作我们都写在mapper文件中了，因此可以mybatis抛开这些实现类，以后无需编写这些实现类了，直接通过dao接口来定位到mapper中的SQL语句，这种方式被称为mapper的动态代理。
+	
+	将之前的程序修改为mapper代理的方式
+	1.在StudentMapper.xml中的mapper标签中添加namespace属性
+		<mapper namespace="com.harry.dao.StudentDao">
+		这样mybatis就会将当前的mapper.xml文件与StudentDao对应上。
+	2.需要将StudentDao中的方法名与mapper.xml文件中的id名称要一致，这样子mybatis就可以将方法和sql语句一一对应上了。
+	3.不使用dao的实现类，但是还需要获取SqlSession对象，该对象的获取可以放到测试类中：
+		private StudentDao studentDao;
+		private SqlSession sqlSession;
+
+		@Before
+		public void initStudentDao(){
+			sqlSession = MyBatisUtil.getSqlSession();
+			// 获取student Dao的对象
+			studentDao = sqlSession.getMapper(StudentDao.class);
+		}
+
+		@After
+		public void closeSession(){
+			if(sqlSession != null){
+				sqlSession.close();
+			}
+		}
+		通过SqlSession的getMapper方法，将要获取的dao对象的的class传入，这样子就会由MyBatis自己创建StudentDao的对象了，该对象是有jdk的动态代理自动生成的。之后在测试类中的增删改操作的方法中手动提交事务即可。
+		将dao的实现类删除之后，mybatis底层只会调用selectOne()或selectList()方法。而框架选择方法的标准是dao层方法中用于接收返回值的对象类型。若接收类型为 List，则自动选择 selectList()方法；否则，自动选择 selectOne()方法。
+		
+	
+七 动态SQL	
+	在实际应用中，在执行查询操作的时候会有多个条件，这些条件是由用户指定的，比如查询的条件有：用户名、年龄、生日。此时我们需要在sql语句中将这三个查询条件加上。不过这三个查询条件用户在输入的时候，填写的个数不确定，可能只填写了一个，也可能三个都填写了，此时就可以使用动态SQL来解决这个问题了，动态SQL会根据传入的条件动态拼接sql语句。
+	
+	if标签
+		这里的if标签主要是用来判断用户是否输入了某个条件，如果输入了再将该条件拼接到sql语句中，如下示例表示用户可以输入两个查询条件，name和age：
+		<select id="selectIf" resultType="student">
+			SELECT id,name,age,score
+			FROM t_student
+			WHERE 1=1
+			<if test="name != null and name != ''">
+			  AND name LIKE '%' #{name} '%'
+			</if>
+			<if test="age>=0">
+			  AND age > #{age}
+			</if>
+		</select>
+		在上面的语句中，我们在where后面添加了一个1=1的条件，这样就不至于两个条件均未设定而出现只剩下一个where，这样sql语句就不正确了，所以在后面添加了1=1这个为true的条件。
+		
+		在dao中添加方法：
+			List<Student> selectIf(Student student);
+			
+		在测试类中进行测试：
+			@Test
+			public void selectIf(){
+				Student student = new Student("富", 0, 0.0);
+				List<Student> students = studentDao.selectIf(student);
+				students.forEach((s)-> {
+					System.out.println(s);
+				});
+			}
+			
+	where标签
+		在上面的if语句中，为了防止用户未设置条件而导致sql语句出现一个where，我们添加了1=1这个条件，但是这个条件没有什么意义，所以可以使用where标签来解决这个问题。
+		在mapper中添加下面sql：
+			<select id="selectWhere" resultType="student">
+				SELECT id,name,age,score
+				FROM t_student
+				<where>
+					<if test="name != null and name != ''">
+						name LIKE '%' #{name} '%'
+					</if>
+					<if test="age>=0">
+						AND age > #{age}
+					</if>
+				</where>
+			</select>
+			
+		使用where标签后，就无需再写1=1了，注意在第一个if标签中的sql可以不加and，但是其后面的if标签中必须要加and。
+		
+	choose标签
+		通过choose标签实现下面功能若姓名不空，则按照姓名查询；若姓名为空，则按照年龄查询；若没有查询条件，则没有查询结果。
+		在mapper中添加下面sql：
+		    <select id="selectChoose" resultType="student">
+				SELECT id,name,age,score
+				FROM t_student
+				<where>
+					<choose>
+						<when test="name != null and name != ''">
+							name like '%' #{name} '%'
+						</when>
+						<when test="age>0">
+							age>#{age}
+						</when>
+						<otherwise>
+							1 != 1
+						</otherwise>
+					</choose>
+				</where>
+			</select>
+			
+		在choose标签中可以有多个when，但是只能有一个otherwise，这个有点类似java中的switch语句。
+		
+		在dao接口中添加下面方法：
+			List<Student> selectChoose(Student student);
+			
+		在测试类中添加测试方法：
+			@Test
+			public void selectChoose(){
+				Student student = new Student("harry", 30, 0.0);
+				List<Student> students = studentDao.selectChoose(student);
+				students.forEach(s -> {
+					System.out.println(s);
+				});
+			}
+			
+	Foreach标签
+		有时候会有这样的操作，用户需要查询Student的id是5,6,10,15的数据，这些数据可能会被放到数组里面作为参数进行传递，以前我们可以在sql语句中使用in来实现，在mybatis中就可以使用foreach标签。
+		foreach标签的属性中
+			collection 表示要遍历的集合类型，这里是数组，即 array。
+			open、close、separator 为对遍历内容的 SQL 拼接。
+		
+		在mapper文件中添加下面内容：
+			<select id="selectForeachArray" resultType="student">
+				SELECT id,name,age,score
+				FROM t_student
+				<if test="array != null and array.length>0">
+				  WHERE id IN 
+					<foreach collection="array" open="(" close=")" item="id" separator=",">
+						#{id}
+					</foreach>
+				</if>
+			</select>
+		
+		在dao中添加方法：
+			List<Student> selectForeachArray(Object[] ids);
+		
+		在测试类中添加测试方法：
+			@Test
+			public void selectForeachArray(){
+				Object[] ids = new Object[]{5,6,10,15};
+
+				List<Student> students = studentDao.selectForeachArray(ids);
+				students.forEach((s)-> {
+					System.out.println(s);
+				});
+			}
+			
+		foreach标签遍历基本数据类型的集合
+			遍历集合的方式跟数组差不多，只不过有些地方需要稍作修改。
+			在mapper中创建sql：
+				<select id="selectForeachList" resultType="student">
+					select id,name,age,score
+					from t_student
+					<if test="list != null and list.size>0" >
+						where id in
+						<foreach collection="list" open="(" close=")" item="id" separator=",">
+							#{id}
+						</foreach>
+					</if>
+				</select>
+		
+			需要注意这里在if的test属性中使用的是list和list.size，foreach中的collection也是list。
+		
+			在dao中添加方法：
+				List<Student> selectForeachList(List<Integer> ids);
+			
+			在测试类中添加测试方法：
+				@Test
+				public void selectForeachList(){
+					List<Integer> list = new ArrayList<>();
+					list.add(5);
+					list.add(6);
+					list.add(10);
+					list.add(15);
+
+					List<Student> students = studentDao.selectForeachList(list);
+					students.forEach((s)-> {
+						System.out.println(s);
+					});
+				}
+			
+			foreach标签遍历自定义数据类型的集合
+				<select id="selectForeachListStudent" resultType="student">
+					SELECT id,name,age,score
+					FROM t_student
+					<if test="list != null and list.size>0">
+						WHERE id IN
+						<foreach collection="list" open="(" close=")" item="stu" separator=",">
+							#{stu.id}
+						</foreach>
+					</if>
+				</select>
+				
+			在dao中添加方法：
+				List<Student> selectForeachListStudent(List<Student> students);
+					
+			在测试类中添加方法：
+				@Test
+				public void selectForeachListStudent(){
+					List<Student> stuList = new ArrayList<>();
+					Student s1 = new Student();
+					Student s2 = new Student();
+					s1.setId(1);
+					s2.setId(5);
+					stuList.add(s1);
+					stuList.add(s2);
+					List<Student> students = studentDao.selectForeachListStudent(stuList);
+					students.forEach(student -> {
+						System.out.println(student);
+					});
+				}
+	
+	sql标签
+		sql标签可以用来定义一个可被复用的sql片段，在使用的时候写上include标签就可以将sql标签中的内容引入。
+		在mapper中添加和使用sql标签：
+			<!--定义sql片段-->
+				<sql id="select">
+					SELECT id,name,age,score
+					FROM t_student
+				</sql>
+
+				<select id="selectSQL" resultType="student">
+					<!--使用sql片段-->
+					<include refid="select"/>
+
+					<if test="list != null and list.size>0">
+						WHERE id IN
+						<foreach collection="list" open="(" close=")" item="stu" separator=",">
+							#{stu.id}
+						</foreach>
+					</if>
+				</select>
+				
+	动态SQL的注意事项
+		在mybatis的动态sql中，我们可能会对一些数据进行比较大于>小于<，不过因为这些比较操作要写在xml文件中，就有可能导致xml文件解析出现问题，此时可以使用实体符号代替。
+			原符号      实体符号
+			  <         &lt;
+			  <=        &lt;=
+			  >         &gt;
+			  >=        &gt;=
+			  &         &amp;
+			  "         &quot;
+			  '         &apos;
+			  
+		<select id="selectIf" resultType="student">
+			SELECT id,name,age,score
+			FROM t_student
+			WHERE 1=1
+			<if test="name != null and name != ''">
+			  AND name LIKE '%' #{name} '%'
+			</if>
+			<if test="age>=0">
+			  AND age &gt; #{age}
+			</if>
+		</select>
+
+八 多表查询操作
+	
+	1 mybatis一对多关联查询
+		一对多关联查询指的是在查询一方对象的时候同时把跟他所关联的多方对象也查询出来，这里以篮球队和篮球运动员为例，一个篮球队关联着多个篮球队员。
+		
+		创建数据库表
+			创建球队的表，里面有两个字段：
+				id：主键
+				name：球队名称
+				
+				CREATE TABLE `t_team` (
+				  `id` INT NOT NULL AUTO_INCREMENT,
+				  `name` VARCHAR(45) NULL,
+				  PRIMARY KEY (`id`));
+		
+			创建球员的表，有三个字段：
+				id：主键
+				name：球员姓名
+				tid：所在球队的主键id
+				
+				CREATE TABLE `t_player` (
+				  `id` INT NOT NULL AUTO_INCREMENT,
+				  `name` VARCHAR(45) NULL,
+				  `tid` INT NULL,
+				  PRIMARY KEY (`id`));
+				  
+		
+		创建javabean
+			创建篮球运动员的类Player：
+				package com.monkey1024.bean;
+
+				/**
+				 * 篮球队员
+				 */
+				public class Player {
+
+					private int id;
+
+					private String name;
+
+					public Player(String name) {
+						this.name = name;
+					}
+
+					public Player() {
+					}
+
+					 @Override
+					public String toString() {
+						return "Player{" +
+								"id=" + id +
+								", name='" + name + '\'' +
+								'}';
+					}
+
+					//省略setter和getter
+				}
+				
+			创建球队的类Team，这里将球员数据全部放到一个List集合中:
+				package com.monkey1024.bean;
+
+				import java.util.List;
+
+				/**
+				 * 篮球队
+				 */
+				public class Team {
+
+					private int id;
+
+					private String name;
+
+					private List<Player> playerList;
+
+
+					@Override
+					public String toString() {
+						return "Team{" +
+								"id=" + id +
+								", name='" + name + '\'' +
+								", playerList=" + playerList +
+								'}';
+					}
+
+					//省略setter和getter
+				}
+			需要注意的是若定义的类是双向关联，即双方的属性中均有对方对象作为域属性出现，那么它们在定义各自的 toString()方法时需要注意，只让某一方可以输出另一方即可，不要让双方的 toString()方法均可输出对方。这样会造成栈内存溢出的错误。
+		
+		创建TeamMapper.xml映射文件：
+			<?xml version="1.0" encoding="UTF-8" ?>
+			<!DOCTYPE mapper
+					PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+					"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+			<mapper namespace="com.harry.dao.TeamDao">
+				<resultMap id="teamMap" type="team">
+					<!-- 篮球队的属性 -->
+					<id column="teamid" property="id"/>
+					<result column="tname" property="name"/>
+					<!-- 关联属性的映射关系 -->
+					<collection property="playerList" ofType="player">
+						<id column="pid" property="id"/>
+						<result column="pname" property="name"/>
+					</collection>
+				</resultMap>
+				<select id="selectTeamById" resultMap="teamMap">
+					SELECT t.id teamid,t.name tname,p.id pid,p.name pname
+					FROM t_team t,t_player p
+					where t.id=p.tid and t.id=#{id}
+				</select>
+
+			</mapper>
+
+			property中填写集合在Team这个bean中的属性名称，此时是playerList
+			ofType中填写集合的泛型
+			在collection标签中填写的内容关联的是Player中的属性。
+		
+		创建dao
+			public interface TeamDao {
+
+				Team selectTeamById(int id);
+			}
+			
+		创建测试类
+			public class TeamTest01 {
+				private TeamDao teamDao;
+				private SqlSession sqlSession;
+
+				@Before
+				public void initTeamDao() {
+					sqlSession = MyBatisUtil.getSqlSession();
+					teamDao = sqlSession.getMapper(TeamDao.class);
+				}
+
+				@After
+				public void closeSession() {
+					if (sqlSession != null) {
+						sqlSession.close();
+					}
+				}
+				@Test
+				public void selectTeamById(){
+					team team = teamDao.selectTeamById(1);
+					System.out.println(team );
+
+				}
+			}
+	
+	2.mybatis多对一关联查询
+		多对一指的是在查询多方对象的时候，同时将其所关联的一方对象也查询出来。由于在查询多方对象时也是一个一个查询，所以多对一关联查询，其实就是一对一关联查询。即一对一关联查询的实现方式与多对一的实现方式是相同的。
+		
+		修改javabean
+		数据库表还是使用之前t_player和t_team，这里要做一对多和一对一查询，所以需要在Player类中添加一个属性Team：
+			/**
+			 * 篮球队员
+			 */
+			public class Player {
+
+				private int id;
+
+				private String name;
+
+				private Team team;
+
+				//省略getter和setter
+			}
+		
+		创建一对一查询的mapper
+			这里先演示一对一的查询，创建PlayerMapper.xml文件在里面添加下面内容：
+			<resultMap id="playerMap" type="Player">
+				<!--team中的基本属性-->
+				<id column="pid" property="id"/>
+				<result column="pname" property="name"/>
+
+				<!--关联属性的映射关系-->
+				<association property="team" javaType="Team">
+					<id column="teamid" property="id"/>
+					<result column="tname" property="name"/>
+				</association>
+			</resultMap>
+
+
+			<select id="selectPlayerById" resultMap="playerMap">
+				SELECT t.id teamid,t.name tname,p.id pid,p.name pname
+				FROM t_team t , t_player p
+				WHERE t.id = p.tid and p.id=#{id}
+			</select>
+		
+			property里面填写在Player类中的属性名称
+			javaType里面填写在Player类中的的属性类型
+			
+		创建dao接口
+			Player selectPlayerById(int id);
+			
+		创建测试类
+			@Test
+			public void selectPlayerById() {
+				Player player = playerDao.selectPlayerById(1);
+				System.out.println(player);
+			}
+			
+		在mapper中添加多对一查询
+			<select id="selectPlayers" resultMap="playerMap">
+				SELECT t.id teamid,t.name tname,p.id pid,p.name pname
+				FROM t_team t , t_player p
+				WHERE t.id = p.tid
+			</select>
+			
+		在dao接口中添加方法
+			List<Player> selectPlayers();
+			
+		添加测试方法
+			@Test
+			public void selectPlayers() {
+				List<Player> players = playerDao.selectPlayers();
+				System.out.println(players);
+			}
+			
+	3.mybatis自关联一对多查询
+		自关联查询就是自己充当多方，同时也充当一方，即多和一都在同一张表中，一般这样的表其实可以看做是一个树形结构，在数据库表中有一个外键，该外键表示当前数据的父节点。下面以公司职位为例创建一张自关联的表。
+		建表语句
+			CREATE TABLE `t_employee` (
+			  `id` int(11) NOT NULL,
+			  `name` varchar(45) DEFAULT NULL,
+			  `job` varchar(20) DEFAULT NULL,
+			  `mgr` int(11) DEFAULT NULL,
+			  PRIMARY KEY (`id`)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+			
+		初始化数据:
+			INSERT INTO `t_employee` VALUES (1001,'king','董事长',NULL),(1002,'jack','技术总监',1001),(1003,'paul','财务总监',1001),(1004,'tom','销售总监',1001),(1005,'tomas','技术一部经理',1002),(1006,'linda','技术二部经理',1002),(1007,'lucy','会计',1003),(1008,'lily','出纳',1003),(1009,'terry','销售一部经理',1004),(1010,'emma','销售二部经理',1004),(1011,'may','软件工程师',1005),(1012,'bella','软件工程师',1005),(1013,'kelly','软件工程师',1006);
+		
+	
+		创建javabean
+			public class Employee {
+
+				private int id;
+
+				private String name;
+
+				private String job;
+
+				//表示多的一方，即当前员工的所有下属
+				private List<Employee> children;
+
+				//省略getter、setter和toString
+			}
+			
+		创建dao
+			public interface EmployeeDao {
+				List<Employee> selectChildrenByPid(int mgr);
+			}
+			
+		创建mapper
+			<mapper namespace="com.harry.dao.EmployeeDao">
+				<!-- 形成递归查询 -->
+			  <resultMap id="childrenMap" type="employee">
+				  <id column="id" property="id"/>
+				  <result column="name" property="name"/>
+				  <collection property="children" ofType="employee" select="selectChildrenByPid" column="id"/>
+			  </resultMap>
+			  <select id="selectChildrenByPid" resultMap="childrenMap">
+					SELECT id,name,job
+					FROM t_employee
+					where mgr=#{pid}
+			  </select>
+			</mapper>
+			在上面的sql语句中，实际上形成了递归查询，resultMap中的collection里面，select属性表示会继续执行selectChildrenByPid这个sql语句，column表示将id作为属性传入sql中，此处是pid。有一点需要注意的是column中的id要跟sql语句中的id一致，因为本次查询出的id会作为条件pid再次传入sql中执行。
+		
+		定义测试类
+			@Test
+			public void selectChildrenByPid(){
+				List<Employee> employees = employeeDao.selectChildrenByPid(1002);
+				employees.forEach(employee -> {
+					System.out.println(employee);
+				});
+			}
+			
+		查询结果包含指定员工和其下属员工
+			上面的执行结果中可以看到会将id是1002这位员工的所有下属打印出来，但是不包含1002这位员工的信息，如果想要查询的结果包含1002这位员工的信息需要在mapper中添加下面内容：
+			<select id="selectEmployeeByPid" resultMap="childrenMap">
+				SELECT id,name,job
+				FROM t_employee
+				where id=#{ id}
+			</select>
+			
+			上面sql就是根据id查询员工数据，但是这里面的resultMap指定的是childrenMap,所以它会继续进行递归查询将其下属也全部查询出来，这样子在查询结果中就包含了当前员工的信息了。
+			
+		在dao中添加下面方法
+			List<Employee> selectEmployeeByPid(int mgr);
+			
+		添加测试方法
+			@Test
+			public void selectEmployeeByPid(){
+				List<Employee> employeeList = employeeDao.selectEmployeeByPid(1002);
+
+				employeeList.forEach((e)->{
+					System.out.println(e);
+				});
+			}
+			
+	4.自关联多对一查询
+		多对一查询指的是多方可以看到一方，即给出一个员工编号，查看一下他的所有上级领导是谁。
+		修改Employee在之前的Employee类中添加下面属性，该属性表示当前员工的上级领导对象：
+			private Employee leader;
+
+		修改mapper
+		在EmployeeMapper.xml文件中添加下面内容：
+			<resultMap id="leaderMap" type="Employee">
+				<id column="id" property="id"/>
+				<result column="name" property="name"/>
+				<association property="leader" javaType="Employee" select="selectLeaderByPid" column="mgr"/>
+			</resultMap>
+
+			<select id="selectLeaderByPid" resultMap="leaderMap">
+				SELECT id,name,job,mgr
+				FROM t_employee
+				WHERE id=#{id}
+			</select>
+		association中的select表示要执行的sql语句，column表示将之前的sql语句中查询出的mgr作为条件id再次执行sql语句。
+		
+		修改dao
+			Employee selectLeaderByPid(int mgr);
+			
+		添加测试方法
+			@Test
+			public void selectLeaderByPid(){
+				Employee employee = employeeDao.selectLeaderByPid(1005);
+
+				System.out.println(employee);
+			}
+			
+	5.mybatis多对多关联查询
+		一个学生可以选多门课程，而一门课程可以由多个学生选择，这就是一个典型的多对多关联关系。所谓多对多关系，其实是由两个互反的一对多关系组成。即多对多关系都会通过一个中间表来建立，例如选课表。学生对于选课表来说是一对多，课程对于选课表来说也是一对多。
+		创建数据库表
+			CREATE TABLE `t_course` (
+			  `id` INT NOT NULL,
+			  `name` VARCHAR(20) NULL,
+			  PRIMARY KEY (`id`));
+			  
+		选课表
+			CREATE TABLE `learnmybatis`.`t_student_course` (
+			  `id` INT NOT NULL AUTO_INCREMENT,
+			  `sid` INT NULL,
+			  `cid` INT NULL,
+			  PRIMARY KEY (`id`));
+			  
+		初始化数据：
+			INSERT INTO `learnmybatis`.`t_course` (`id`, `name`) VALUES ('1001', 'SpringMVC');
+			INSERT INTO `learnmybatis`.`t_course` (`id`, `name`) VALUES ('1002', 'mybatis');
+			INSERT INTO `learnmybatis`.`t_course` (`id`, `name`) VALUES ('1003', 'Spring');
+
+			INSERT INTO `learnmybatis`.`t_student_course` (`sid`, `cid`) VALUES ('1', '1001');
+			INSERT INTO `learnmybatis`.`t_student_course` (`sid`, `cid`) VALUES ('1', '1002');
+			INSERT INTO `learnmybatis`.`t_student_course` (`sid`, `cid`) VALUES ('1', '1003');
+			INSERT INTO `learnmybatis`.`t_student_course` (`sid`, `cid`) VALUES ('3', '1001');
+			INSERT INTO `learnmybatis`.`t_student_course` (`sid`, `cid`) VALUES ('3', '1002');
+			INSERT INTO `learnmybatis`.`t_student_course` (`sid`, `cid`) VALUES ('4', '1001');
+			
+		创建javabean
+			public class Course {
+
+				private int id;
+
+				private String name;
+
+				private List<Student> students;
+
+				//省略getter、setter和toString
+			}
+		
+		创建Student
+			public class Student {
+				private int id;
+				private String name;
+				private List<Course> courses;
+				private double score;
+				private int age;
+			}
+		
+		创建mapper
+			<mapper namespace="com.harry.dao.CourseDao">
+			   <resultMap id="courseMapper" type="course">
+				   <id column="cid" property="id"/>
+				   <result column="cname" property="name"/>
+				   <collection property="students" ofType="student">
+					   <id column="sid" property="id"/>
+					   <result column="sname" property="name"/>
+				   </collection>
+			   </resultMap> 
+			  <select id="selectCourseStudent" resultMap="courseMapper">
+				  select c.id cid,c.name cname,s.id sid,s.name sname
+				  from t_course c,t_student s,t_student_course sc
+				  where
+					c.id=#{id}
+					and s.id=sc.sid
+					and c.id=sc.cid
+
+			  </select>
+			上面sql语句是三张表的关联查询，在collection中表示查询出的学生数据，这里其实可以看做是一对多的查询，因为我们指定了课程编号。
+	
+		创建Dao
+			public interface CourseDao {
+				Course selectCourseStudent(int id);
+			}
+			
+		创建测试类
+			@Test
+			public void selectCourseStuden(){
+				Course course = courseDao.selectCourseStudent(1001);
+				System.out.println(course);
+			}
+		返回数据
+			Course{id=1001, name='SpringMVC', student=null, students=[Student{id=3, name='???', score=0.0, age=0, courses=null}, Student{id=4, name='harry', score=0.0, age=0, courses=null}]}
+	
+
+九 mybatis懒加载(延迟加载)
+	
+	1.什么是延迟加载
+		MyBatis中的延迟加载，也称为懒加载，是指在进行表的关联查询时，按照设置延迟规则推迟对关联对象的select查询。
+		例如在进行一对多查询的时候，只查询出一方，当程序中需要多方的数据时，mybatis再发出sql语句进行查询，这样子延迟加载就可以的减少数据库压力。MyBatis 的延迟加载只是对关联对象的查询有迟延设置，对于主加载对象都是直接执行查询语句的。
+	
+	2.加载时机
+		MyBatis根据对关联对象查询的select语句的执行时机，分为三种类型：直接加载、侵入式延迟加载与深度延迟加载。
+			直接加载：执行完对主加载对象的 select 语句，马上执行对关联对象的 select 查询。
+			侵入式延迟： 执行对主加载对象的查询时，不会执行对关联对象的查询。但当要访问主加载对象的详情属性时，就会马上执行关联对象的select查询。
+			深度延迟： 执行对主加载对象的查询时，不会执行对关联对象的查询。访问主加载对象的详情时也不会执行关联对象的select查询。只有当真正访问关联对象的详情时，才会执行对关联对象的 select 查询。
+		
+		需要注意的是，延迟加载的应用要求，关联对象的查询与主加载对象的查询必须是分别进行的select 语句，不能是使用多表连接所进行的select查询。因为多表连接查询，其实质是对一张表的查询，对由多个表连接后形成的一张表的查询。会一次性将多张表的所有信息查询出来。
+		MyBatis中对于延迟加载设置，只对于resultMap中的collection和association起作用，可以应用到一对一、一对多、多对一、多对多的所有关联关系查询中。
+	
+	3.一对多的多表单独查询方式
+		修改之前的TeamMapper.xml文件
+			<!--根据team的id查找player-->
+			<select id="selectPlayerByTeamId" resultType="Player">
+				select id,name from t_player WHERE tid=#{id}
+			</select>
+
+			<!--关联属性映射关系-->
+			<!--集合的数据来自select查询，该查询的条件是selectTeamByIdAlone查询出的id-->
+			<resultMap id="teamMapAlone" type="Team">
+				<id column="id" property="id"/>
+				<result column="name" property="name"/>
+				<collection property="playerList" ofType="Player" select="selectPlayerByTeamId" column="id"/>
+			</resultMap>
+
+
+			<select id="selectTeamByIdAlone" resultMap="teamMapAlone">
+				SELECT id,name FROM t_team where id=#{id}
+			</select>
+			
+		在TeamDao中添加下面方法：
+			Team selectTeamByIdAlone(int id);
+			
+		在测试类中添加下面方法：
+			@Test
+			public void selectTeamByIdAlone() {
+				Team team = teamDao.selectTeamByIdAlone(1);
+
+			}
+			
+		执行之后，可以看到在控制台中分两次发出了sql语句分别查询t_team和t_player表。
+		
+		开启侵入式延迟
+			<!--全局参数设置-->
+			<settings>
+				<!--延迟加载总开关-->
+				<setting name="lazyLoadingEnabled" value="true"/>
+				<!--侵入式延迟加载开关-->
+				<!--3.4.1版本之前默认是true，之后默认是false-->
+				<setting name="aggressiveLazyLoading" value="true"/>
+			</settings>
+			
+			lazyLoadingEnabled表示延迟加载的总开关，如果将其设置为false，即使侵入式开关设置为true也不会生效。
+			aggressiveLazyLoading表示侵入式延迟加载开关，在3.4.1版本之前默认是true，之后默认是false。
+			将以上内容配置好之后，再执行上面测试类方法的时候，就会发现在控制台中只发出了一条查询t_team的sql语句，这是因为我们开启了侵入式延迟加载开关，在java程序中并未访问Team中的任何属性，所以mybatis不会去查询其关联的player对象数据。
+		
+		修改测试方法如下：
+			@Test
+			public void selectTeamByIdAlone() {
+				Team team = teamDao.selectTeamByIdAlone(1);
+				System.out.println(team.getName());
+			}
+			再次执行上面方法之后就会看到控制台中发出两条SQL语句分别查询t_team和t_player,这是因为在java程序中访问了Team的属性name，所以mybatis会将其关联的player对象数据查询出来。
+			
+		开启深度延迟加载
+			修改mybatis.xml文件：
+				开启总开关，将aggressiveLazyLoading关闭即可
+				<!--全局参数设置-->
+				<settings>
+					<!--延迟加载总开关-->
+					<setting name="lazyLoadingEnabled" value="true"/>
+					<!--侵入式延迟加载开关-->
+					<!--3.4.1版本之前默认是true，之后默认是false-->
+					<setting name="aggressiveLazyLoading" value="false"/>
+				</settings>
+			继续执行上面的测试方法，可以看到控制台中只打印了一条查询t_team表的sql语句。
+			
+		修改测试方法如下：
+			@Test
+			public void selectTeamByIdAlone() {
+				Team team = teamDao.selectTeamByIdAlone(1);
+				System.out.println(team.getName());
+				System.out.println(team.getPlayerList().size());
+			}
+			执行上面测试方法之后，可以看到控制台中打印了两条sql语句分别查询t_team和t_player，这说明当开启深度延迟后，只要代码中不使用player相关的数据，mybatis就不会进行sql查询，只有当真正使用的时候才会去发出sql语句查询。
+		
+		在单个resultMap中使用延迟加载
+			上面都是通过在mybatis.xml文件中统一配置的深度延迟加载，倘若只希望某些查询支持深度延迟加载的话可以在resultMap中的collection或association添加fetchType属性，配置为lazy之后是开启深度延迟，配置eager是不开启深度延迟。fetchType属性将取代全局配置参数lazyLoadingEnabled的设置
+		
+十 mybatis缓存
+	
+	1.缓存的作用
+		查询缓存主要是为了提高查询访问速度，即当用户执行一次查询后，会将该数据结果放到缓存中，当下次再执行此查询时就不会访问数据库了而是直接从缓存中获取该数据。 如果在缓存中找到了数据那叫做命中。 在mybatis中有一级缓存和二级缓存两种缓存方式。
+	
+	2.一级缓存
+		MyBatis的一级查询缓存（也叫作本地缓存）是基于org.apache.ibatis.cache.impl.PerpetualCache 类的 HashMap本地缓存，其作用域是SqlSession，即在同一个SqlSession中两次执行相同的 sql 查询语句，第一次执行完毕后，会将查询结果写入到缓存中，第二次会从缓存中直接获取数据，而不再到数据库中进行查询，这样就减少了数据库的访问，从而提高查询效率。
+		当一个 SqlSession 结束后，该 SqlSession 中的一级查询缓存也就不存在了。 myBatis 默认一级查询缓存是开启状态，且不能关闭。
+		
+		检验一级缓存
+			@Test
+			public void selectStudentById(){
+				Student student1 = studentDao.selectStudentById(2);
+				System.out.println(student1);
+
+				Student student2 = studentDao.selectStudentById(2);
+				System.out.println(student2);
+			}
+			
+			执行结束后，在控制台中可以看到mybatis只发送了一条sql语句，也就是说上面方法中的第二次查询中使用了缓存中的数据。
+			mybatis是如何判断某个sql语句是否在缓存中存在呢？因为mapper中的id具有唯一性，所以mybatis是通过这个id来判断缓存中是否存在的。如果有两个sql语句一模一样，但是两者的id不一样，此时mybatis是不会为这两个sql语句建立相同缓存的。如果一条select语句中有查询条件的话，该查询条件也会被作为特征值，即再有相同条件查询的时候，会命中。
+		
+		增删改对一级缓存的影响	
+			这里就有一个问题，在第一次查询数据库后，mybatis会为selectStudentById建立缓存，那在下一次访问该数据的时候会直接从缓存中获取，倘若在这期间，建立缓存后，下次访问前，对数据进行了增删改的操作，此时无论是否commit，都会清空一级缓存。
+			@Test
+			public void selectStudentById(){
+				Student student1 = studentDao.selectStudentById(2);
+				System.out.println(student1);
+
+				//建立一级缓存后，对数据进行更新操作，会清空一级缓存
+				studentDao.updateStudent(student1);
+
+				//由于一级缓存已经被清空，此时会发送sql语句重新查询数据库
+				Student student2 = studentDao.selectStudentById(2);
+				System.out.println(student2);
+			}
+			执行该测试方法后可以发现在控制台中打印出了两条查询sql语句，一条update语句。
+	
+	3.mybatis内置二级缓存
+		在mybatis中有两种二级缓存，一种是内置的一种是外置的。myBatis 查询缓存的作用域是根据映射文件 mapper 的 namespace 划分的，相同namespace的mapper查询数据存放在同一个缓存区域。不同namespace下的数据互不干扰。无论是一级缓存还是二级缓存,都是按照namespace进行分别存放的。
+		
+		(1)内置二级缓存
+			myBatis内置的二级缓存为org.apache.ibatis.cache.impl.PerpetualCache。与一级缓存不同的是二级缓存的生命周期会与整个应用同步，与sqlSession是否关闭没有关系。二级缓存的使用比较简单，只需对之前的程序稍作修改即可。
+			序列化javabean 将javabean实现Serializable接口，如果该javabean有显示的父类的话，让父类也实现Serializable接口。
+			cache标签在mapper配置文件中的mapper标签下添加下面标签：<cache/>
+			在上面的标签中有一些属性，通过配置这些属性可以调整一些参数
+				eviction：逐出策略。当二级缓存中的对象达到最大值时，就需要通过逐出策略将缓存中的对象移出缓存。默认为 LRU。常用的策略有：
+					FIFO：First In First Out，先进先出
+					LRU：Least Recently Used，未被使用时间最长的
+				flushInterval：刷新缓存的时间间隔，单位毫秒。这里的刷新缓存即清空缓存。一般不指定，即当执行增删改时刷新缓存，如果长时间未刷新缓存有肯能会出现过期数据。
+				readOnly：设置缓存中数据是否只读。只读的缓存会给所有调用者返回缓存对象的相同实例，因此这些对象不能被修改的，这样性能会好一些，缺点是因为他是只读的，所以不能被修改。如果设置为false的话，读写的缓存会通过序列化返回该缓存对象的拷贝，因为会把对象进行拷贝，这会慢一些，但是安全，因此默认是 false。
+				size：二级缓存中可以存放的最多对象个数。默认为 1024 个。
+				
+		
+		(2)验证内置二级缓存
+			二级缓存的声明周期会与整个应用同步，而一级缓存只在sqlSession域中有效，此时需要将测试代码修改如下，将sqlSession关闭，让一级缓存失效，从而验证二级缓存的存在。
+			
+				@Test
+				public void selectStudentById(){
+					Student student1 = studentDao.selectStudentById(2);
+					System.out.println(student1);
+
+					//关闭sqlSession
+					this.sqlSession.close();
+
+					//重新获取sqlSession对象
+					sqlSession = MyBatisUtil.getSqlSession();
+					//通过该方法可以获取StudentDao的对象
+					studentDao = sqlSession.getMapper(StudentDao.class);
+
+					//二级缓存开启后，这部分将不会发出sql语句查询数据库，而是从缓存中获取数据
+					Student student2 = studentDao.selectStudentById(2);
+					System.out.println(student2);
+				}
+			上面程序执行后，可以看到控制台中只发出了一条sql语句，这样就验证了二级缓存的存在。
+			
+		(3)增删改对二级缓存的影响
+			增删改操作，无论是否进行提交commit()，均会清空一级、二级查询缓存，使查询再次从DB中select。
+			这里的二级缓存中的key是不会清空，只清空key对应的值。
+			如果想要设置增删改操作的时候不清空二级缓存的话，可以在其insert或delete或update中添加属性flushCache=”false”，默认为 true。
+				<delete id="deleteStudent" flushCache="false">
+					DELETE FROM t_student where id=#{id}
+				</delete>
+				
+		(4)二级缓存的关闭
+			根据关闭的范围大小，可以分为全局关闭与局部关闭。
+			全局关闭
+				全局关闭是将整个应用的二级缓存全部关闭，所有查询均不使用二级缓存。全局开关设置在mybatis.xml配置文件的全局设置中，将属性cacheEnabled设置为 false，则关闭；设置为 true，则开启，默认值为 true。即二级缓存默认是开启的。
+				<setting name="cacheEnabled" value="false"/>
+			局部关闭
+				局部关闭是只关闭某个select查询的二级缓存，在select标签中将属性useCache设置为false，那么就会关闭该select查询的二级缓存。
+				<select id="selectStudentById" useCache="false" resultMap="studentMapper">
+					SELECT id,name,age,score,password FROM t_student where id=#{id}
+				</select>
+				
+		(5)二级缓存的使用注意事项
+			在一个命名空间下使用二级缓存
+				二级缓存对于不同的命名空间namespace的数据是互不干扰的，倘若多个namespace中对一个表进行操作的话，就会导致这不同的namespace中的数据不一致的情况。
+
+			在单表上使用二级缓存
+				在做关联关系查询时，就会发生多表的操作，此时有可能这些表存在于多个namespace中，这就会出现上一条内容出现的问题了。
+
+			查询多于修改时使用二级缓存
+				在查询操作远远多于增删改操作的情况下可以使用二级缓存。因为任何增删改操作都将刷新二级缓存，对二级缓存的频繁刷新将降低系统性能。
+	
+	4.Mybatis外置二级缓存
+		(1) ehCache二级缓存
+			mybatis除了自带的二级缓存，还支持一些第三方的缓存，并且由于mybatis只擅长sql，所以这些第三方缓存的性能要比mybatis的好一些，下面以ehCache为例看下第三方的二级缓存使用方式。
+			ehCache是一款知名的缓存框架，hibernate框架的默认缓存策略使用的就是ehCache。
+			使用ehCache二级缓存，实体类无需实现Serializable接口。
+			
+		(2)添加ehCache依赖jar包
+			需要添加ehCache和mybatis-ehCache整合两个jar包，除此之外ehcache使用了slf4j记录日志，所以需要导入slf4j相关的jar包，需要注意的是目前mybatis只支持ehcache的2.x的版本
+			   <dependency>
+					<groupId>net.sf.ehcache</groupId>
+					<artifactId>ehcache</artifactId>
+					<version>2.10.0</version>
+				</dependency>
+				<dependency>
+					<groupId>org.mybatis.caches</groupId>
+					<artifactId>mybatis-ehcache</artifactId>
+					<version>1.1.0</version>
+				</dependency>
+
+				<dependency>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+					<version>1.7.25</version>
+				</dependency>
+				<dependency>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+					<version>1.7.25</version>
+				</dependency>
+				
+			添加ehcache.xml配置文件
+				在resources目录下创建ehcache.xml文件，里面填写下面内容，配置项是ehcache2.x的，在ehcache3.x中会不同，所以下面内容简单了解即可：
+				<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../config/ehcache.xsd">
+					<diskStore path="java.io.tmpdir"/>
+
+					<defaultCache
+							maxElementsInMemory="10000"
+							eternal="false"
+							timeToIdleSeconds="120"
+							timeToLiveSeconds="120"
+							maxElementsOnDisk="10000000"
+							diskExpiryThreadIntervalSeconds="120"
+							memoryStoreEvictionPolicy="LRU">
+						<persistence strategy="localTempSwap"/>
+					</defaultCache>
+				</ehcache>
+				diskStore标签：指定一个文件目录，当内存空间不够，需要将二级缓存中数据写到硬盘上时，会写到这个指定目录中。其值一般为 java.io.tmpdir，表示当前系统的默认文件临时目录
+				<defaultCache/>标签的参数：
+					maxElementsInMemory：指定该内存缓存区可以存放缓存对象的最多个数。
+					eternal：设定缓存对象是否不会过期。若设为 true，表示对象永远不会过期，此时会忽略 timeToIdleSeconds 与 timeToLiveSeconds 属性。默认值为 false。
+					timeToIdleSeconds：设定允许对象处于空闲状态的最长时间，以秒为单位。当对象自从最近一次被访问后，若处于空闲状态的时间超过了 timeToIdleSeconds 设定的值，这个对象就会过期。当对象过期，EHCache 就会将它从缓存中清除。 设置值为 0，则对象可以无限期地处于空闲状态。
+					timeToLiveSeconds：设定对象允许存在于缓存中的最长时间，以秒为单位。当对象自从被存放到缓存后，若处于缓存中的时间超过了 timeToLiveSeconds 设定的值，这个对象就会过期。当对象过期，EHCache 就会将它从缓存中清除。设置值为 0，则对象可以无限期地存在于缓存中。注意，只有 timeToLiveSeconds≥ timeToIdleSeconds，才有意义。
+					overflowToDisk： 设定为 true，表示当缓存对象达到了 maxElementsInMemory 界限，会将溢出的对象写到元素指定的硬盘目录缓存中。
+					maxElementsOnDisk：指定硬盘缓存区可以存放缓存对象的最多个数。
+					diskPersistent：指定当程序结束时，硬盘缓存区中的缓存对象是否做持久化。
+					diskExpiryThreadIntervalSeconds：指定硬盘中缓存对象的失效时间间隔。
+					memoryStoreEvictionPolicy：如果内存缓存区超过限制，选择移向硬盘缓存区中的对象时使用的策略。支持三种策略：
+						FIFO：First In First Out，先进先出
+						LFU：Less Frequently Used，最少使用
+						LRU：Least Recently Used，最近最少使用
+						
+		(3)启用ehcache 缓存
+			在映射文件的mapper中cache中通过type指定缓存机制为Ehcache缓存
+			<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+			除此之外还可以在不同的mapper中进行个性化的设置：
+				<cache type="org.mybatis.caches.ehcache.EhcacheCache"/>
+					<property name="timeToIdleSeconds" value="3600"/>
+					<property name="timeToLiveSeconds" value="3600"/>
+					<property name="maxEntriesLocalHeap" value="1000"/>
+					<property name="maxEntriesLocalDisk" value="10000000"/>
+					<property name="memoryStoreEvictionPolicy" value="LRU"/>
+				</cache>
+				
+十一 mybatis generator逆向工程生成代码
+
+	mybatis generator工具可以帮助我们实现逆向工程生成上面的那些代码和配置文件，使用方式有多种，这里以maven为例进行介绍。
+	
+	首先要在maven项目中添加依赖，当然你得确保在你的maven中已经添加了mybatis相关的其他依赖jar包：
+		<dependency>
+			<groupId>org.mybatis.generator</groupId>
+			<artifactId>mybatis-generator-maven-plugin</artifactId>
+			<version>1.3.5</version>
+		</dependency>
+		
+	添加generator的插件：
+		<plugins>
+			<plugin>
+				<groupId>org.mybatis.generator</groupId>
+				<artifactId>mybatis-generator-maven-plugin</artifactId>
+				<version>1.3.5</version>
+				<executions>
+					<execution>
+						<id>Generate MyBatis Artifacts</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>mysql</groupId>
+						<artifactId>mysql-connector-java</artifactId>
+						<version>5.1.46</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<!--配置文件的路径-->
+					<configurationFile>src/main/resources/generatorConfig.xml</configurationFile>
+					<overwrite>true</overwrite>
+				</configuration>
+			</plugin>
+			
+		</plugins>        
+	
+	在resources目录中创建一个generatorConfig.xml逆向工程的配置文件：
+		<?xml version="1.0" encoding="UTF-8"?>
+		<!DOCTYPE generatorConfiguration
+				PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+				"http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+		<generatorConfiguration>
+			<!--如果不需要生成example的话将targetRuntime设置为MyBatis3Simple即可-->
+			<context id="test" targetRuntime="MyBatis3">
+
+				<commentGenerator>
+					<!-- 生成的注释是否包含生成的时间，一般设置为true，不生成时间 -->
+					<property name="suppressDate" value="true" />
+					<!-- 是否去除自动生成的注释 true：是 ： false:否 -->
+					<property name="suppressAllComments" value="true" />
+				</commentGenerator>
+				<!--数据库链接URL，用户名、密码 -->
+				<jdbcConnection driverClass="com.mysql.jdbc.Driver"
+								connectionURL="jdbc:mysql://192.168.0.108:3306/testssm?useSSL=false" userId="root"
+								password="123456">
+				</jdbcConnection>
+				<javaTypeResolver>
+					<!-- 是否将数据库中的decimal类型转换为java的BigDecimal类型 -->
+					<property name="forceBigDecimals" value="false" />
+				</javaTypeResolver>
+				<!-- 生成模型的包名和位置 -->
+				<javaModelGenerator targetPackage="com.harry.bean"
+									targetProject="\learnspring\generator\src\main\java">
+					<property name="enableSubPackages" value="true" />
+					<property name="trimStrings" value="true" />
+				</javaModelGenerator>
+				<!-- 生成映射文件的包名和位置 -->
+				<sqlMapGenerator targetPackage="com.harry.dao"
+								 targetProject="\learnspring\generator\src\main\java">
+					<property name="enableSubPackages" value="true" />
+				</sqlMapGenerator>
+				<!-- 生成DAO的包名和位置 -->
+				<javaClientGenerator type="XMLMAPPER"
+									 targetPackage="com.harry.dao"
+									 targetProject="\learnspring\generator\src\main\java">
+					<property name="enableSubPackages" value="true" />
+				</javaClientGenerator>
+
+				<!-- 要生成哪些表 -->
+				<table tableName="t_user" domainObjectName="User"></table>
+
+
+			</context>
+		</generatorConfiguration>
+		
+	添加完毕之后，在idea的maven中执行下面命令即可：
+		mybatis-generator:generate
+		
+	注意：
+		这里面只会根据单表来生成文件，并不会生成表之间的关系
+		倘若Mapper文件已经存在时，如果进行重新生成mapper文件时，内容不被覆盖而是进行内容追加，结果导致mybatis解析失败。
+		解决方法：删除原来已经生成的mapper文件之后再进行生成。
+		Mybatis自动生成的bean及dao文件不是内容而是直接覆盖没有此问题。
+		
+	Example类
+		在逆向工程生成的文件中有一个UserExample文件，该文件的作用就是帮我们实现多条件的查询，代码示例，根据id查询用户：
+			public User selectUserById(int id) {
+
+				UserExample.Criteria criteria = example.createCriteria();
+
+				criteria.andIdEqualTo(id);
+
+				List<User> users = userDao.selectByExample(example);
+
+				if (users != null){
+					return users.get(1);
+				}else{
+					return null;
+				}
+
+			}
+			
+十二 通用mapper的整合(可以将单表的增删改查操作省去)
+	1.导入pom依赖
+	    <!-- 通用mapper -->
+        <dependency>
+            <groupId>tk.mybatis</groupId>
+            <artifactId>mapper-spring-boot-starter</artifactId>
+            <version>2.1.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-jdbc</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+	
+	2.配置mapper，继承通用mapper
+		public interface UserMapper extends Mapper<UmsMember>
+		
+	3.配置通用mapper的主键和主键返回策略
+		@Id
+		@GeneratedValue(strategy = GenerationType.IDENTITY)
+		
+	4.配置启动类扫描器MapperScan，使用通用mapper的tk……..MapperScan
+		tk.mybatis.spring.annotation.MapperScan
+		
+	

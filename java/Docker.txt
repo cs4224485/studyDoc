@@ -1,0 +1,627 @@
+一 Docker简介
+	
+	Docker是基于Go语言实现的云开源项目
+	Docker的主要目标是"Build, Ship and Run Any App, Anywhere"， 也就是通过对应用组件的封装、分发、部署、运行等生命周期的管理，使用户的APP(可以是一个WEB应用或数据库应用等等)及其运行环境能够做到"一次封装，到处运行"
+	
+	Linux容器技术的出现解决了这样一个问题， 而Docker就是在它的基础上发展过来的。将应用运行在Docker容器上面，而Docker容器在任何操作系统上都是一致的，这家ius实现了跨平台、跨服务器。
+	只需要一次配置好环境，换到别的机子上就可以一键部署好 
+	
+	Docker和传统虚拟化方式的不同之处：
+		* 传统虚拟机技术是虚拟出一套硬件后，在其上运行一个完整操作系统，在该系统上在运行所需应用的进程
+		* 而容器内的应用进程直接运行于宿主的内核，容器内没有自己的内核，而且也没有进行硬件虚拟。 因此容器要比传统虚拟机更为轻便
+		* 每个容器之间互相隔离，每个容器都有自己的文件系统，容器之间进程不会相互影响，能区分计算资源。
+		
+	容器的组成
+	
+		1. 镜像
+			Docker 镜像（Image）就是一个只读的模板。镜像可以用来创建 Docker 容器，一个镜像可以创建很多容器。
+			
+		2. 容器
+			Docker 利用容器（Container）独立运行的一个或一组应用。容器是用镜像创建的运行实例。
+			它可以被启动、开始、停止、删除。每个容器都是相互隔离的、保证安全的平台。
+			可以把容器看做是一个简易版的 Linux 环境（包括root用户权限、进程空间、用户空间和网络空间等）和运行在其中的应用程序。
+			容器的定义和镜像几乎一模一样，也是一堆层的统一视角，唯一区别在于容器的最上面那一层是可读可写的。
+			
+		3. 仓库
+			仓库（Repository）是集中存放镜像文件的场所。
+			仓库(Repository)和仓库注册服务器（Registry）是有区别的。仓库注册服务器上往往存放着多个仓库，每个仓库中又包含了多个镜像，每个镜像有不同的标签（tag）。
+			仓库分为公开仓库（Public）和私有仓库（Private）两种形式。
+			最大的公开仓库是 Docker Hub(https://hub.docker.com/)，
+			存放了数量庞大的镜像供用户下载。国内的公开仓库包括阿里云 、网易云 等
+
+二 Docker的安装
+	1 CentOS6.8 安装Docker
+		yum install -y epel-release
+		
+		yum instal -y docker-io
+		
+		安装后的配置文件：/etc/sysconfig/docker
+		
+		启动Docker后台服务: service docker start
+		
+		docker version 验证
+	
+	2. Centos7 安装
+		官网中文安装手册https://docs.docker-cn.com/engine/installation/linux/docker-ce/centos/#prerequisites
+		
+		(1) 安装GCC相关
+			yum -y install gcc
+			yum -y install gcc-c++
+			
+		(2) 如果有旧版本 卸载旧版本
+			yum -y remove docker docker-common docker-selinux docker-engin
+			
+		(3) 安装需要的软件包
+			yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+			
+		(4) 更新yum软件包索引
+			yum makecache fast
+			
+		(5) 安装DOCKER CE
+			yum -y install docker-ce
+			
+		(6) 启动docker
+			systemctl start docker
+			
+		(7) 测试
+			docker version
+			docker run hello-worl
+			
+		(8) 配置镜像加速
+			mkdir -p /etc/docke
+			vim  /etc/docker/daemon.json
+				#网易云
+				{"registry-mirrors": ["http://hub-mirror.c.163.com"] }
+				 
+				 
+				 
+				 #阿里云
+				{
+				  "registry-mirrors": ["https://｛自已的编码｝.mirror.aliyuncs.com"]
+				}
+		(9) 卸载
+			systemctl stop docker
+			yum -y remove docker-ce
+			rm -rf /var/lib/docker
+			
+	3 Docker是怎么工作的
+		Docker是一个Client-Server结构的系统，Docker守护进程运行在主机上， 然后通过Socket连接从客户端访问，守护进程从客户端接受命令并管理运行在主机上的容器。 
+		容器，是一个运行时环境，就是我们前面说到的集装箱。
+		
+	4 为什么Docker比较比VM块
+		(1)docker有着比虚拟机更少的抽象层。由亍docker不需要Hypervisor实现硬件资源虚拟化,运行在docker容器上的程序直接使用的都是实际物理机的硬件资源。因此在CPU、内存利用率上docker将会在效率上有明显优势。
+		(2)docker利用的是宿主机的内核,而不需要Guest OS。因此,当新建一个容器时,docker不需要和虚拟机一样重新加载一个操作系统内核。仍而避免引寻、加载操作系统内核返个比较费时费资源的过程,当新建一个虚拟机时,虚拟机软件需要加载Guest OS,返个新建过程是分钟级别的。而docker由于直接利用宿主机的操作系统,则省略了返个过程,因此新建一个docker容器只需要几秒钟。
+
+
+三 Docker常用命令
+	1. 帮助命令
+		查看版本 	docker version
+		查看信息 	docker info
+		查看帮助	docker --help
+		
+	2. 镜像命令
+		docker images 列出本地主机上镜像
+			OPTIONS说明： -a: 列表本地所有的镜像(含中间影像层)
+						  -q：只显示镜像ID
+						  -digests: 显示镜像的摘要信息
+						  -no-trunc: 显示完整的镜像信息
+						  
+		docker search 某个XXX镜像名字
+			命令：docker search [OPTIONS] 镜像名字
+			OPTIONS: --no-trunc:显示完整的镜像描述。
+					 -s：列出收藏数不小于指定值的镜像。
+					 -automated:只列出automated build类型的镜像
+					 
+		docker pull 某个XXX镜像名字
+			下载镜像
+			docker pull 镜像名字 [:TAG]
+			
+		docker rmi 某个XXX镜像名字ID 
+			删除单个镜像：docker rmi -f 镜像ID
+			删除多个镜像: docker rmi -f 镜像名1:TAG 镜像名2:TAG
+			删除全部镜像: docker rmi -f $(docker images -qa)
+			
+	
+	3 容器命令
+		(1) 首先拉一个CentOS镜像
+			docker pull centos
+			
+		(2) 新建并启动容器
+			docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
+			 OPTIONS说明（常用）：有些是一个减号，有些是两个减号
+				--name="容器新名字": 为容器指定一个名称；
+				-d: 后台运行容器，并返回容器ID，也即启动守护式容器；
+				-i：以交互模式运行容器，通常与 -t 同时使用；
+				-t：为容器重新分配一个伪输入终端，通常与 -i 同时使用；
+				-P: 随机端口映射；
+				-p: 指定端口映射，有以下四种格式
+					  ip:hostPort:containerPort
+					  ip::containerPort
+					  hostPort:containerPort
+					  containerPort
+						
+						
+		(3) 列出当前所有正在运行的容器
+			docker ps[OPTIONS] 
+			OPTIONS说明（常用）：
+				-a :列出当前所有正在运行的容器+历史上运行过的
+				-l :显示最近创建的容器。
+				-n：显示最近n个创建的容器。
+				-q :静默模式，只显示容器编号。
+				--no-trunc :不截断输出。
+				
+		(4) 退出容器
+			两种退出方式：eixt 容器停止退出
+						  ctrl+P+Q  容器停止退出
+						  
+		
+		(5) 启动容器
+			docker start 容器ID或者容器名
+			
+		(6) 重启容器
+			docker restart 容器ID或者容器名
+			
+		(7) 停止容器
+			docker stop 容器ID或者容器名
+			
+		(8) 强制停止容器
+			docker kill 容器ID或者容器名
+			
+		(9) 删除已停止的容器
+			docker rm 容器ID 
+			一次性删除多个容器
+				docker rm -f $(docker ps -a -q
+				docker ps -a -q | xargs docker rm
+			
+	
+	4 容器核心命令
+		(1) 启动守护式容器
+			docker run -d 容器名
+			
+			 
+			#使用镜像centos:latest以后台模式启动一个容器
+			docker run -d centos
+			 
+			问题：然后docker ps -a 进行查看, 会发现容器已经退出
+			很重要的要说明的一点: Docker容器后台运行,就必须有一个前台进程.
+			容器运行的命令如果不是那些一直挂起的命令（比如运行top，tail），就是会自动退出的。
+			 
+			这个是docker的机制问题,比如你的web容器,我们以nginx为例，正常情况下,我们配置启动服务只需要启动响应的service即可。例如
+			service nginx start
+			但是,这样做,nginx为后台进程模式运行,就导致docker前台没有运行的应用,
+			这样的容器后台启动后,会立即自杀因为他觉得他没事可做了.
+			所以，最佳的解决方案是,将你要运行的程序以前台进程的形式运行
+			shell执行一个循环 保证docker容器在运行
+			[root@192 harry]# docker run -d centos /bin/sh -c "while true;do echo hello world;sleep 2;done"
+			
+		(2) 查看容器日志
+			docker logs -f -t --tail 容器ID 
+				-t 		是加入时间戳
+				-f		跟随最新的日志打印
+				-tail	数字 显示最后多少条
+		
+		(3) 查看容器运行的进程
+			docker top 容器ID
+		
+		(4) 查看容器内部细节
+			docker inspect 容器ID
+			
+		(5) 进入正在运行的容器并以命令行交互
+			docker exec -it 容器ID bashShel  [root@localhost harry]# docker exec -it e25adfc72c7a ls /tmp
+			重新进入docker attach 容器ID
+			上面两者的区别：
+				attach 直接进入容器启动命令的终端，不会启动新的进程
+				exec 是在容器中打开新的终端，并且可以启动新的进程
+				
+		(6) 从容器内拷贝文件到主机上
+			docker cp  容器ID:容器内路径 目的主机路径
+			[root@192 ~]# docker cp 3629846bc670:/tmp/a.txt /root
+			
+四 Docker镜像原理
+	
+	镜像是一种轻量级、可执行的独立软件包，用来打包软件运行环境和基于运行环境开发的软件，它包含运行某个软件所需的所有内容，包括代码、运行时、库、环境变量和配置文件。
+ 
+	1. UnionFS（联合文件系统）
+		Union文件系统（UnionFS）是一种分层、轻量级并且高性能的文件系统，它支持对文件系统的修改作为一次提交来一层层的叠加，同时可以将不同目录挂载到同一个虚拟文件系统下(unite several directories into a single virtual filesystem)。Union 文件系统是 Docker 镜像的基础。镜像可以通过分层来进行继承，基于基础镜像（没有父镜像），可以制作各种具体的应用镜像。
+		
+	2. Docker镜像加载原理：
+		docker的镜像实际上由一层一层的文件系统组成，这种层级的文件系统UnionFS。
+		bootfs(boot file system)主要包含bootloader和kernel, bootloader主要是引导加载kernel, Linux刚启动时会加载bootfs文件系统，在Docker镜像的最底层是bootfs。这一层与我们典型的Linux/Unix系统是一样的，包含boot加载器和内核。当boot加载完成之后整个内核就都在内存中了，此时内存的使用权已由bootfs转交给内核，此时系统也会卸载bootfs。
+		rootfs (root file system) ，在bootfs之上。包含的就是典型 Linux 系统中的 /dev, /proc, /bin, /etc 等标准目录和文件。rootfs就是各种不同的操作系统发行版，比如Ubuntu，Centos等等。 
+		Docker镜像都是只读的当容器启动时，一个新的可写层被加载到镜像的顶部。这一层通常被称作“容器层”，“容器层”之下的都叫“镜像层”。
+		
+	3. 为什么 Docker 镜像要采用这种分层结构呢	 
+		最大的一个好处就是 - 共享资源
+		比如：有多个镜像都从相同的 base 镜像构建而来，那么宿主机只需在磁盘上保存一份base镜像，
+		同时内存中也只需加载一份 base 镜像，就可以为所有容器服务了。而且镜像的每一层都可以被共享。
+	
+	4. Docker镜像的commit命令
+		docker commit提交容器副本使之成为一个新的镜像
+		docker commit -m=“提交的描述信息” -a=“作者” 容器ID 要创建的目标镜像名:[标签名]
+		
+		案例演示：
+			(1) 从Hub上下载tomcat镜像到本地并成功运行
+				docker run -it -p 8080:9000 tomcat
+			(2) 故意删除上一步镜像生产tomcat容器的文档
+				[root@192 ~]# docker exec -it c8435471e687 /bin/bash
+				[root@c8435471e687:/usr/local/tomcat# cd webapps.dist/
+				[root@c8435471e687:/usr/local/tomcat/webapps.dist# rm -rf docs/
+				
+			(3)也即当前的tomcat运行实例是一个没有文档内容的容器，以它为模板commit一个没有doc的tomcat新镜像harry/tomcat02
+				[root@192 ~]# docker commit -a="harry" -m="del tomcat docs"  c8435471e687 harry/  
+				[root@192 ~]# docker images -a
+				REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+				harry/tomcat        1.2                 0602f7826656        14 seconds ago      647MB
+			(4) 启动我们的新镜像并和原来的对比
+				[root@192 ~]# docker run -d -p 7777:8080 harry/tomcat:1.2
+
+五 Docker容器数据卷
+	先来看看Docker的理念：
+		*  将运用与运行的环境打包形成容器运行 ，运行可以伴随着容器，但是我们对数据的要求希望是持久化的
+		*  容器之间希望有可能共享数据
+		 
+	Docker容器产生的数据，如果不通过docker commit生成新的镜像，使得数据做为镜像的一部分保存下来，
+	那么当容器删除后，数据自然也就没有了，为了能保存数据在docker中我们使用卷。
+	
+	1 容器数据卷的作用和特点
+		卷就是目录或文件，存在于一个或多个容器中，由docker挂载到容器，但不属于联合文件系统，因此能够绕过Union File System提供一些用于持续存储或共享数据的特性：
+		卷的设计目的就是数据的持久化，完全独立于容器的生存周期，因此Docker不会在容器删除时删除其挂载的数据卷
+		 
+		特点：
+			*数据卷可在容器之间共享或重用数据
+			*卷中的更改可以直接生效
+			*数据卷中的更改不会包含在镜像的更新中
+			*数据卷的生命周期一直持续到没有容器使用它为止
+			
+	2 数据卷相关操作
+		docker run -it -v /宿主机绝对路径目录:/容器内目录      镜像名
+		// 此时docker会在容器和宿主机为我们创建文件夹
+		[root@192 ~]# docker run -it -v /MyData:/containerData centos
+		
+		查看数据卷是否挂载成功
+		[root@192 MyData]# docker inspect 38dfa808653b
+				"HostConfig": {
+					"Binds": [
+						"/MyData:/containerData"
+					],
+
+		带权限的命令
+			docker run -it -v /宿主机绝对路径目录:/容器内目录:ro 镜像名
+			
+			
+	3 DockerFile添加数据卷
+		(1) 根目录下新建mydocker文件夹并进入
+			[root@192 /]# mkdir mydocker
+			[root@192 /]# cd mydocker/
+
+		(2) 可在Dockerfile中使用VOLUME指令来给镜像添加一个或多个数据卷
+			VOLUME["/dataVolumeContainer","/dataVolumeContainer2","/dataVolumeContainer3"]
+				 
+			说明：
+				出于可移植和分享的考虑，用-v 主机目录:容器目录这种方法不能够直接在Dockerfile中实现。
+				由于宿主机目录是依赖于特定宿主机的，并不能够保证在所有的宿主机上都存在这样的特定目录。
+		(3) File构建
+			# volume test
+			FROM centos
+			VOLUME ["/dataVolumeContainer1","/dataVolumeContainer2"]
+			CMD echo "finished,--------success1"
+			CMD /bin/bash
+			
+		(4) 生产一个新的镜像
+			[root@192 mydocker]# docker build -f /mydocker/dockerfile -t harry/centos .
+			Sending build context to Docker daemon  2.048kB
+			Step 1/4 : FROM centos
+			 ---> 470671670cac
+			Step 2/4 : VOLUME ["/dataVolumeContainer1","/dataVolumeContainer2"]
+			 ---> Running in e2fd130005bb
+			Removing intermediate container e2fd130005bb
+			 ---> a536458e8056
+			Step 3/4 : CMD echo "finished,--------success1"
+			 ---> Running in 47bcc60d255f
+			Removing intermediate container 47bcc60d255f
+			 ---> 5f69adac1aac
+			Step 4/4 : CMD /bin/bash
+			 ---> Running in fc7a13fbcfed
+			Removing intermediate container fc7a13fbcfed
+			 ---> e3110034b1d6
+			Successfully built e3110034b1d6
+			Successfully tagged harry/centos:latest
+		
+		(5) run容器
+			[root@192 mydocker]# docker run -it e3110034b1d6 /bin/bash
+			[root@f721744419ba /]# ls
+			bin                   dev   lib         media  proc  sbin  tmp
+			dataVolumeContainer1  etc   lib64       mnt    root  srv   usr
+			dataVolumeContainer2  home  lost+found  opt    run   sys   var
+		
+		(6) 通过上述步骤，容器内的卷目录地址已经知道, 主机默认地址如下
+			Mounts": [
+				{
+					"Type": "volume",
+					"Name": "124a4911ae21090f40f11f9eba073463455f52dc1913a9b45e477e98662cc1b1",
+					"Source": "/var/lib/docker/volumes/124a4911ae21090f40f11f9eba073463455f52dc1913                                                               a9b45e477e98662cc1b1/_data",
+					"Destination": "/dataVolumeContainer1",
+					"Driver": "local",
+					"Mode": "",
+					"RW": true,
+					"Propagation": ""
+				},
+				{
+					"Type": "volume",
+					"Name": "ab79b23ed49a2e64f452dfc5f64d19ecddb91b6dfb1b18705c0cde386bad2af6",
+					"Source": "/var/lib/docker/volumes/ab79b23ed49a2e64f452dfc5f64d19ecddb91b6dfb1b                                                               18705c0cde386bad2af6/_data",
+					"Destination": "/dataVolumeContainer2",
+					"Driver": "local",
+					"Mode": "",
+					"RW": true,
+					"Propagation": ""
+				}
+	4 容器间传递共享(--volumes-from)
+		(1) 先启动一个父容器dc01并在在dataVolumeContainer1新增内容
+			[root@192 mydocker]# docker run -it --name dc01 harry/centos
+		(2) dc02/dc03继承自dc01并各自在dataVolumeContainer1新增内容
+			[root@192 ~]# docker run -it --name dc2 --volumes-from dc01 harry/centos
+			[root@192 ~]# docker run -it --name dc3 --volumes-from dc01 harry/centos
+		(3) 回到dc01可以看到02/03各自添加的都能共享了
+			[root@1944c2a64be2 dataVolumeContainer1]# ls
+			dc1  dc2
+		(4) 删除dc01，dc02修改后dc03可否访问
+			// 依旧可以访问
+			[root@192 mydocker]# docker rm -f 1944c2a64be2
+			1944c2a64be2
+			[root@192 mydocker]# docker attach c822b8db3178
+			[root@c822b8db3178 dataVolumeContainer1]# ls
+			dc1  dc2
+		
+		(5) 结论
+			结论：容器之间配置信息的传递，数据卷的生命周期一直持续到没有容器使用它为止
+
+六 DockerFile
+	Dockerfile是用来构建Docker镜像的构建文件，是由一系列命令和参数构成的脚本。
+	构建三步骤
+		* 编写Dockerfile文件
+		* docker build
+		* docker run
+		
+	1. Dockerfile内容基础知识
+		* 每条保留字指令都必须为大写字母且后面要跟随至少一个参数
+		* 指令按照从上到下，顺序执行
+		* #表示注释
+		* 每条指令都会创建一个新的镜像层，并对镜像进行提交
+		
+	2. Docker执行Dockerfile的大致流程
+		* docker从基础镜像运行一个容器
+		* 执行一条指令并对容器作出修改
+		* 执行类似docker commit的操作提交一个新的镜像层
+		* docker再基于刚提交的镜像运行一个新容器
+		* 执行dockerfile中的下一条指令直到所有指令都执行完成
+		
+	3 DockerFile体系结构(保留字指令)
+		FROM 		基础镜像，当前镜像是基于哪个镜像的
+		MAINTAINER 	镜像维护者的姓名和邮箱地址
+		RUN			容器构建时需要运行的命令
+		EXPOSE		当前容器对外暴露出的端口
+		WORKDIR		指定在创建容器后，终端默认登陆的进来工作目录
+		ENV			用来在构建镜像过程中设置环境变量
+		ADD			将宿主机目录下的文件拷贝进镜像且ADD命令会自动处理URL和解压tar
+		COPY		类似ADD，拷贝文件和目录到镜像中。将从构建上下文目录中<源路径>的文件/目录复制到新的一层的镜像内的 <目标路径> 位置 COPY src dest  COPY ["src", "dest"]
+		VOLUME		容器数据卷，用于数据保存和持久化工作
+		CMD			指定一个容器启动时要运行的命令， Dockerfile 中可以有多个 CMD 指令，但只有最后一个生效，CMD 会被 docker run 之后的参数替换
+		ENTRYPOINT  指定一个容器启动时要运行的命令，ENTRYPOINT 的目的和 CMD 一样，都是在指定容器启动程序及参数
+		ONBULD		当构建一个被继承的Dockerfile时运行命令，父镜像在被子继承后父镜像的onbuild被触发
+		
+	4 案例 自定义mycentos镜像
+		(1) 编写：
+			自定义mycentos目的使我们自己的镜像具备如下：
+			登陆后的默认路径
+			vim编辑器
+			查看网络配置ifconfig支持
+			dockfile文件脚本：
+				FROM centos
+				MAINTAINER harry<414804000@qq.com>
+				
+				ENV MYPATH /usr/local
+				WORKDIR	$MYPATH
+				
+				RUN yum -y install vim
+				RUN yum -y install net-tools
+				
+				EXPOSE 80
+				
+				CMD echo $MYPATH
+				CMD echo "success--------------ok"
+				CMD /bin/bash
+			
+		(2) 构建
+			会看到 docker build 命令最后有一个 ., . 表示当前目录
+			[root@192 mydocker]# docker build -f ./dockerfile2 -t mycentos:1.3 .
+			
+		(3) 运行容器	
+			[root@192 mydocker]# docker run -it mycentos:1.3
+			[root@fb9eb7173188 local]# pwd
+			/usr/local
+			[root@fb9eb7173188 local]#
+
+	5 CMD/ENTRYPOINT 镜像案例
+		都是指定一个容器启动时要运行的命令
+		
+		CMD：Dockerfile 中可以有多个 CMD 指令，但只有最后一个生效，CMD 会被 docker run 之后的参数替换
+		ENTRYPOINT: docker run 之后的参数会被当做参数传递给 ENTRYPOINT，之后形成新的命令组合
+
+		示例：
+			(1) 制作CMD版可以查询IP信息的容器
+				FROM centos
+				RUN yum install -y curl
+				CMD [ "curl", "-s", "http://ip.cn" ]
+			(2) 如果我们希望显示 HTTP 头信息，就需要加上 -i 参数
+				// 使用CMD我们输入-i参数会当成命令覆盖了dockerfile中的CMD命令
+				[root@192 mydocker]# docker run -it myip:1.1 -i
+				docker: Error response from daemon: OCI runtime create failed: container_linux.go:349: starting container process caused "exec: \"-i\": executable file not found in $PATH": unknown.
+			
+			(3) 使用ENTRYPOINT生产一个镜像
+				FROM centos
+				RUN yum install -y curl
+				ENTRYPOINT [ "curl", "-s", "http://ip.cn" ]
+				// 使用参数-i 相当于执行了 curl -s -i http://ip.cn
+				[root@192 mydocker]# docker run -it myip:1.2 -i
+				HTTP/1.1 403 Forbidden
+				Date: Sun, 26 Apr 2020 09:20:01 GMT
+				Content-Type: text/plain; charset=UTF-8
+				Transfer-Encoding: chunked
+				Connection: keep-alive
+				Set-Cookie: __cfduid=d4dfa0702ae175cd9c1b742e5716cc6c51587892801; expires=Tue, 26-May-20 09:20:01 GMT; path=/; domain=.ip.cn; HttpOnly; SameSite=Lax; Secure
+				Cache-Control: max-age=15
+				Expires: Sun, 26 Apr 2020 09:20:16 GMT
+				Server: cloudflare
+				CF-RAY: 589f39bc5d08eb65-LAX
+				alt-svc: h3-27=":443"; ma=86400, h3-25=":443"; ma=86400, h3-24=":443"; ma=86400, h3-23=":443"; ma=86400
+				cf-request-id: 02576269bb0000eb65ed8d7200000001
+	6 ONBULD示例
+		(1) 创建一个父容器
+			[root@192 mydocker]# vim dockerfile5
+			FROM centos
+			RUN yum install -y curl
+			ENTRYPOINT [ "curl", "-s", "http://ip.cn" ]
+			ONBUILD RUN echo "this is father"
+			[root@192 mydocker]# docker build -f dockerfile5 -t father:1.1 .
+		(2) 创建一个子容器
+			[root@192 mydocker]# cat dockerfile6
+			FROM father:1.1
+			RUN yum install -y curl
+			ENTRYPOINT [ "curl", "-s", "http://ip.cn" ]
+			
+			// 子容器在构建时会执行父容器ONBUILD中定义的命令
+			[root@192 mydocker]# docker build -f dockerfile6 -t child:1.1 .
+			Sending build context to Docker daemon  7.168kB
+			Step 1/3 : FROM father:1.1
+			# Executing 1 build trigger
+			 ---> Running in 3d2a26735352
+			this is father
+			Removing intermediate container 3d2a26735352
+			 ---> 762a8c2c8b75
+			Step 2/3 : RUN yum install -y curl
+			 ---> Running in bc5f8d9f3fd0
+			Last metadata expiration check: 0:33:04 ago on Sun Apr 26 08:59:22 2020.
+			Package curl-7.61.1-11.el8.x86_64 is already installed.
+			Dependencies resolved.
+			Nothing to do.
+			Complete!
+			Removing intermediate container bc5f8d9f3fd0
+			 ---> bf0eda6d5663
+			Step 3/3 : ENTRYPOINT [ "curl", "-s", "http://ip.cn" ]
+			 ---> Running in 5ac861d024fb
+			Removing intermediate container 5ac861d024fb
+			 ---> 39c826403ff6
+			Successfully built 39c826403ff6
+			Successfully tagged child:1.1
+
+			
+	7 自定义镜像Tomcat9
+		(1) 创建一个tomcat工作文件
+			[root@192 ~]# mkdir -p /harry/mydockerfile/tomcat9
+		(2) 在上述目录下touch c.txt
+			[root@192 ~]# touch c.txt
+		(3)	将jdk和tomcat安装的压缩包拷贝进上一步目录
+			[root@192 ~]# mv /apache-tomcat-9.0.34.tar.gz /harry/mydockerfile/tomcat9/
+			[root@192 ~]# mv /jdk-8u251-linux-x64.tar.gz /harry/mydockerfile/tomcat9/
+		(4) 目录下新建Dockerfile文件
+			FROM centos
+			MAINTAINER harry<414804000@qq.com>
+			#把宿主机当前上下文的c.txt拷贝到容器/usr/locak/路径下
+			COPY c.txt /usr/local/cincontainer.txt
+			#把java与tomcat添加到容器中
+			ADD jdk-8u251-linux-x64.tar.gz /usr/local/
+			ADD apache-tomcat-9.0.34.tar.gz /usr/local/
+			#安装vim编辑器
+			RUN yum -y install vim
+			#设置工作访问时候的WORKDIR路径，登录落脚点
+			ENV MYPATH /usr/local
+			#配置java与tomcat环境变量
+			ENV JAVA_HOME /usr/local/jdk1.8.0_251
+			ENV CLASSPATH $JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+			ENV CATALINA_HOME /usr/local/apache-tomcat-9.0.34
+			ENV CATALINA_BASE /usr/local/apache-tomcat-9.0.34
+			ENV PATH $PATH:$JAVA_HOME/bin:$CATALINA_HOME/lib:$CATALINA_HOME/bin
+			#容器运行时监听的端口
+			EXPOSE  8080
+			#启动时运行tomcat
+			# ENTRYPOINT ["/usr/local/apache-tomcat-9.0.34/bin/startup.sh" ]
+			# CMD ["/usr/local/apache-tomcat-9.0.34/bin/catalina.sh","run"]
+			CMD /usr/local/apache-tomcat-9.0.34/bin/startup.sh && tail -F /usr/local/apache-tomcat-9.0.34/logs/catalina.out
+		
+		(5) 构建镜像
+			[root@192 tomcat9]# docker build -t harrytomcat9 .
+			
+		(6) 运行镜像
+			[root@192 tomcat9]# docker run -d -p 9080:8080 --name myt9 -v /harry/mydockerfile/tomcat9/test:/usr/local/apache-tomcat-9.0.34/webapps/test -v /harry/mydockerfile/tomcat9/tomcat9logs/:/usr/local/apache-tomcat-9.0.34/logs --privileged=true harrytomcat9
+			272dc669399c73d1399a3b96621176b6f14291f5db360620ab65bb32151ce6c2
+		(7) 验证
+			http://192.168.0.128:9080/
+		(8) 结合前述的容器卷将测试的web服务test发布
+			[root@192 test]# pwd
+			/harry/mydockerfile/tomcat9/test
+			[root@192 test]# vim web.xml
+			<?xml version="1.0" encoding="UTF-8"?>
+			<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			  xmlns="http://java.sun.com/xml/ns/javaee"
+			  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+			  id="WebApp_ID" version="2.5">
+
+			  <display-name>test</display-name>
+
+			</web-app>
+			[root@192 test]# vim a.jsp
+			<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+			<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+			<html>
+			  <head>
+				<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+				<title>Insert title here</title>
+			  </head>
+			  <body>
+				-----------welcome------------
+				<%="i am in docker tomcat self "%>
+				<br>
+				<br>
+				<% System.out.println("=============docker tomcat self");%>
+			  </body>
+			</html>
+		(9)测试	
+			http://192.168.0.128:9080/test/a.jsp
+			
+七 Docker常用安装
+	1 安装tomcat
+		(1) docker hub上面查找tomcat镜像 docker search tomcat
+		(2) 从docker hub上拉取tomcat镜像到本地docker pull tomca
+		(3) docker images查看是否有拉取到的tomcat
+		(4) 使用tomcat镜像创建容器(也叫运行镜像)docker run -it -p 8080:8080 tomcat
+		
+	2 安装MySql
+		(1) hub上面查找mysql镜像
+		(2) hub上(阿里云加速器)拉取mysql镜像到本地标签为5.6
+			[root@192 test]# docker pull mysql:5.6
+		(3) 使用mysql5.6镜像创建容器(也叫运行镜像)
+			docker run -p 12345:3306 --name mysql -v /harry/mysql/conf:/etc/mysql/conf.d -v /harry/mysql/logs:/logs -v /harry/mysql/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=123456 -d mysql:5.6
+			命令说明：
+				-p 12345:3306：将主机的12345端口映射到docker容器的3306端口。
+				--name mysql：运行服务名字
+				-v /harry/mysql/conf:/etc/mysql/conf.d ：将主机/harry/mysql录下的conf/my.cnf 挂载到容器的 /etc/mysql/conf.d
+				-v /harry/mysql/logs:/logs：将主机/harry/mysql目录下的 logs 目录挂载到容器的 /logs。
+				-v /harry/mysql/data:/var/lib/mysql ：将主机/harry/mysql目录下的data目录挂载到容器的 /var/lib/mysql 
+				-e MYSQL_ROOT_PASSWORD=123456：初始化 root 用户的密码。
+				-d mysql:5.6 : 后台程序运行mysql5.6
+				
+		(4) 数据备份小测试
+			docker exec myql服务容器ID sh -c ' exec mysqldump --all-databases -uroot -p"123456" ' > /harry/all-databases.sql
+	
+	3 安装Redis
+		(1) 从docker hub上(阿里云加速器)拉取redis镜像到本地标签为3.2
+			[root@192 harry]# docker pull redis:3.2
+		(2) 使用镜像
+			docker run -p 6379:6379 -v /harry/myredis/data:/data -v /harry/myredis/conf/redis.conf:/usr/local/etc/redis/redis.conf  -d redis:3.2 redis-server /usr/local/etc/redis/redis.conf --appendonly yes
+		
+		(3) 在主机/harry/myredis/conf/redis.conf目录下新建redis.conf文件
+			vim /harry/myredis/conf/redis.conf/redis.conf
+		
+		(4) 测试redis-cli连接上来
+			docker exec -it 运行着Rediis服务的容器ID redis-cli

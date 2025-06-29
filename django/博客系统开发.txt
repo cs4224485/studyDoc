@@ -1,0 +1,808 @@
+一 项目流程
+	1 明确项目需求
+		(1) 基于用户认证组件和Ajax实现登录验证(图片验证码)
+		(2) 基于forms组件和AJAX实现一个注册功能
+		(3) 设计系统首页(文章列表渲染)
+		(4) 设计个人站点页面
+		(5)	文章详情页
+		(6) 实现文章点赞
+		(7) 实现文章评论
+		(8) 后台管理页面
+	2 设计表结构
+		from django.contrib.auth.models import AbstractUser
+		class UserInfo(AbstractUser):
+			'''
+			用户信息，是具有用户组件的表进行扩展字段
+			注意：生成数据库时需要在django配置中增加：
+			AUTH_USER_MODEL = "blog.userinfo"
+			'''
+			nid = models.AutoField(primary_key=Ture)
+			telephone = models.CharField(max_length=11, null=Ture, unique=Ture)
+			avatar = models.FileField(upload_to='avatars/', default-"/avatars/default.png")
+			email = models.EmailField()
+			create_time = models.DateTimeField(verbose_name='创建时间', auto_now_add=Ture)
+			
+			blog = models.OneToOneField(to='Blog', to_field='nid', null=Ture)
+			
+		
+		class Blog(models.Model)
+			'''
+			博客信息，个人站点表
+			'''
+			nid = models.AutoField(primary_key=Ture)
+			title = models.CharField(verbose_name='个人博客标题'， max_length=64)
+			site_name = models.CharField(verbose_name='站点名称', max_length=64)
+			theme = models.CharField(verbose_name='博客主体', max_length=32)
+			
+		class Category(models.Model)
+			'''
+			博主个人文章分类
+			'''
+			nid = models.AutoField(primary_key=Ture)
+			title = models.CharField(verbose_name='分类标题', max_length=32)
+			blog = models.ForeignKey(verbose_name='所属博客', to='Blog', to_field='nid')
+		
+		class Tag(models.Model)
+			nid = models.AutoField(primary_key=Ture)
+			title = models.CharField(verbose_name='标签名称', max_length=32)
+			blog = models.ForeignKey(verbose_name='所属博客', to='Blog', to_field='nid')
+			
+		class Article(models.Model)
+			nid = models.AutoField(primary_key=True)
+			title = models.CharField(max_length=50, verbose_name='文章标题')
+			desc = models.CharField(max_length=255,verbose_name='文章描述'）
+			create_time = models.DateTimeField(verbose_name='创建时间“， auto_now_add=True)
+			user = models.ForeignKey(verbose_name='作者', to='UserInfo', to_field='nid')
+			caregory = models.ForeignKey(to='Category', to_field='nid', null=True)
+			tags = models.ManyToManyField(
+				to='Tag',
+				through='Article2Tag',
+				through_fields=('article','tag')),
+			
+			content = models.TexfField()
+		
+		class Atticle2Tag(models.Model)
+			nid = models.AutoField(primary_key=True)
+			article = models.ForeignKey(verbose_name='文章', to='Article', to_field='nid')
+			tag = models.ForeignKey(verbose_name='标签', to="Tag", to_field='nid')
+			
+			class Meta:
+				unique_together = [
+					('article', 'tag'),
+					]
+		class ArticleUpDown(models.Model)
+			'''
+			点赞表
+			'''
+			nid = models.AutoField(primary_key=True)
+			user = models.ForeignKey('UserInfo', null=True)
+			article = models.ForeignKey("Article", null=True)
+			is_up = models.BooleanField(default=True)
+			
+			class Meta:
+				unique_together = [
+					('article', 'user'),
+					]
+			
+		class Comment(models.Model):
+			'''
+			评论表
+			'''
+			nid = models.AutoField(primary_key=True)
+			article = models.ForeignKey(verbose_name='评论文章', to='Article', to_field='nid')
+			user = models.ForeignKey(verbose_name'评论者', to='UserInfo', to_field='nid')
+			content = models.CharField(verbose_name='评论内容'， max_length=255)
+			create_time = models.DateTimeField(verbose_name='创建时间'， auto_now_add=True)
+			parent_comment = models.ForeignKey('self', null=True)
+			
+			
+			
+	3 按着每一个功能进行开发
+		(1) 基于Ajax的登录	
+			生成动态验证码
+				def get_validCode_img(request):
+				
+					# 动态生成图片颜色
+					def get_random_color():
+						return (random.randint(0,255), random.randint(0,255), random.randint(0,255)
+					from PIL import Image, ImageDraw, ImageFont	
+					import random
+					'''
+					# 从磁盘中读取和写入的操作
+					img = Image.new('RGB',(270,40),color=get_random_color())
+					with open("validCode.png", "wb") as f:
+						img.save(f,"png")
+						
+					with open("validCode.png",'rb') as f:
+						data = f.read()
+					'''
+					
+					# 从内存中读写验证码图片的操作
+					from io import BytesIO
+					
+					img = Image.new("RGB",(270,40), color=get_random_color())
+				
+					
+					# 生成一个对象这样就可以在这个PNG图片中写入内容
+					draw = ImageDraw.Draw(img)
+					# 写入文本
+					kumo_font = ImageFont.truetype("", siz=20)
+					# 生成随机字符串：
+					valid_code_str = ""
+					for i in range(5):
+						random_num = str(random.randint(0,9))
+						random_low_alpha = chr(random.randint(95,122))
+						random_upper_alpha = chr(random.randint(65,90))
+						random_char = random.choice([random_num,random_low_alpha,random_upper_alpha])
+						draw.text((i*20,5),"python", get_random_color(),font=kumo_font)
+						#保存验证码字符串
+						valid_code_str += random_char
+						
+					# 噪点噪线
+					width=270
+					height=40
+					for i in range(10)
+						x1=random.randint(0,width)
+						x2=random.randint(0,width)
+						y1=random.randint(0,height)
+						y2=random.randint(0,height)
+						draw.line((x1,y1,x2,y2),fill=get_random_color())
+					
+					for i in range(100)
+						draw.point([random.randint(0,width),random.randint(0,height)], fill=get_random_color())
+						x = random.randint(0,width)
+						y = random.randint(0,height)
+						draw.arc((x,y,x+4,y+4), 0, 90, fill=get_random_color())
+						
+					
+					f = BytesIO()
+					img.save(f, "png")
+					data = f.getvalue()
+					
+					return HttpResponse(data)
+			
+			刷新验证码	
+				<script>
+					$("#valid_code_img").click(function(){
+						$(this)[0].src+="?"
+					})
+					
+			登录验证
+				$(".login_btn").click(function(){
+					
+					$.ajax({
+						url:"",
+						type:"post",
+						data:{
+							user:$("#user").val()
+							password:$('#pwd').val(),
+							valid_code:$("#valid_code").val(),
+							csrfmiddlewaretoken:$("[name='csrfmiddlewaretoken']").val(),
+							}
+						success:function(data){
+							
+						}
+						
+						})
+		
+		(2) 用户注册
+			Class UserForm(forms.Form):
+				user = forms.CharField(max_length=32)
+				pwd = forms.CharField(max_length=32)
+				re_pwd = forms.CharField(max_length=32)
+				email = forms.EmailField(max_length=32)
+			
+			
+		
+			def register(request):
+				response = {'state': False, 'error_msg':"", 'summary_error': ""}
+
+				if request.is_ajax():
+					form_obj = blog_forms.RegisterForm(request.POST)
+					if form_obj.is_valid():
+						username = form_obj.cleaned_data.get('username')
+						password = form_obj.cleaned_data.get('password')
+						Email = form_obj.cleaned_data.get('email')
+						valid_code = form_obj.cleaned_data.get('check_code')
+						avatar_obj = request.FILES.get('avatar')
+						check_valid = request.session['valid_code']
+						if valid_code == check_valid:
+							extra = {}
+							if avatar_obj:
+								extra["avatar"] = avatar_obj
+							blog_obj = models.Blog.objects.create(
+								title="%s的博客" % username,
+								site_name="%s的个人站点" % username,
+								theme="default.css")
+				  
+							models.UserInfo.objects.create_user(username=username, password=password, blog=blog_obj, email=Email, **extra)
+							response['state'] = True
+							return JsonResponse(response)
+						else:
+							response['summary_error'] = '验证码错误'
+							return JsonResponse(response)
+					else:
+
+						response['error_msg'] = form_obj.errors
+						return JsonResponse(response)
+				elif request.method == 'GET':
+					form_obj = blog_forms.RegisterForm()
+					return render(request, 'register.html', {'form_obj': form_obj})
+							
+			上传头像： 点击头像等于点击input
+			
+				<div class="form-group">
+					<label for="avatar">
+							头像
+							<img id="avatar_img" width="60" height="60" src="/static/blog/img/default.png">
+					</label>
+					<input type="file" id="avatar">
+				</div>
+				
+			实现头像预览功能：
+				<script>
+					$("#avatar").change(function(){
+						// 获取文件对象
+						var file_obj = $(this)[0].files[0];
+						// 获取文件对象的路径
+						var reader = new FileReader()
+						reader.readAsDataURL(file_obj)
+						// 修改img的src属性
+						reader.onload = function(){
+							$("#avatar_img").attr("src", reader.result)
+						};
+				</script>
+				
+			基于Ajax提交数据
+				$(".reg_btm").click(function(){
+					var formdata = new FormDate();
+					// 使用 serializeArray()方法
+					var request_data= $("#form").serializeArray();
+
+					$.each(request_data,function(index,data){
+						formdata.append(data.name,data.value)
+					});	
+				    formdata.append("avatar",$("#avatar")[0].files[0]);
+					
+					
+					/*
+					formdata.append("user",$("#id_user").val());
+					formdata.append("pwd",$("#id_pwd").val());
+					formdata.append("re_pwd",$("#id_repwd").val());
+					formdata.append("email",$("#id_email").val());
+					formdata.append("avatar",$("#avatar")[0].files[0]);
+					*/
+					
+					$.ajax({
+						url:"",
+						type:"post",
+						contentType:false;
+						processData:false
+						data:formdata
+						success:function(data){
+							console.log(data)
+							if(data.user){
+								// 注册成功
+							}else{
+								// 注册失败
+								
+								// 在错误信息渲染之前先清空一下错误信息
+								$("span.error").html('')
+								// 展示此次提交的错误信息
+								$.each(data.msg,function(field,error_list){
+									// 处理全局错误信息
+									if (field=="__all__"){
+										$("#id_re_pwd").next().html(error_list[0]).parent().addClass("has-error")
+									$("id_"+field).text().html(error_list[0])
+								}
+						}
+					})
+					})
+			
+			forms组件的局部钩子和全局钩子的应用
+				class UserForm(forms.Form):
+					user = forms.CharField(max_length=32,
+										   error_messages={"required":"该字段不能为空"},
+										   label="用户名",
+										   widget=widgets.TextInput(attrs={"class":"form-control"
+										   )
+					
+					pwd = forms.CharField(max_length=32,
+										   error_messages={"required":"该字段不能为空"},
+										   label="用户名",
+										   widget=widgets.Password(attrs={"class":"form-control"
+										   )
+					
+					re_pwd = forms.CharField(max_length=32,
+										   error_messages={"required":"该字段不能为空"},
+										   label="用户名",
+										   widget=widgets.PasswordInput(attrs={"class":"form-control"
+										   )
+										   
+					email = forms.EmailField(max_length=32,
+											 label="邮箱",
+											widget=widgets.EmailField(attrs="class": "form-control"},)
+											
+					def clean_user(self):
+						user = self.cleaned_data.get("user")
+						
+						UsreInfo.objects.filter(username=user).first()
+						in not uesr:
+							return user
+						else
+							raise ValidationError("该用户已注册"）
+					
+					def  clean(self)
+						pwd = self.cleaned_data.get("pwd")
+						re_pwd = self.cleaned_.data.get("re_pwd")
+						if pwd and re_pwd:
+							if pwd==re_pwd：
+								return self.cleaned_data
+							else:
+								raise ValidationError("两次密码不一致")
+						else:
+							return self.cleaned_data
+						
+			Django对静态文件的区分
+					Django有两种静态文件
+						/static/      :   css,js,img
+						/media/		  :   用户上传的文件
+					
+					Media配置
+						在项目的应用下生成一个media文件
+						在settings下配置：MEDIA_ROOT = os.path.join(BASE_DIR,"media")
+						
+						如果用户一旦配置了MEDIA_ROOT：
+							avatar_obj=request.FIELS.get("avatar")
+							user_obj = UserInfo.objects.create_user(username=user,password=pwd,email=email,avatar=avatar_obj)
+							Django会将文件对象下载到MEDIA_ROOT中的avatar文件夹中(如果没有avatar,Django会自动创建), user_obj的avatar存的是文件对象
+					
+					Meida 配置值MEDIA_URL:
+						让浏览器直接访问到media中的数据
+						在settings.py里配置MEDIA_URL="/meida"
+						# media配置
+						from django.views.static import serve
+						from cnblog import settings
+						re_path(r"media/(?P<path>.*)$", serve, {"document_root":settings.MEDIA_ROOT})
+				
+			博客首页
+				设计系统首页(文章列表渲染)
+				
+				admin组件：
+					Django内部的一个后台数据管理组件(web页面)
+					admin注册：
+						在app下的admin.py下
+						from django.contrib import admin
+						from blog import models
+						admin.site.register(models.Blog)
+						admin.site.register(models.UserInfo)
+						admin.site.register(models.Category)
+						admin.site.register(models.Article)
+						
+					
+					
+				首页模板：	
+					<div class="container-fluid">
+						<div class="row">
+							<div class="col-md-3">
+								<div class="panel panel-warning">
+									<div class="panel-heading"> panel heading </div>
+									<div class="panel-body">
+										panel Content
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="article_list">
+									{% for article in article_list %}
+										<div class="article-item">
+											<h5><a href="">{{ artice.title }}</a></h5>
+											<div class="article-desc">
+												<span class="media-left">
+													<a href=""><img src="media/{{ article.user.avatar }}"></a>
+												</span>
+												<span class="media-right">
+													{{ article.summary }}
+												</span>	
+											</div>	
+											<div class="small">
+												<span><a href="">{{ article.user.username }}</a></span>&nbsp;&nbsp;&nbsp
+												<span>发布于 &nsbp;&nbsp;{{ article.create_time|date:"Y-m-d H:i"</span>
+												
+											</div>
+										</div>
+										<hr>
+									{% endfor %}
+								</div>
+							</div>
+							<div class="col-md-3">
+								<div class="panel panel-warning">
+									<div class="panel-heading"> panel heading </div>
+									<div class="panel-body">
+										panel Content
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				
+				首页视图：
+					def index(request)
+						article_list = models.Atricle.objects.all()
+			
+			个人站点
+				re_path('^(?P<username>\w+)/(?P<condition>tag|caregory|archive)/(?P<param>.*)/$', views.home_site)
+				视图函数：
+					def home_site(request,username)
+						user = UserInfo.objects.filter(username=username).exists()
+						if not user:
+							return render(request, "not_found.html)
+						
+						if article_list:
+							if kwargs:
+								condition = kwargs['condition']
+								parm = kwargs['parm']
+								if condition == 'category':
+									article_list = article_list.filter(category__title=parm)
+								elif condition == 'tag':
+									article_list = article_list.filter(tags__title=parm)
+								elif condition == 'archive':
+									year, month, day = parm.split("-")
+									article_list = article_list.filter(create_time__year=year, create_time__month=month)
+						# 当前站定对象	
+						blog = user.blog
+						# 当前用户或站点的所有文章
+						article_list = user.article_set.all()
+						
+						# 查询当前站点的每一个标签以及对应的文章数
+						tag_list = models.Tag.objects.filter(blog=blog).values("pk").annocate(c=Count("article")).values("title","count")
+						# 查询当前站点每一个年月的名称以及对应的文章数  mysql:data_formant   sqlite:strftime
+						data_list = models.Article.objects.extra(select={"y_m_date":"date_format(create_time,'%%Y-%%m')"}).values("y_m_date").annocate(c=Count("nid")).values("y_m_date","c")
+					
+						# 日期归档查询方式2	
+						from django.db.models.function import TruncMonth
+						Sales.objects
+							 .annocate(month=TruncMonth('timestamp'))
+							 .values('month')
+							 .annotate(c=Count('id'))
+							 .values('month','c')
+						
+						
+						return render(request， "home_site.html")
+				
+			个人站点模板：
+				
+				<div class="header">
+					<div class="content">
+						<p class="title">
+							<span>{{ blog.title }}</span>
+							<a href="" class="backend">后台管理<a>
+						</p>
+					</div>
+				</div>
+				
+				<div class="container">
+					<div class="row">
+						<div class="col-md-3"></div>
+						<div class="col-md-9">
+							<div class="article_list">
+								
+							</div>
+							
+						</div>
+			
+			文章详情页	
+				
+				re_path("(?P<username>\w+)/(?P<article_id>articles\d+)$", views.article_detail)
+				def article_detail(request, usernaem, article_id):
+					article_obj = models.Article.objects.filter(pk=article_id).first()
+					
+					return render
+				
+				模板include
+					
+					在templatetags下定义一个函数
+					@register.inclusion_tag("classification.html")
+					def get_classification_style(usernam)
+						user = models.UserInfo.objects.filter(username=username).first()
+						blog = user.blog
+						cate_list = models.Category.objects.filter(blog=blog).valus("pk").annotate(c=Count("article")).values("title","c")
+						tag_list = models.Tag.objects.filter(blog=blog).values("pk").annocate(c=Count("article")).values("title","count")
+						data_list = models.Article.objects.extra(select={"y_m_date":"date_format(create_time,'%%Y-%%m')"}).values("title","y_m_date").annocate(c=Count("nid")).values("y_m_date","c")
+						return {"blog":blog,"cate_list"：cate_list,"data_list":data_list,"tag_list":tag_list}
+						
+						
+				
+				点赞功能
+					$("#div_digg .action").click(function(){
+						var is_up = $(this).hasClass("diggit")
+						$obj = $(this).children("span")
+						$.ajax({
+							url:"/digg/",
+							type:"post",
+							data:{
+								'csrfmiddlewaretoken':$("[name='csrfmiddlewaretoken']").val()
+								"is_up":is_up,
+								"article_id":"{{ article_obj.pk }}",
+							},
+							success:function(data){
+								console.log(data)
+								if(data.stae){
+									var val = parseInt($obj.text());
+									$obj.text(val+1)
+								
+								}else{
+									var val = data.handled?"您已经推荐过！"："您已经反对过"
+									$("#digg_tips").html("val")
+													
+								}
+									
+								
+									setTimeout(function(){
+										$("#digg_tips").html("")
+									},1000)
+								}
+								
+							}
+						}
+					}
+					
+					def digg(request)
+						article_id = request.POST.get("article_id")
+						is_up = json.loads(request.POST.get("is_up"))
+						user_id = request.user.pk
+						up_down_obj:models.ArticleUpDown.objects.filter(user_id=user_id, article_id=article_id).first()
+						respone = {"state": True, "msg":None}
+						
+						if not up_down_obj:
+							ard = models.AtricleUpDown.objects.create(user_id=user_id, article_id=article_id, is_up)
+							if is_up:
+								modles.Article.objects.filter(pk=article_id).update(up_count=F("up_count")+1)
+							else:
+								modles.Article.objects.filter(pk=article_id).update(down_count=F("down_count")+1)
+						else:
+							respone["state"] = false
+							respone["handled"] = obj.is_up
+							from django.http import JsonResponse
+						return JsonResponse(respone)
+				
+				评论功能
+					根评论：对文章的评论
+					子评论：对评论的评论
+					
+					1 构建样式
+						<div class="comments list-group">
+							<p>发表评论</p>
+							<p>昵称<input type="text" id="tbCommentAuthor" class="author"</p>
+							<p>评论内容:</p>
+							<textarea name="" id="comment_content" cols="60" rows="10"></textarea>
+							<p>
+								<button class="btn btn-default comment">提交评论</button>
+							</p>
+							
+							<p class="tree_bnt">评论树</p>
+							<div class="comment_tree">
+								
+							</div>
+							
+							<p>评论列表</p>
+							
+							<ul class="comment_list list-group">
+								{$ for comment in commnet_list%}
+									<li class="list-group-item">
+										{{ comment.content }}
+										<div>
+											<a href=""># {{ forloop.counter }}楼</a> &nbsp;&nbsp;
+											<span>{{ comment.create_time|date:"Y-MD H:i" }} </span>
+											<a href=""><span>{{ comment.user.username }}</span></a>
+											<a href="" class="pull-right replay-btn" username="{{ comment.user.username }}" comment_pk="{{ comment.pk }}">回复</a>
+										</div>
+										{% if comment.parent_comment_id %}
+											<div class="pid_info well">
+												<p>
+													{{ comment.parent_comment.user.username }}:{{ comment.parent_comment.content }}
+												</p>
+											</div>
+										{% endif %}
+										
+										<div>
+											<p>{{ comment.comment }}</p>
+										</div>	
+									<li>
+								{% endfor %}
+							</ul>
+						</div>
+						
+							
+					2 提交根评论
+						// 评论请求
+						var pid = ""
+						$(".comment_btn").click(function(){
+							// 父评论ID	
+							
+							var content = $("#comment_content").val()
+							if(pid){
+								var index = contetn.indexOF("\n")
+								content = content.slice(index+1）
+								
+								
+							}
+							$.ajax({
+								url:"/comment/",
+								type:"post",
+								data:{
+									"csrfmiddlewaretoken":$("[name="csrfmiddlewaretoken"]").val(),
+									"article_id":"{{ article_obj.pk }}",
+									"content": content,
+									pid:"pid"
+								},
+								success:function(data){
+									console.log(data)
+									var create_time = data.create_time;
+									var username = data.username
+									var content = data.content
+									
+									
+									
+									var stringTag = `
+										<li class="list-group-item">
+											{{ comment.content }}
+											<div>
+												<span>${create_time}</span>
+												<a href=""><span>${username}</span></a>
+												<a href="" class="pull-right reply_btn">回复</a>
+											</div>
+											<div class="comment_con">
+												<p>${content}</p>
+											</div>	
+										<li>
+									`
+									$("ul.comment_list").append(stringTag)
+									
+									
+									// 清空评论框
+									$("#comment_content").val("");
+									
+									// 清空pid
+									pid = ""
+								}
+							}
+						}	
+						
+					def comment(request):
+						article_id = request.POST.get("artice_id")
+						pid = request.POST.get("pid")
+						content = request.POST.get("content")
+						user_id = request.user.pk
+						
+						from django.db import transcation
+						
+						
+						// 事务 实现数据同步
+						with transcation.atomic():
+							comment_obj = models.Comment.objects.create(user_id=user_id, article_id= article_id, content=content, parent_comment_id=pid)
+							models.Article.objects.filter(pk=artice_id).update(comment_count=F("comment_count")+1))
+						
+						comment_list = models.Comment.objects.filter(artice_id=artice_id)
+						response = {}
+						response["create_time"] = comment_obj.create_time.strftime("%Y-%m-%d")
+						response["username"] = request.user.username
+						response["content"] = content
+						
+						
+						return JsonResponse(response)
+					3 显示根评论
+					4 提交子评论
+						// 回复按钮
+						$(".reply_btn").click(function(){
+							$("#comment_content").focus();
+							var val = "@"+ $(this).attr('username')+"\name"
+							pid = $(this).attr("comment_pk")
+						}
+						
+						
+					5 显示子评论
+					
+					
+					6 评论树显示
+						$(".tree_bnt").click(function(){
+							$.ajax({
+								url:"/get_comment_tree",
+								type:"get",
+								data:{
+									article_id:"{{ article_obj.pk }}"
+								},
+								success:function(data){
+									console.log(data);
+									$.each(data, function(index, comment_object){
+										var pk = comment_object.pk;
+										var content = comment_object.content;
+										var parent_comment_id = comment_object.parent_comment_id;
+										var  s='<div clss="comment_item" comment_id='+pk+'><span>'+content+'</span></div>'
+										if(!parent_comment_id){
+											$(".comment_tree").append(s);
+										}else {
+											$("[comment_id="+parent_comment_id+"]").append(s);
+									
+									})
+								}	
+							})
+						})
+						
+						def get_comment_tree(request):
+							artice_id = request.GET.get("article_id")
+							ret = list(models.Comment.objects.filter(article_id=artice_id).values("pk", "content", "parent_comment_id"))
+							
+							return JsonResponse(ret, safe=False)
+					
+					7 评论后发送邮件
+							from django.core.mail import send_mail
+							from cnblog import settings
+							article_obj = models.Article.objects.filter(pk=artice_id).first()
+							send_mail(
+								"您的文章%s新增了一条内容"%article_obj.title,
+								content,
+								settings.EMAIL_HOST_USER,
+								["414804000@qq.com"]
+								)
+						# 在哪SETTINGS下配置
+						EMAIL_HOST = "smtp.exmail.qq.com"  # 如果是163改成 smtp.163.com
+						EMAIL_POST = 465
+						EMAIL_HOST_USER = ''
+						EMAIL_HOST_PASSWORD = ''
+						EMAIL_USE_SSL = True
+				
+				博客系统后台管理
+					编辑器的引用和使用
+						引入kindeditor编辑器
+							<script charset="utf-8" src="/editor/kindeditor.js"></script>
+							<script charset="utf-8" src="/editor/lang/zh-CN.js"></script>
+							<script>
+									KindEditor.ready(function(K) {
+											window.editor = K.create('#editor_id', {  // 要与textarea标签ID一直进行引用
+												width:"800",
+												height:"600",
+												uploadJson:"/upload/",
+												extraFileUploadParams:{
+													csrfmiddlewaretoken:$("[name="csrfmiddlewaretoken]".val()")
+												},
+												filePostName:"upload_img"		// 上传文件键（文件名）			
+											});
+									});
+							</script>
+						
+						def upload(request)：
+							img =request.FIELS.get("upload_img")
+							path = os.path.join(settings.MEDIA_ROOT, "add_article_img", img.name)
+						
+							with open(path, "wb") as f：
+								for line in img:
+									f.write(line)
+							
+							response={
+								"error":0,
+								"url":"media/add_article_img/%s"%img.name
+							}
+							
+							return HttpResponse(json.dunps(response))
+				
+				
+				BeautifulSoup
+						from bs4 import BeautifulSoup
+						s="<h1>hello</h1><span>123</span>"
+						soup = BeautifulSoup(s,"html.parser")
+						print(soup.text)
+						
+					防御XSS攻击
+						print(soup.find_all())
+						for tag in soup.find_all():
+							print(tag.name)
+							if tag.name == "srcipt":
+								tag.decompose()
+						
+						
+						
+						
+				
+	4 功能测试
+	5 项目部署上线

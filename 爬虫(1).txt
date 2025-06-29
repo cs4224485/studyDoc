@@ -1,0 +1,1746 @@
+一 爬虫简介
+   爬虫就是通过编写程序模拟浏览器上网，然后让其去互联网上抓取数据的过程。
+   能实现爬虫的编程语言：
+	   1.php：可以实现爬虫。php被号称是全世界最优美的语言（当然是其自己号称的，就是王婆卖瓜的意思），但是php在实现爬虫中支持多线程和多进程方面做的不好。
+	   2.java：可以实现爬虫。java可以非常好的处理和实现爬虫，是唯一可以与python并驾齐驱且是python的头号劲敌。但是java实现爬虫代码较为臃肿，重构成本较大。
+	   3.c、c++：可以实现爬虫。但是使用这种方式实现爬虫纯粹是是某些人（大佬们）能力的体现，却不是明智和合理的选择。
+	   4.python：可以实现爬虫。python实现和处理爬虫语法简单，代码优美，支持的模块繁多，学习成本低，具有非常强大的框架（scrapy等）且一句难以言表的好！没有但是！
+	爬虫的分类：
+		1.通用爬虫：通用爬虫是搜索引擎（Baidu、Google、Yahoo等）“抓取系统”的重要组成部分。主要目的是将互联网上的网页下载到本地，形成一个互联网内容的镜像备份。  简单来讲就是尽可能的；把互联网上的所有的网页下载下来，放到本地服务器里形成备分，在对这些网页做相关处理(提取关键字、去掉广告)，最后提供一个用户检索接口。 
+		2.聚焦爬虫：聚焦爬虫是根据指定的需求抓取网络上指定的数据。例如：获取豆瓣上电影的名称和影评，而不是获取整张页面中所有的数据值。
+	robots.txt协议
+		- 如果自己的门户网站中的指定页面中的数据不想让爬虫程序爬取到的话，那么则可以通过编写一个robots.txt的协议文件来约束爬虫程序的数据爬取。robots协议的编写格式可以观察淘宝网的robots（访问www.taobao.com/robots.txt即可）。但是需要注意的是，该协议只是相当于口头的协议，并没有使用相关技术进行强制管制，所以该协议是防君子不防小人。但是我们在学习爬虫阶段编写的爬虫程序可以先忽略robots协议。
+
+二 urllib模块
+	python中自带的一个基于爬虫的模块
+	作用: 可以使用代码模拟浏览器发起请求。 request parse
+	使用流程:
+		- 指定一个URL
+		- 针对指定的url发起一个请求
+		- 获取服务器响应回来的页面数据
+		- 持久化存储
+		
+	1 第一个urllib程序
+		# 需求爬取搜狗首页的页面数据
+		import urllib.request
+		# 目标url
+		url = 'https://www.sogou.com/'
+		# 发起请求且返回一个响应对象
+		response = urllib.request.urlopen(url=url)
+		# 获取页面数据:read函数返回的就是响应对象中存储的页面数据
+		page_text = response.read()
+		print(page_text)
+		# 进行持久化存储
+		with open('./sougou.html', 'wb') as f:
+			f.write(page_text)
+			print('写入成功')
+	
+	2 url编码处理
+		# 爬取指定词条所对应的页面数据
+		import urllib.request
+		import urllib.parse
+		url = 'https://www.sogou.com/web?query=' # url 当中不可以存在非ACCISS码的字符数据
+		# 编码
+		word = urllib.parse.quote("特朗普搅乱世界")
+		url += word
+		print(url)
+		# 发请求
+		response = urllib.request.urlopen(url=url)
+
+		print(word)
+		# 获取页面数据
+		page_text = response.read()
+		with open('./sougou2.html', 'wb') as f:
+			f.write(page_text)
+			
+	3 反爬机制UA：
+		网站检查请求的UA,如果发现UA是爬虫程序,则拒绝提供网站数据
+		User-Agent:请求载体的身份标识
+		反反爬虫机制:伪装爬虫程序请求的UA
+		import urllib.request
+		url = 'http://www.baidu.com/'
+		# UA伪装
+		# 1. 自制定一个请求对象
+		headers = {
+		# 存储任意的请求头信息
+			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
+		}
+		# 该请求对象进行了成功的伪装
+		request = urllib.request.Request(url=url, headers=headers)
+		# 2 针对自定制的请求对象发起请求
+		response = urllib.request.urlopen(request)
+		page_text = response.read()
+		print(page_text)
+	
+	4 urlb模块的post请求
+		import urllib.request
+		import urllib.parse
+		
+		url = 'https://fanyi.baidu.com/sug'
+		# postq请求携带的参数进行处理
+		# 1. 将post请求参数封装到字典中
+		data = {'kw':'西瓜'}
+		# 2. 使用parse模块中的urlencode进行编码处理，返回为str类型
+		data = urllib.parse.urlencode(data)
+		type(data) # 字符串类型
+		# 3. 将步骤2的编码结果转换成byte类型
+		data = data.encode()
+		# 发起post请求 urlopen函数的data参数表示的就是经过处理后的post请求携带的参数
+		response = urllib.request.urlopen(url=url, data=data)
+		res_data = response.read()
+		print(res_data)
+		
+三 Requests模块
+	1 requests模块简介
+		requests模块是python中原生的基于网络请求的模块，其主要作用是用来模拟浏览器发起请求。功能强大，用法简洁高效。在爬虫领域中占据着半壁江山的地位。
+		为什么要使用requests模块
+				手动处理url编码
+				手动处理post请求参数
+				处理cookie和代理操作繁琐
+				......
+		使用requests模块：
+				自动处理url编码
+				自动处理post请求参数
+				简化cookie和代理操作
+				
+	2 requests-get请求：
+		- 需求:爬取搜狗首页的页面数据
+			import requests
+			url = 'https://www.sogou.com/'
+			# 发起get请求：get方法会返回请求成功后的响应对象
+			response = requests.get(url=url)
+			# 获取响应中的数据值:text可以获取响应对象中字符串形式的页面数据
+			page_data = response.text
+			# 持久化操作
+			with open('sougou-request.html', 'w', encoding='utf-8') as fp:
+				fp.write(page_data)
+	
+	3 requests的response常用属性
+			import requests
+			url = 'https://www.sogou.com/'
+			# 发起get请求：get方法会返回请求成功后的响应对象
+			response = requests.get(url=url)
+			# content获取的是response对象中二进制(byte)类型的页面数据
+			response.content
+			# 返回一个响应状态码
+			response.status_code
+			# 响应头信息
+			response.headers
+			# 获取请求的url
+			response.url
+	
+	4 携带参数的get请求
+		# 方式一
+			import requests
+			url = 'https://www.sogou.com/web?query=苹果&ie=utf8'
+			request.get(url=url)
+			page_text = response.text
+			with open('./query.html', 'w', encoding='utf-8') as fp:
+				fp.write(page_text)
+	
+		# 方式二
+			import requests
+			url = 'https://www.sogou.com/web'
+			# 将参数封装到字典中
+			params = {
+				'query':'apple',
+				'ie':'utf-8'
+			}
+			request.get(url=url, params=params)
+			page_text = response.text
+			with open('./query.html2', 'w', encoding='utf-8') as fp:
+				fp.write(page_text)
+	
+	5 request模块get自定义请求头
+		import requests
+		url = 'https://www.sogou.com/web'
+		# 将参数封装到字典中
+		params = {
+			'query':'apple',
+				
+		# 自定义请求信息
+		headers = {
+			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
+		}
+		response = request.get(url=url, params=params, headers=headers)
+		page_text = response.text
+		with open('./query.html2', 'w', encoding='utf-8') as fp:
+				fp.write(page_text)
+	
+	6 request模块的post请求
+		import requests
+
+		url = 'https://accounts.douban.com/j/mobile/login/basic'
+		# 封装post请求参数
+		param_data = {
+			'ck': 'dFf2',
+			'name': '18629090745',
+			'password': 'cs1993413' ,
+			'remember': 'false',
+			'ticket':'' 
+		}
+		# 自动以请求头信息
+		headers = {
+			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
+		}
+		# 发起post请求
+		response = requests.post(url=url, data=param_data, headers=headers)
+		# 获取响应对象中的页面数据
+		page_data = response.text
+	
+	7 requests模块的ajax请求
+		(1) get请求
+			import requests
+			url = 'https://movie.douban.com/j/chart/top_list'
+			# 封装ajax的get请求中的参数
+			params = {
+				'type': '24',
+				'interval_id': '100:90',
+				'action': '',
+				'start': '60',
+				'limit': '20',
+			}
+			headers = {
+				'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
+			}
+			response = requests.get(url=url, params=params, headers=headers)
+			page_data = response.text
+			
+		(2) post请求
+			# 需求：爬取肯德基城市位置数据
+			
+			#指定ajax-post请求的url（通过抓包进行获取）
+			url = 'http://www.kfc.com.cn/kfccda/ashx/GetStoreList.ashx?op=keyword'
+
+			#定制请求头信息，相关的头信息必须封装在字典结构中
+			headers = {
+				#定制请求头中的User-Agent参数，当然也可以定制请求头中其他的参数
+				'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36',
+			}
+
+			#定制post请求携带的参数(从抓包工具中获取)
+			data = {
+				'cname':'',
+				'pid':'',
+				'keyword':'北京',
+				'pageIndex': '1',
+				'pageSize': '10'
+			}
+			#发起post请求，获取响应对象
+			response = requests.post(url=url,headers=headers,data=data)
+
+			#获取响应内容：响应内容为json串
+			print(response.text)
+			
+	8 综合练习
+		# 需求:爬取搜狗知乎某一个词条对一定范围页码表示的页面数据
+		import requests
+		import os
+		
+		# 创建一个文件夹
+		if not os.path.exists('./pages'):
+			os.mkdir('./pages')
+			
+		word = input('enter a word:')
+		# 动态指定页面范围
+		start_pageNum = int(input('enter a start pageNum:'))
+		end_pageNum = int(input('enter a end pageNum:'))
+		url = 'https://www.sogou.com/web'
+		headers = {
+			#定制请求头中的User-Agent参数，当然也可以定制请求头中其他的参数
+			'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36',
+		}
+		for page in range(start_pageNum, end_pageNum+1):
+			params = {
+				'query':word,
+				'page':page,
+				'ie': 'utf-8'
+			}
+			response = requests.get(url=url, params=params, headers=headers)
+			# 获取响应中的页面数据(指定页面(page))
+			page_text = response.text
+			# 进行持久化存储
+			filenName = word+str(page)+'.html'
+			filePath = 'pages/' + filenName
+			with open(filePath, 'w', encoding='utf-8') as fp:
+				fp.write(page_text)
+	
+	9 request模块的cookie操作
+		实现流程：
+			1 执行登录操作(获取cookie)
+			2 在发起个人主页请求时,需要将cooki携带到请求中
+			注意: session对象：发送请求(会将cookie对象进行自动存储)
+			
+		import requests
+		
+		session = requests.session()
+		# 发起登录请求, 将cookie获取, 并且存储到session对象中
+		login_url = 'https://accounts.douban.com/j/mobile/login/basic'
+		param_data = {
+			'ck': '',
+			'name': '18629090745',
+			'password': 'cs1993413' ,
+			'remember': 'false',
+			'ticket':'' 
+		}
+		headers = {
+			#定制请求头中的User-Agent参数，当然也可以定制请求头中其他的参数
+			'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36',
+		}
+		# 使用session发起post请求
+		login_response = session.post(url=login_url, data=data, headers=headers )
+		
+		# 对个人主页发起请求(session), 获取响应页面数据
+		url = 'https://www.douban.com/people/181322653/'
+		response = session.get(url=url, headers=headers)
+		page_text = response.text
+		
+	10 request模块的代理操作
+		免费代理ip的网站提供商：
+			- www.goubanjia.com
+			- 快代理
+			- 西祠代理
+		import requests
+		headers = {
+			#定制请求头中的User-Agent参数，当然也可以定制请求头中其他的参数
+			'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36',
+		}
+		url = 'http://www.baidu.com/s?wd=ip&ie=utf-8'
+		# 将代理ip封装到字典中
+		proxy = {
+			'http':'123.117.38.29:9000'
+		}
+		# 更换网络ip
+		response = requests.get(url=url, proxies=proxy, headers=headers)
+		with open('./daili.html', 'w', encoding='utf-8') as fp:
+			fp.write(response.text)
+			
+三 图片验证码处理
+	验证码处理：
+		1. 手动识别验证码
+		2. 云打码平台自动识别验证码
+		
+	云打码平台处理的实现流程
+		1. 对携带验证码的页面数据进行抓取
+		2. 可以将页面数据种验证码进行解析, 验证码图片下载到本地
+		3. 可以将验证码图片提交给三方平台识别，返回验证码图片上的数据值
+			— 云打码平台:
+				* 在官网中注册(普通用户和开发者用户都需注册)
+				* 登陆开发者用户
+					— 实例代码的下载(开发者文档>>调用实例及最新的DLL>>pythonHTTP示例)
+					— 创建一个软件: 我的软件>> 添加新的软件
+				* 使用示例代码中的源码文件中的代码进行修改, 让其识别验证码图片中的数据值
+
+		
+		调用云打码识别的相关接口对指定的验证码图片进行识别,返回图片上的数据值：
+		def getCode(codeImg):
+			# 云打码平台普通用户用户名
+			username    = 'cs4224485'
+
+			# 密码
+			password    = 'cs1993413'                            
+
+			# 软件ＩＤ，开发者分成必要参数。登录开发者后台【我的软件】获得！
+			appid       = 7817                                     
+
+			# 软件密钥，开发者分成必要参数。登录开发者后台【我的软件】获得！
+			appkey      = '7d884e469f76fb1048bd0bb1b4e4bb87'    
+
+			# 验证码图片文件
+			filename    = codeImg                        
+
+			# 验证码类型，# 例：1004表示4位字母数字，不同类型收费不同。请准确填写，否则影响识别率。在此查询所有类型 http://www.yundama.com/price.html
+			codetype    = 3000
+
+			# 超时时间，秒
+			timeout     = 60                                    
+
+			# 检查
+			if (username == 'username'):
+				print('请设置好相关参数再测试')
+			else:
+				# 初始化
+				yundama = YDMHttp(username, password, appid, appkey)
+				# 登陆云打码
+				uid = yundama.login();
+				print('uid: %s' % uid)
+				# 查询余额
+				balance = yundama.balance();
+				print('balance: %s' % balance)
+				# 开始识别，图片路径，验证码类型ID，超时时间（秒），识别结果
+				cid, result = yundama.decode(filename, codetype, timeout);
+				print('cid: %s, result: %s' % (cid, result))
+			
+			return result
+			
+		实现代码：
+			import requests
+			import json
+			import time
+			from lxml import etree 
+			
+			headers = {
+				#定制请求头中的User-Agent参数，当然也可以定制请求头中其他的参数
+				'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36',
+			}
+			
+			url = 'http://www.yundama.com/'
+			page_text = requests.get(url=url, headers=headers).text
+			# 将页面数据种验证码解析, 验证码图片下载到本地
+			tree = etree.HTML(page_text)
+			codeImg_url = tree.xpath('//*[@id="verifyImg"]')[0]
+			# 获取了验证码图片对应的二进制数据值
+			code_img = requests.get(url=codeImg_url, headers=headers).content
+			with open('./code.png', 'wb') as fp:
+				fp.write(code_img)
+			
+			# 获得了验证码图片上的数据值
+			codeText = getCode('./code.png')
+			
+			# 进行登陆操作
+			post_url = ''
+			data = {
+				'ck': codeText,
+				'name': '18629090745',
+				'password': 'cs1993413' ,
+				'remember': 'false',
+				'ticket':'' 
+			}
+			
+四 爬虫数据解析
+	三种解析方式:
+		正则
+		bs4
+		xpath
+	1 正则
+		# 提取出python
+		key = "javapythonc++php"
+		re.findall('python', key)
+		
+		# 提取出hello world
+		key = "<html><h1>hello word</h1></html>"
+		re.findall('<h1>(hello word)</h1>', key)
+		
+		# 提取170
+		string = '我喜欢身高为170的XX'
+		re.findall('\d+', string)
+		
+		# 提取出http://和https://
+		key = 'http://www.baidu.com and https://boob.com'
+		re.findall('https?', key)
+		或
+		re.findall('https{0,1}', key)
+		
+		# 提取出hit.
+		key = 'bobo@hit.edu.com'
+		re.findall('h.*?\.', key) # 贪婪模式：根据正则表达式尽可能多的提取出数据
+		
+		# 匹配asa和saas
+		key = 'saas and sas and saaas'
+		re.findall('sa{1,2}s', key)
+		
+		# 匹配出i开头的行
+		string = '''
+			fall in love with you
+			i love you very much
+			i love she
+			i love her
+			'''
+		re.findall('^i.*', string, re.M) # re.S(单行匹配) re.M(多行匹配)
+		
+		# 匹配全部行
+		string = '''
+			<div>静夜思
+			窗前明月光
+			疑似地上霜
+			举头望明月
+			低头思故乡
+		'''
+		re.findall('<div>.*</div>', string, re.S)
+		
+		
+		# 使用正则对糗事百科中的图片数据进行解析和下载
+		
+		import requests
+		import re
+		import os
+		headers = {
+			#定制请求头中的User-Agent参数，当然也可以定制请求头中其他的参数
+			'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36',
+		}
+		url = 'https://www.qiushibaike.com/imgrank/'
+		requests.get(url=url, headers=headers)
+		page_text = response.text
+		
+		# 数据解析
+		'''
+		图片html
+		<div class="thumb">
+			<a href="/article/121733601" target="_blank">
+			<img src="//pic.qiushibaike.com/system/pictures/12173/121733601/medium/HDWWXFFANYVPKZGN.jpg" alt="糗事#121733601" class="illustration" width="100%" height="auto">
+			</a>
+		</div>
+		'''
+		# 该列表中存储的就是当前页面源码中所有图片链接
+		img_list = re.findall('<div class="thumb">.*?<img src="(.*?)" .*?>.*?</div>', page_text, re.S)
+		# 创建一个存储图片数据的文件夹
+		if not os.path.exists('./imgs'):
+			os.mkdir('imgs')
+		
+		for url in img_list:
+			# 将图片的url进行拼接，拼接成一个完整的url
+			img_url = 'https:' + url
+			# 持久化存储：存储的是图片的数据并不是图片的url
+			img_data = requests.get(url=img_url, headers=headers).content
+			img_name = url.split('/')[-1]
+			img_path = 'imgs/' + img_name
+			with open(img_path, 'wb') as fp:
+				fp.write(img_data)
+				print(img_name+'写入成功')
+		
+			
+			
+	2 xpath在爬虫的使用流程
+		下载：pip instal lxml
+		导包： from lxml import etree
+		创建etree对象进行制定数据的解析
+			- 本地：etree.parse('本地文件路径')
+					etree.xpath('xpath表达式')
+			- 网络：etree.HTML('网络请求到的页面数据')
+					etree.xpath('xpath表达式')
+					
+		测试页面数据:
+			<html lang="en">
+				<head>
+					<meta charset="UTF-8" />
+					<title>测试bs4</title>
+				</head>
+				<body>
+					<div>
+						<p>百里守约</p>
+					</div>
+					<div class="song">
+						<p>李清照</p>
+						<p>王安石</p>
+						<p>苏轼</p>
+						<p>柳宗元</p>
+						<a href="http://www.song.com/" title="赵匡胤" target="_self">
+							<span>this is span</span>
+						宋朝是最强大的王朝，不是军队的强大，而是经济很强大，国民都很有钱</a>
+						<a href="" class="du">总为浮云能蔽日,长安不见使人愁</a>
+						<img src="http://www.baidu.com/meinv.jpg" alt="" />
+					</div>
+					<div class="tang">
+						<ul>
+							<li><a href="http://www.baidu.com" title="qing">清明时节雨纷纷,路上行人欲断魂,借问酒家何处有,牧童遥指杏花村</a></li>
+							<li><a href="http://www.163.com" title="qin">秦时明月汉时关,万里长征人未还,但使龙城飞将在,不教胡马度阴山</a></li>
+							<li><a href="http://www.126.com" alt="qi">岐王宅里寻常见,崔九堂前几度闻,正是江南好风景,落花时节又逢君</a></li>
+							<li><a href="http://www.sina.com" class="du">杜甫</a></li>
+							<li><a href="http://www.dudu.com" class="du">杜牧</a></li>
+							<li><b>杜小月</b></li>
+							<li><i>度蜜月</i></li>
+							<li><a href="http://www.haha.com" id="feng">凤凰台上凤凰游,凤去台空江自流,吴宫花草埋幽径,晋代衣冠成古丘</a></li>
+						</ul>
+					</div>
+				</body>
+			</html>
+		常用xpath表达式:
+			属性定位：
+				#找到class属性值为song的div标签
+				//div[@class="song"] 
+			层级&索引定位：
+				#找到class属性值为tang的div的直系子标签ul下的第二个子标签li下的直系子标签a
+				//div[@class="tang"]/ul/li[2]/a
+			逻辑运算：
+				#找到href属性值为空且class属性值为du的a标签
+				//a[@href="" and @class="du"]
+			模糊匹配：
+				//div[contains(@class, "ng")]
+				//div[starts-with(@class, "ta")]
+			取文本：
+				# /表示获取某个标签下的文本内容
+				# //表示获取某个标签下的文本内容和所有子标签下的文本内容
+				//div[@class="song"]/p[1]/text()
+				//div[@class="tang"]//text()
+			取属性：
+				//div[@class="tang"]//li[2]/a/@href
+				
+		实战：
+			# 创建etree对象进行制定数据解析
+			tree = etree.parse('./text.html')
+			# 属性定位：根据指定的属性定位到指定的节点标签
+			tree.xpath('//div[@class="song"]')
+			# 层级索引定位
+			tree.xpath('//div[@class="tang"]/ul/li[2]/a')
+			# 逻辑定位
+			tree.xpath('//a[@href="" and @class="du"]')
+			# 模糊匹配
+			tree.xpath('//div[contains(@class, "ng")]')
+			tree.xpath('//div[starts-with(@class, "ta")]')
+			
+			# 取文本
+			tree.xpath('//div[@class="song"]/p[1]/text()')
+			tree.xpath('//div[@class="tang"]//text()')
+			
+			# 取属性：
+			tree.xpath('//div[@class="tang"]//li[2]/a/@href')
+		
+		xpat插件：可以直接将xpath表达式作用于浏览器当中
+			安装： - 打开浏览器更多工具的扩展程序>>开启右上角开发者模式>>xpath程序拖拽的页面
+				   - 开启和关闭xpath插件：ctrl+shif+x
+				   
+		xpath实战项目：
+			# 需求使用xpath对段子网中的段子内容和标题进行解析
+		import requests
+		from lxml import etree
+
+		url = 'https://ishuo.cn/duanzi'
+
+		headers = {
+			#定制请求头中的User-Agent参数，当然也可以定制请求头中其他的参数
+			'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36',
+			}	
+		response = requests.get(url=url, headers=headers)
+		page_text = response.text
+		tree = etree.HTML(page_text)
+		# 每个li标签列表 注意：Element类型的对象可以继续调用xpath函数对该对象表示的局部内容进行指定内容的解析
+		li_list = tree.xpath('//div[@id="list"]/ul/li')
+
+		fp = open('./duanzi.txt', 'w', encoding='utf-8') 
+		for li in li_list:
+			content = li.xpath("./div[@class='content']/text()")[0]
+			title = li.xpath("./div[@class='info']/a/text()")[0]
+			fp.write(title+":"+content+"\n\n")
+	
+	3 Beadutiful解析
+		- python中独有的解析方式
+		- 环境安装: 
+			- windows
+				（1）打开文件资源管理器(文件夹地址栏中)
+				（2）地址栏上面输入 %appdata%
+				（3）在这里面新建一个文件夹  pip
+				（4）在pip文件夹里面新建一个文件叫做  pip.ini ,内容写如下即可
+					[global]
+					timeout = 6000
+					index-url = https://mirrors.aliyun.com/pypi/simple/
+					trusted-host = mirrors.aliyun.com
+			 - linux
+				（1）cd ~
+				（2）mkdir ~/.pip
+				（3）vi ~/.pip/pip.conf
+				（4）编辑内容，和windows一模一样
+			- 需要安装：pip install bs4
+				 bs4在使用时候需要一个第三方库，把这个库也安装一下
+				 pip install lxml
+				 
+		- 代码使用流程
+			核心思想：将html文档转换成Beautiful对象, 然后调用该对象中的属性和方法进行html文档指定内容的定位查找。
+			导包： from bs4 import BeautifulSoup
+			创建Beautiful对象：
+				如果html文档的来源是本地：
+					Beautiful('open('本地的html文件')', 'lxml')
+				如果 html是来源于网络
+					Beautiful('网络请求的页面数据', 'lxml')
+			基础方法：
+				（1）根据标签名查找
+					- soup.a   只能找到第一个符合要求的标签
+				（2）获取属性
+					- soup.a.attrs  获取a所有的属性和属性值，返回一个字典
+					- soup.a.attrs['href']   获取href属性
+					- soup.a['href']   也可简写为这种形式
+				（3）获取内容
+					- soup.a.string
+					- soup.a.text
+					- soup.a.get_text()
+				   【注意】如果标签还有标签，那么string获取到的结果为None，而其它两个，可以获取文本内容
+				（4）find：找到第一个符合要求的标签
+					- soup.find('a')  找到第一个符合要求的
+					- soup.find('a', title="xxx")
+					- soup.find('a', alt="xxx")
+					- soup.find('a', class_="xxx")
+					- soup.find('a', id="xxx")
+				（5）find_all：找到所有符合要求的标签
+					- soup.find_all('a')
+					- soup.find_all(['a','b']) 找到所有的a和b标签
+					- soup.find_all('a', limit=2)  限制前两个
+				（6）根据选择器选择指定的内容
+						   select:soup.select('#feng')
+					- 常见的选择器：标签选择器(a)、类选择器(.)、id选择器(#)、层级选择器
+						- 层级选择器：
+							div .dudu #lala .meme .xixi  下面好多级
+							div > p > a > .lala          只能是下面一级
+					【注意】select选择器返回永远是列表，需要通过下标提取指定的对象
+		实战演练：
+			# 需求：使用bs4实现将诗词名句网站中三国演义小说的每一章的内容爬去到本地磁盘进行存储  
+			import requests
+			from bs4 import BeautifulSoup
+
+			def parse_content(url):
+				#获取标题正文页数据
+				page_text = requests.get(url,headers=headers).text
+				soup = BeautifulSoup(page_text,'lxml')
+				#解析获得标签
+				ele = soup.find('div',class_='chapter_content')
+				content = ele.text #获取标签中的数据值
+				return content
+
+			headers = {
+				#定制请求头中的User-Agent参数，当然也可以定制请求头中其他的参数
+				'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36',
+			}
+			url = 'http://www.shicimingju.com/book/sanguoyanyi.html'
+			page_text = requests.get(url=url, headers=headers).text
+			soup = BeautifulSoup(page_text, 'lxml')
+			# a_list列表中存储的是一系列a标签对象
+			a_list = soup.select('.book-mulu > ul > li > a')
+			fp = open('./sanguo.txt','w', encoding='utf-8')
+			for a in a_list:
+				title = a.string
+				# 获取章节的内容
+				content_url = 'http://www.shicimingju.com' +a['href']
+				content = parse_content(content_url)
+				fp.write(title+":"+content+'\n\n\n\n\n')
+
+五 处理页面动态加载数据
+	
+	1 selenium
+		可以实现让浏览器完成自动化的操作
+		安装：pip install selenium
+		获取浏览器的驱动程序：
+			下载浏览器驱动程序：
+			http://chromedriver.storage.googleapis.com/index.html
+			查看驱动和浏览器版本的映射关系：
+			http://blog.csdn.net/huilan_same/article/details/51896672
+			简单使用/效果展示
+		元素定位
+			webdriver 提供了一系列的元素定位方法，常用的有以下几种：
+				find_element_by_id()
+				find_element_by_name()
+				find_element_by_class_name()
+				find_element_by_tag_name()
+				find_element_by_link_text()
+				find_element_by_partial_link_text()
+				find_element_by_xpath()
+				find_element_by_css_selector()
+		#编码流程
+			from selenium import webdriver
+			from time import sleep
+			# 创建一个浏览器对象 executable_path驱动的路径
+			bro = webdriver.Chrome(executable_path='./chromedriver')
+			bro.get('https://www.baidu.com')
+			sleep(1)
+			# 让百度进行指定词条的一个搜索
+			text = bro.find_element_by_id('kw') # 定位到text文本框
+			text.send_keys('人民币') # send_keys表示向文本框输入指定内容
+			seleep(1)
+			button = bro.find_element_by_id('su')
+			button.click # click表示的点击操作
+			sleep(3)
+			bro.quit() # 关闭浏览器
+	2 phantomJs:
+		无界面的浏览器, 自动化流程和上述操作谷歌浏览器流程相同
+		from selenium import webdriver
+		bro = webdriver.PhantomJS(executable_path='.\phantomjs-2.1.1-windows/bin/phantomjs')
+		bro.get('https://www.baidu.com')
+		# 截屏
+		bro.save_screenshot('./1.png')
+		sleep(1)
+		# 让百度进行指定词条的一个搜索
+		text = bro.find_element_by_id('kw') # 定位到text文本框
+		text.send_keys('人民币') # send_keys表示向文本框输入指定内容
+		seleep(1)
+		button = bro.find_element_by_id('su')
+		button.click # click表示的点击操作
+		sleep(3)
+		bro.quit() # 关闭浏览器
+	
+	3 项目实战
+		# 需求：获取豆瓣电影中动态加载出更多电影详情数据
+		
+		from selenium import webdriver
+		from time import sleep
+		
+		bro = webdriver.PhantomJS(executable_path='.\phantomjs-2.1.1-windows/bin/phantomjs')
+		url = 'https://movie.douban.com/typerank?type_name=%E5%89%A7%E6%83%85&type=11&interval_id=100:90&action='
+		bro.get(url)
+		sleep(3)
+		bro.save_screenshot('./1.png')
+		# 编写js代码：让页面中的滚轮向下滑动(底部)
+		js = 'window.scrollTo(0, document.body.scrollHeight)'
+		
+		# 如何让浏览器对象执行js代码
+		bro.execute_script(js)
+		
+		# 获取加载数据后的页面： page_sourse获取浏览器当前的页面数据
+		page_text = bro.page_source
+		print(page_text)
+		bro.save_screenshot('./2.png')
+
+六 Scrapy框架
+	1 Scrapy框架的简介
+		为了爬取网站数据而编写的一款应用框架,所谓的框架其实就是一个集成了相应的功能且具有很强通用性的项目模板
+		该框架提供了高性能的异步下载，解析和持久化等功能
+		
+	2 安装：
+		linux or max os 
+			pip install scrapy
+		windows:
+			pip install wheel
+			下载 twisted框架：https://www.lfd.uci.edu/~gohlke/pythonlibs/#twisted
+			下载好后安装：pip insta 下载的框架.whl
+			pip install pywin32
+			pip install scrapy
+	
+	3 基础使用
+		(1) 创建一个工程: scrapy startproject 工程名称
+		(2) 在工程目录下创建一个爬虫文件
+			目录结构：
+				project_name/
+			    scrapy.cfg：
+			    project_name/
+				   __init__.py
+				   items.py
+				   pipelines.py
+				   settings.py
+				   spiders/
+					   __init__.py
+
+				scrapy.cfg   项目的主配置信息。（真正爬虫相关的配置信息在settings.py文件中）
+				items.py     设置数据存储模板，用于结构化数据，如：Django的Model
+				pipelines    数据持久化处理
+				settings.py  配置文件，如：递归的层数、并发数，延迟下载等
+				spiders      爬虫目录，如：创建文件，编写爬虫解析规则
+		(3) 对应的文件中编写爬虫程序来完成爬虫的相关操作
+			cd 工程目录
+			执行scrapy genspider 爬虫文件的名称 起始url
+			文件内容：
+				# -*- coding: utf-8 -*-
+				import scrapy
+				class FirstSpider(scrapy.Spider):
+					# 爬虫文件的名称: 可以通过爬虫文件的名称可以指定的定位到某一个具体的爬虫文件
+					name = 'first'
+					# 允许的域名: 只可以爬取指定域名下的页面数据
+					allowed_domains = ['www.qiushibaike.com']
+					# 起始url:当前工程要爬取的页面所对应的url
+					start_urls = ['http://www.qiushibaike.com/']
+
+					# 解析方法:对获取的页面数据进行指定内容的解析
+					# response:根据起始url列表发起请求,请求成功后返回的响应对象
+					# parse方法的返回值:必须为迭代器或者空
+					def parse(self, response):
+						print(response.text) # 获取响应对象的页面数据
+		(4) 配置文件的编写（settings.py）
+			所需更改的配置：
+				# Obey robots.txt rules
+				ROBOTSTXT_OBEY = False # 改成False
+				# 对请求载体的身份进行伪装
+				USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36'
+		(5) 执行
+			scrapy crawl 爬虫文件的名称
+	
+	4 爬虫文件中指定页面解析操作
+		# 需求：爬取糗事百科中段子的内容和作者
+			(1) 创建一个工程 scrapy startproject spiderqiubai
+			(2) 创建一个爬虫文件 cd spiderqiubai   scrapy gensider www.qiushibaike.com/text
+			(3) 编写代码
+				class QiubaiSpider(scrapy.Spider):
+					name = 'qiubai'
+					# allowed_domains = ['www.qiushibaike.com/text']
+					start_urls = ['https://www.qiushibaike.com/text/']
+
+					def parse(self, response):
+						# 建议使用xpath进行解析（框架集成了xpath解析的接口）
+						div_list = response.xpath('//div[@id="content-left"]/div ')
+						for div in div_list:
+							# xpath解析到的指定内容存储到了Selector对象
+							# extract()该方法可以将Selector对象存储中存储的数据值拿到
+							author = div.xpath('./div/a[2]/h2/text()').extract_first()
+							# extract_first = extract()[0]
+							content = div.xpath('.//div[@class="content"]/span/text()').extract_first()
+							print(author)
+							print(content)
+	
+	5 持久化存储操作
+		硬盘文件
+			(1) 基于终端指令
+				    def parse(self, response):
+						# 建议使用xpath进行解析（框架集成了xpath解析的接口）
+						div_list = response.xpath('//div[@id="content-left"]/div ')
+						# 存储解析到的页面数据
+						data_list = []
+						for div in div_list:
+							# xpath解析到的指定内容存储到了Selector对象
+							# extract()该方法可以将Selector对象存储中存储的数据值拿到
+							author = div.xpath('./div/a[2]/h2/text()').extract_first()
+							# extract_first = extract()[0]
+							content = div.xpath('.//div[@class="content"]/span/text()').extract_first()
+							data_dict = {
+								'author':author,
+								'content':content
+							}
+							data_list.append(data_dict)
+						return data_list
+				* 保证parse犯法返回一个可迭代类型的对象(存储解析到页面内容)
+				* 使用终端指定完成数据存储到磁盘文件的操作
+					scrapy crawl 爬虫文件名称 -o 磁盘文件.后缀
+				
+			(2) 基于管道 
+				* items: 		存储解析到的页面数据
+				* piplines：	处理持久化存储的相关操作
+				* 代码流程：
+					1 将解析到的页面数据存储到items对象
+					2 使用yield关键字将items提交给管道文件进行处理
+					3 在管道文件中编写代码完成数据存储的操作
+					4 在配置文件开启管道操作
+				qiubai.py
+					class QiubaiSpider(scrapy.Spider):
+						name = 'qiubai'
+						# allowed_domains = ['www.qiushibaike.com/text']
+						start_urls = ['https://www.qiushibaike.com/text/']
+
+						def parse(self, response):
+							# 建议使用xpath进行解析（框架集成了xpath解析的接口）
+							div_list = response.xpath('//div[@id="content-left"]/div ')
+							# 存储解析到的页面数据
+							data_list = []
+							for div in div_list:
+								# xpath解析到的指定内容存储到了Selector对象
+								# extract()该方法可以将Selector对象存储中存储的数据值拿到
+								author = div.xpath('./div/a[2]/h2/text()').extract_first()
+								# extract_first = extract()[0]
+								content = div.xpath('.//div[@class="content"]/span/text()').extract_first()
+
+								# 将解析到的数据值(author和content)存储到items对象
+								item = SpiderqiubaiItem()
+								item['author'] = author
+								item['content'] = content
+								# 将item对象提交给管道
+								yield item
+				items.py
+					import scrapy
+					class SpiderqiubaiItem(scrapy.Item):
+						# define the fields for your item here like:
+						# name = scrapy.Field()
+						author = scrapy.Field()
+						content = scrapy.Field()
+
+				piplines.py
+					class SpiderqiubaiPipeline(object):
+						fp = None
+
+						# 在整个爬虫过程中，该方法只会在开始爬虫的时候被调用一次
+						def open_spider(self, spider):
+							print('开始爬虫')
+							self.fp = open('./qiubai_pipe.txt', 'w', encoding='utf-8')
+
+						# 该方法可以接收爬虫文件提交过来的对象，并且对item对象中存储的页面数据进行持久化存储
+						# 参数：item表示的就是接收到的item对象
+						# 每当爬虫文件向管道提交一次item 则该方法就会执行一次
+						def process_item(self, item, spider):
+							# 取出item对象中存储的数据值
+							author = item['author']
+							content = item['content']
+							# 持久化存储
+							self.fp.write(author+":"+content+"\n\n\n")
+							return item
+
+						# 该方法只会在爬虫结束的时候被调用一次
+						def close_spider(self, spider):
+							print("爬虫结束")
+							self.fp.close()
+		数据库存储
+			* 代码流程：
+				1 将解析到的页面数据存储到items对象
+				2 使用yield关键字将items提交给管道文件进行处理
+				3 在管道文件中编写代码完成数据存储(存入数据库)的操作
+					class SpiderqiubaiPipeline(object):
+						conn = None
+
+						# 在整个爬虫过程中，该方法只会在开始爬虫的时候被调用一次
+						def open_spider(self, spider):
+							# 连接数据库
+							self.conn = pymysql.Connect(host='192.168.1.10', port=3306, user='root', password='cs1993413', db='qiubai')
+
+						# 该方法可以接收爬虫文件提交过来的对象，并且对item对象中存储的页面数据进行持久化存储
+						# 参数：item表示的就是接收到的item对象
+						# 每当爬虫文件向管道提交一次item 则该方法就会执行一次
+						def process_item(self, item, spider):
+							# 1 连接数据库
+							# 2 执行sql语句
+							sql = 'insert into qiubai values("%s", "%s")' %(item['author'], item['content'])
+							self.cursor = self.conn.cursor()
+							try:
+								self.cursor.execute(sql)
+								
+								self.conn.commit()
+							except Exception as e:
+								self.conn.rollback()
+							# 3 提交事务
+							# 取出item对象中存储的数据值
+							return item
+
+						# 该方法只会在爬虫结束的时候被调用一次
+						def close_spider(self, spider):
+						   self.conn.close()
+				4 在配置文件开启管道操作
+		redis存储：
+			class SpiderqiubaiPipeline(object):
+				conn = None
+
+				# 在整个爬虫过程中，该方法只会在开始爬虫的时候被调用一次
+				def open_spider(self, spider):
+					# 连接数据库
+					self.conn = redis.Redis(host='192.168.1.10', port=6379)
+
+				def process_item(self, item, spider):
+					data_dict = {
+						'author': item['author'],
+						'content': item['content']
+					}
+					self.conn.lpush('data', data_dict)
+					return item
+					
+	6 pipline高级操作
+		将数据同时存在本地以及数据库和redis上
+			# 将数据值存储到本地磁盘中
+			class QiubaiByFiels(object):
+				fp = None
+
+				def open_spider(self, spider):
+					print('开始爬虫')
+					self.fp = open('./qiubai_pipe.txt', 'w', encoding='utf-8')
+
+				def process_item(self, item, spider):
+					author = item['author']
+					content = item['content']
+					self.fp.write(author + ":" + content + "\n\n\n")
+					return item
+
+				def close_spider(self, spider):
+					print("爬虫结束")
+					self.fp.close()
+
+
+			# 将数据值存储到mysql数据库中
+			class QiubaiByMysql(object):
+				conn = None
+
+				def open_spider(self, spider):
+					self.conn = pymysql.Connect(host='192.168.1.10', port=3306, user='root', password='cs1993413', db='qiubai')
+
+				def process_item(self, item, spider):
+					sql = 'insert into qiubai values("%s", "%s")' % (item['author'], item['content'])
+					self.cursor = self.conn.cursor()
+					try:
+						self.cursor.execute(sql)
+
+						self.conn.commit()
+					except Exception as e:
+						self.conn.rollback()
+					return item
+
+				def close_spider(self, spider):
+					self.conn.close()
+		settings.py
+			ITEM_PIPELINES = {
+			   'spiderqiubai.pipelines.SpiderqiubaiPipeline': 300,
+			   'spiderqiubai.pipelines.QiubaiByMysql': 200,
+			   'spiderqiubai.pipelines.QiubaiByFiels': 100,
+			}
+	7 爬取多Url
+		class QiubaiSpider(scrapy.Spider):
+			name = 'qiubai'
+			# allowed_domains = ['www.qiushibaike.com/text']
+			start_urls = ['https://www.qiushibaike.com/text/']
+			# 设计一个通用url模板
+			url = 'https://www.qiushibaike.com/text/page/%d/'
+			page_num = 1
+
+			def parse(self, response):
+				# 建议使用xpath进行解析（框架集成了xpath解析的接口）
+				div_list = response.xpath('//div[@id="content-left"]/div ')
+				# 存储解析到的页面数据
+				data_list = []
+				for div in div_list:
+					# xpath解析到的指定内容存储到了Selector对象
+					# extract()该方法可以将Selector对象存储中存储的数据值拿到
+					author = div.xpath('./div/a[2]/h2/text()').extract_first()
+					# extract_first = extract()[0]
+					content = div.xpath('.//div[@class="content"]/span/text()').extract_first()
+
+					# 将解析到的数据值(author和content)存储到items对象
+					item = QiubaibypageseItem()
+					item['author'] = author
+					item['content'] = content
+					# 将item对象提交给管道
+					yield item
+				# 请求的手动发送
+				# 13表示最后一页页码
+				if self.page_num <= 13:
+					print("爬取到了第%d页的页面数据" % self.page_num)
+					self.page_num += 1
+					new_url = format(self.url % self.page_num)
+					# callback:将去请求获取到的页面数据进行解析
+					yield scrapy.Request(url=new_url, callback=self.parse)
+	
+	8 发起post请求：
+		# 将百度翻译中指定词条对应的翻译结果进行获取
+		对start_requests进行重新
+		class PostdemoSpider(scrapy.Spider):
+			name = 'postDemo'
+			# allowed_domains = ['www.baidu.com']
+			start_urls = ['https://fanyi.baidu.com/sug']
+
+			def start_requests(self):
+				# 该方法其实是父类中的一个方法:该方法可以对star_urls列表中的元素进行get请求的fas
+				# 发送post:
+					# 将Request方法中method参数赋值成post
+					# FormRequest()可以发起post请求(推荐)
+				data = {
+					'kw': 'dog'
+				}
+				print('start requests')
+				for url in self.start_urls:
+					yield scrapy.FormRequest(url=url, formdata=data, callback=self.parse)
+
+			def parse(self, response):
+				print(response.text)
+	
+	9 cookie操作
+		class DoubanSpider(scrapy.Spider):
+			name = 'douban'
+			start_urls = ['https://accounts.douban.com/j/mobile/login/basic']
+
+			def start_requests(self):
+				param_data = {
+					'ck': 'dFf2',
+					'name': '18629090745',
+					'password': 'cs1993413',
+					'remember': 'false',
+					'ticket': ''
+				}
+
+				for url in self.start_urls:
+					yield scrapy.FormRequest(url, formdata=param_data, callback=self.parse)
+
+			def parseBySecondPage(self, response):
+				#  指定个人页面数据进行解析
+				fp = open('second.html', 'w', encoding='utf-8')
+				fp.write(response.text)
+
+			def parse(self, response):
+				print(response.text)
+				# 获取当前用户的个人主页
+				url = 'https://www.douban.com/people/181322653/'
+				yield scrapy.Request(url=url, callback=self.parseBySecondPage)
+	
+	10 代理操作
+		下载中间件的作用： 拦截请求,可以将请求的ip进行更换
+		流程：
+			(1)下载中间件类的自制定
+				# 自定义一个下载中间件的类, 在类中事先process_request（处理中间件拦截到的请求）方法
+				class MyProxy(object):
+					def process_request(self, request, spider):
+						# 请求ip的更换
+						request.meta['proxy'] = "http://183.233.90.6:8080"
+			(2) 配置文件中进行下载中间件的开启
+				DOWNLOADER_MIDDLEWARES = {
+					   # 'postPro.middlewares.PostproDownloaderMiddleware': 543,
+					   'postPro.middlewares.MyProxy': 542,
+				}
+				
+	11 日志等级
+		日志等级
+			ERROR:错误
+			WARNING:警告
+			INFO:一般的信息
+			DEBUG:调试信息(默认输出)
+		在settins中修改：
+			# 指定终端输入指定种类的日志信息
+			LOG_LEVEL = 'ERROR'
+			# 日志输出到指定的文件
+			LOG_FILE = 'log.txt'
+	
+	12 请求传参
+		解决爬取的数据值不在同一页面中
+		# 需求：将1905电影网中电影详情进行爬取(名称， 类型， 导演， 评分， 剧情，演员)
+			class Moive195Spider(scrapy.Spider):
+				name = 'moive195'
+				# allowed_domains = ['http://www.1905.com']
+				start_urls = ['http://www.1905.com/mdb/film/list/year-2018']
+
+				# 用于解析二级子页面中的数据值
+				def parseBySecondPage(self, response):
+					Feature = response.xpath('/html/body/div[2]/div/div[1]/section[1]/div/p/text()').extract_first()
+					director = response.xpath('/html/body/div[2]/section/div/div[2]/div[2]/a[1]/div[2]/text()').extract_first()
+					# 取出Request方法的meta参数传递过来的字典(response.meta)
+					item = response.meta['item']
+					item['feature'] = Feature if Feature else ''
+					item['director'] = director if director else ''
+
+					# 将item提交给管道
+					yield item
+
+				def parse(self, response):
+					div_list = response.xpath("/html/body/div[2]/div[1]/ul/li")
+					for div in div_list:
+						movie_name = div.xpath("./div/p[1]/a/text()").extract_first()
+						href = div.xpath("./a/@href").extract_first()
+						rank = div.xpath("./div/p[2]/b/text()").extract_first()
+						actors = div.xpath("./div/p[3]/a/text()").extract()
+						print(actors, '演员')
+						movie_type = div.xpath("./div/p[4]/a/text()").extract_first()
+						# 创建item对象
+						item = ParsemoiveItem()
+						item['name'] = movie_name if movie_name else ''
+						item['movie_type'] = movie_type if movie_type else ''
+						item['rank'] = rank if rank else ''
+						item['actors'] = '/'.join(actors) if actors else ''
+
+						# 需要对url发起请求,获取页面数据进行指定的解析
+						url = 'http://www.1905.com/' + href
+						# meta参数值可以赋值一个字典(将item对象先封装到一个字典中)
+						yield scrapy.Request(url=url, callback=self.parseBySecondPage, meta={'item': item})
+			pipline.py			
+			class ParsemoivePipeline(object):
+				fp = None
+
+				def open_spider(self, spider):
+					self.fp = open('movie.txt', 'w', encoding='utf-8')
+
+				def process_item(self, item, spider):
+					detail = item['name'] + ':' + item['movie_type'] + '' + item['rank'] + '' + item['director'] + "\n" + item[
+						'actors'] + "\n" + item['feature'] + "\n\n\n"
+					self.fp.write(detail)
+					return item
+
+				def close_spider(self, spider):
+					self.fp.close()
+
+	
+	13 CrawlSpider
+		问题： 如果想要对某一个网站全站的数据进行爬取
+		解决方案：
+			1 手动请求的发送
+			2 CrawlSpider(推荐)
+		
+		CrawlSpider概念
+			CrawlSpider其实就是Spider的一个子类。 CrawlSpider功能更加强大(链接提取器，规则解析器)
+			* 创建一个基于CrawlSpider的爬虫文件
+				scrapy genspider -t crawl 爬虫名称 起始url
+				
+			import scrapy
+			from scrapy.linkextractors import LinkExtractor
+			from scrapy.spiders import CrawlSpider, Rule
+
+
+			class CrawlchoutiSpider(CrawlSpider):
+				name = 'crawlchouti'
+				# allowed_domains = ['dig.chouti.com']
+				start_urls = ['https://dig.chouti.com/']
+				# 实例化了一个链接提取器对象
+				# 链接提取器:用来提取指定的链接(url)
+				# allow参数：赋值一个正则表达式
+				# 链接提取器可以根据正则表达式在页面提取指定的链接
+				# 提取到的链接会全部交给规则解析器
+				link = LinkExtractor(allow=r'/all/hot/recent/\d+')
+				rules = (
+					# 实例化了一个规则解析器对象
+					# 规则解析器接受了链接提取器发送的链接后,就会对这些链接发起请求，获取链接对应的页面内容， 就会根据指定的规则对页面内容中指定的数据值进行解析
+					# callback:指定一个解析规则(方法/函数)
+					# follow:是否将链接提取器继续作用到链接提取器提出的链接所表示的页面数据
+					Rule(link, callback='parse_item', follow=False),
+				)
+
+				def parse_item(self, response):
+					print(response)
+					
+	14 redis分布式爬虫
+		概念：多台机器上可以执行同一个爬虫程序,实现网站数据的爬取
+		原生的scrapy是不可以实现分布式爬虫, 原因如下：
+			* 调度器无法共享
+			* 管道无法共享
+		scrapy-redis组件：专门为scrapy开发的一套组件。 该组件可以让scrapy实现分布式 pip install scrapy-redis
+		分布式爬取的流程：
+			* redis配置文件的配置
+				将 bind 127.0.0.1	   进行注释
+				将 protected-mode no   关闭保护模式
+				
+			* redis服务器的开启：基于配置文件的开启
+			* 创建scrapy工程后， 创建基于crawlSpider的爬虫文件
+			* 导入RedisCrawSpider类 from scrapy_redis.spiders import RedisCrawlSpider
+			* 将start_url修改成redis_key = 'xxx'
+			* 解析代码编写
+			* 将项目的管道和调度器配置成基于scrapy-redis组件中
+				ITEM_PIPELINES = {
+					'scrapy_redis.pipelines.RedisPipeline': 400
+				}
+				# 使用scrapy-redis组件的去重队列
+				DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+				# 使用scrapy-redis组件自己的调度器
+				SCHEDULER = "scrapy_redis.scheduler.Scheduler"
+				# 是否允许暂停
+				SCHEDULER_PERSIST = True
+			* 配置Redis服务器地址和端口
+				# 如果redis服务器不在本机，则需如下配置
+				REDIS_HOST = '192.168.0.108'
+				REDIS_PORT = 6379
+				REDIS_PARAMS = {"password":123456}
+			
+			* 执行爬虫文件
+				scrapy runspider qiubai
+			
+			*  向调度器队列中扔入一个起始url（在redis客户端中操作）：lpush redis_key属性值 起始url
+				lpush qiubaispider https://www.qiushibaike.com/pic/
+			class QiubaiSpider(RedisCrawlSpider):
+				name = 'qiubai'
+				# allowed_domains = ['www.qiushibaike.com/pic']
+				# start_urls = ['http://www.qiushibaike.com/pic/']
+				redis_key = 'qiubaispider'  # 表示跟start_urls含义一样
+				link = LinkExtractor(allow=r'/pic/page/\d+')
+				rules = (
+					Rule(link, callback='parse_item', follow=True),
+				)
+
+				def parse_item(self, response):
+					print('开始爬虫')
+					div_list = response.xpath('//*[@id="content-left"]/div')
+					for div in div_list:
+						print(div)
+						img_url = "http://" + div.xpath('.//div[@class="thumb"]/a/img/@src').extract_first()
+						item = RedisproItem()
+						item['img_url'] = img_url
+						yield item
+	
+七 基于RedisSpider的分布式爬虫
+	案例需求：爬取的是基于文字的新闻数据(国内, 国际，军师， 航空)
+		1 在爬虫文件中导入webdriver类
+		2 在爬虫文件的爬虫类的构造方法中进行了浏览器实例化操作
+		3 在爬虫类的closed方法中进行浏览器的关闭操作
+		4 在下载中间件的process_response方法中编写执行浏览器自动化操作
+		wangyi.py：
+			# -*- coding: utf-8 -*-
+			import scrapy
+			from selenium import webdriver
+			from wanyiPro.items import WanyiproItem
+			from scrapy_redis.spiders import RedisSpider
+
+
+			class WangyiSpider(RedisSpider):
+				name = 'wangyi'
+				# allowed_domains = ['news.163.com']
+				# start_urls = ['https://news.163.com/']
+				redis_key = "wangyi"
+
+				def __init__(self):
+					# 实例化一个浏览器对象
+					self.bro = webdriver.Chrome(executable_path='G:\myprogram\路飞学城\第七模块\wanyiPro\chromedriver.exe')
+
+				# 必须在整个爬虫结束后关闭浏览器
+				def closed(self, spider):
+					print('爬虫结束')
+					self.bro.quit()
+
+				def parse(self, response):
+					lis = response.xpath('//div[@class="ns_area list"]/ul/li')
+					indexs = [3, 4, 6, 7]
+					li_list = []  # 存储的就是国内 国际 军事 航空四个板块对应的li标签对象
+					for index in indexs:
+						li_list.append(lis[index])
+					# 获取四个板块中的链接和文字标题
+
+					for li in li_list:
+						url = li.xpath('./a/@href').extract_first()
+						title = li.xpath('./a/text()').extract_first()
+						# print(url+":"+title)
+						# 对每一个板块对应的url发起请求，获取页面数据(标题， 缩略图， 关键字， 发布时间，  url)
+						yield scrapy.Request(url=url, callback=self.parseSecond, meta={'title': title})
+
+				def parseSecond(self, response):
+					div_list = response.xpath('//div[@class="data_row news_article clearfix "]')
+					for div in div_list:
+						head = div.xpath('.//div[@class="news_title"]/h3/a/text()').extract_first()
+						url = div.xpath('.//div[@class="news_title"]/h3/a/@href').extract_first()
+						img_url = div.xpath('./a/img/@src').extract_first()
+						tag_list = div.xpath('.//div[@class="news_tag"]//text()').extract()
+						tags = []
+						for t in tag_list:
+							t = t.strip('\n \t')
+							tags.append(t)
+						tag = "".join(tags)
+						# 获取meta传递的数据值title
+						title = response.meta['title']
+						print(head + ":" + url + ":" + img_url)
+						# 实例化item对象, 将解析到的数据值存储在item中
+						item = WanyiproItem()
+						item['head'] = head
+						item['url'] = url
+						item['imgUrl'] = img_url
+						item['tag'] = tag
+						item['title'] = title
+						# 对url发起请求 解析新闻详细内容
+						yield scrapy.Request(url=url, callback=self.getContent, meta={'item': item})
+
+				def getContent(self, response):
+					# 获取传递过来的item
+					item = response.meta['item']
+					# 解析当前页面中存储的新闻数据
+					content_list = response.xpath('//div[@class="post_text"]/p/text()').extract()
+					content = "".join(content_list)
+					item['content'] = content
+					yield item
+		middlewares.py:
+			from scrapy import signals
+			from scrapy.http import HtmlResponse
+			class WanyiproDownloaderMiddleware(object):
+				# Not all methods need to be defined. If a method is not defined,
+				# scrapy acts as if the downloader middleware does not modify the
+				# passed objects.
+
+				def process_request(self, request, spider):
+					# Called for each request that goes through the downloader
+					# middleware.
+
+					# Must either:
+					# - return None: continue processing this request
+					# - or return a Response object
+					# - or return a Request object
+					# - or raise IgnoreRequest: process_exception() methods of
+					#   installed downloader middleware will be called
+					return None
+
+				def process_response(self, request, response, spider):
+					# 拦截到响应对象(下载器传递给Spider的响应对象)
+					# request: 响应对象对应的请求对象
+					# response: 拦截到的响应对象
+					# spider: 爬虫文件对应的爬虫类的实例
+					print(request.url + "这是下载中间件")
+					# 响应对象中存储页面数据的篡改
+					if request.url in ['http://news.163.com/domestic/', 'http://news.163.com/world/', 'http://war.163.com/',
+									   'http://news.163.com/air/']:
+						spider.bro.get(url=request.url)
+						js = 'window.scrollTo(0,document.body.scrollHeight)'
+						spider.bro.execute_script(js)
+						time.sleep(2)  # 一定要给与浏览器一定的缓冲加载数据的时间
+						# 页面数据包含了动态加载出来的新闻数据对应的页面数据
+						page_text = spider.bro.page_source
+						return HtmlResponse(url=spider.bro.current_url, body=page_text, encoding='utf-8', request=request)
+					else:
+						return response
+	UA池和地址池：
+		from scrapy import signals
+		from scrapy.http import HtmlResponse
+		from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
+		import random
+
+		user_agent_list = [
+			"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 "
+			"(KHTML, like Gecko) Chrome/22.0.1207.1 Safari/537.1",
+			"Mozilla/5.0 (X11; CrOS i686 2268.111.0) AppleWebKit/536.11 "
+			"(KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11",
+			"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.6 "
+			"(KHTML, like Gecko) Chrome/20.0.1092.0 Safari/536.6",
+			"Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.6 "
+			"(KHTML, like Gecko) Chrome/20.0.1090.0 Safari/536.6",
+			"Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/537.1 "
+			"(KHTML, like Gecko) Chrome/19.77.34.5 Safari/537.1",
+			"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/536.5 "
+			"(KHTML, like Gecko) Chrome/19.0.1084.9 Safari/536.5",
+			"Mozilla/5.0 (Windows NT 6.0) AppleWebKit/536.5 "
+			"(KHTML, like Gecko) Chrome/19.0.1084.36 Safari/536.5",
+			"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.3 "
+			"(KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3",
+			"Mozilla/5.0 (Windows NT 5.1) AppleWebKit/536.3 "
+			"(KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3",
+			"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_0) AppleWebKit/536.3 "
+			"(KHTML, like Gecko) Chrome/19.0.1063.0 Safari/536.3",
+			"Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.3 "
+			"(KHTML, like Gecko) Chrome/19.0.1062.0 Safari/536.3",
+			"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.3 "
+			"(KHTML, like Gecko) Chrome/19.0.1062.0 Safari/536.3",
+			"Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.3 "
+			"(KHTML, like Gecko) Chrome/19.0.1061.1 Safari/536.3",
+			"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.3 "
+			"(KHTML, like Gecko) Chrome/19.0.1061.1 Safari/536.3",
+			"Mozilla/5.0 (Windows NT 6.1) AppleWebKit/536.3 "
+			"(KHTML, like Gecko) Chrome/19.0.1061.1 Safari/536.3",
+			"Mozilla/5.0 (Windows NT 6.2) AppleWebKit/536.3 "
+			"(KHTML, like Gecko) Chrome/19.0.1061.0 Safari/536.3",
+			"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.24 "
+			"(KHTML, like Gecko) Chrome/19.0.1055.1 Safari/535.24",
+			"Mozilla/5.0 (Windows NT 6.2; WOW64) AppleWebKit/535.24 "
+			"(KHTML, like Gecko) Chrome/19.0.1055.1 Safari/535.24"
+		]
+
+		# UA池代码的编写（单独给UA池封装一个下载中间件的一个类）
+		# 导包UserAgentMiddleware类
+		class RandomUserAgent(UserAgentMiddleware):
+			def process_request(self, request, spider):
+				# 从列表中随机抽选一个ua值
+				ua = random.choice(user_agent_list)
+				# ua值进行当前拦截到请求的ua的写入操作
+				request.headers.setdefault('User-Agent', ua)
+
+
+		# 可被选用的代理IP
+		PROXY_http = [
+			'153.180.102.104:80',
+			'195.208.131.189:56055',
+		]
+		PROXY_https = [
+			'120.83.49.90:9000',
+			'95.189.112.214:35508',
+		]
+
+		# 批量对拦截到的请求进行IP更换
+		class Proxy(object):
+			def process_request(self, request, spider):
+				# 对拦截到请求的url进行判断（协议头到底是http还是https）
+				# request.url返回值：http://www.xxx.com
+				h = request.url.split(':')[0]  # 请求的协议头
+				if h == 'https':
+					ip = random.choice(PROXY_https)
+					request.meta['proxy'] = 'https://' + ip
+				else:
+					ip = random.choice(PROXY_http)
+					request.meta['proxy'] = 'http://' + ip
+					
+	基于RedisSpider实现分布式爬虫	
+		1 导包：from scrapy_redis.spiders import RedisSpider
+		2 将爬虫类的父类修改成RedisSpider
+		3 将起始URL列表注释, 添加一个redis_key(调度器队列的名称)的属性
+		4 进行redis数据库配置文件的配置：
+			将 bind 127.0.0.1	   进行注释
+			将 protected-mode no   关闭保护模式
+		5 settings中配置redis
+			REDIS_HOST = '192.168.0.108'
+			REDIS_PORT = 6379
+			REDIS_PARAMS = {"password": 123456}
+
+			# 使用scrapy-redis组件的去重队列
+			DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+			# 使用scrapy-redis组件自己的调度器
+			SCHEDULER = "scrapy_redis.scheduler.Scheduler"
+			# 是否允许暂停
+			SCHEDULER_PERSIST = True
+			
+			ITEM_PIPELINES = {
+				'scrapy_redis.pipelines.RedisPipeline': 400
+			}
+		6 执行爬虫文件
+			scrapy runspider wangyi.py	
+		
+		7 向调度器的管道中扔一个起始url:
+			lpush wangyi https://news.163.com/
+			
+八 异步爬虫
+	1 线程池实现异步爬虫
+		import time
+		import requests
+		from multiprocessing.dummy import Pool
+
+		start_time = time.time()
+
+
+		def get_page(url):
+			print("正在下载：", url)
+			response = requests.get(url)
+			time.sleep(3)
+			print("下载完成", url)
+			return {'url': url, 'content': response.text}
+
+
+		urls = [
+			'http://www.jd.com',
+			'https://www.baidu.com',
+			'https://www.python.org'
+		]
+
+		if __name__ == '__main__':
+			# 实例化一个线程对象
+			pool = Pool(4)
+			# 将列表中每一个列表元素传给get_page进行处理
+			pool.map(get_page, urls)
+			
+	2 使用线程池爬取梨视频数据
+		import time, re
+		import requests
+		from multiprocessing.dummy import Pool
+		from lxml import etree
+
+		# 线程池处理的是阻塞较为耗时的操作
+		start_time = time.time()
+		headers = {
+			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
+		}
+		# 对下述url发起请求解析出视频详情页的url和视屏名称
+		url = "https://www.pearvideo.com/category_5"
+		page_text = requests.get(url=url, headers=headers).text
+
+		tree = etree.HTML(page_text)
+		li_list = tree.xpath('//ul[@id="listvideoListUl"]/li')
+		urls = []  # 存储所有视频的连接
+		for li in li_list:
+			detail_url = "https://www.pearvideo.com/" + li.xpath("./div/a/@href")[0]
+			name = li.xpath('./div/a/div[2]/text()')[0] + ".mp4"
+			print(detail_url, name)
+			# 对详情页的url发起请求
+			detail_page_text = requests.get(url=detail_url, headers=headers).text
+			# 从详情页中解析出视频的地址 该视频地址在js中
+			ex = 'srcUrl="(.*?)",vdoUrl'
+			video_url = re.findall(ex, detail_page_text)[0]
+			urls.append({'name': name, "url": video_url})
+
+
+		def get_video_data(data):
+			url = data['url']
+			video_name = data['name']
+			print(video_name, "正在下载")
+			video_data = requests.get(url=url, headers=headers).content
+
+			# 持久化存储操作
+
+			with open(video_name, 'wb') as fp:
+				fp.write(video_data)
+				print(video_name, "下载成功！")
+
+
+		# 使用线程池对视频数据进行请求(较为耗时的阻塞操作)
+		pool = Pool(4)
+		pool.map(get_video_data, urls)
+		pool.close()
+		pool.join()
+		
+	3 单线程+异步协程(推荐)：
+		event_loop: 事件循环, 相当于一个无限循环, 我们可以把一些函数注册到这个事件循环上，当满足某些条件的时候，函数就会被循环执行
+		coroutine:协程对象, 我们可以将协程对象注册到事件循环中, 它会被事件循环调用。我们可以使用async关键字来定义一个方法, 这个方法在调用时不会立即被执行，而是返回一个协程对象
+		task: 任务, 它是对协程对象的进一步封装, 包含了任务的各个状态
+		async： 定义一个协程
+		await: 用来挂起阻塞方法的执行
+		
+		协程使用示例：
+			import asyncio
+			async def request(url):
+				print("正在请求的url是", url)
+				print("请求成功", url)
+
+
+			# async修饰函数, 调用之后返回一个协程对象
+			c = request("www.baidu.com")
+
+			# 创建一个事件循环对象
+			loop = asyncio.get_event_loop()
+			# 将协程对象注册到loop, 然后启动loop
+			loop.run_until_complete(c)
+			
+		task的使用
+			import asyncio
+			async def request(url):
+				print("正在请求的url是", url)
+				print("请求成功", url)
+			# async修饰函数, 调用之后返回一个协程对象
+			c = request("www.baidu.com")
+			loop = asyncio.get_event_loop()
+			# 基于loop创建一个task对象
+			task = loop.create_task(c)
+			print(task)
+			loop.run_until_complete(task)
+			
+		furture的使用
+			import asyncio
+			async def request(url):
+				print("正在请求的url是", url)
+				print("请求成功", url)
+			# async修饰函数, 调用之后返回一个协程对象
+			c = request("www.baidu.com")
+			loop = asyncio.get_event_loop()
+			task = asyncio.ensure_future(c)
+			print(task)
+			loop.run_until_complete(task)
+			print(task)
+			
+		绑定回调函数
+			import asyncio
+			async def request(url):
+				print("正在请求的url是", url)
+				print("请求成功", url)
+			# async修饰函数, 调用之后返回一个协程对象
+			c = request("www.baidu.com")
+			loop = asyncio.get_event_loop()
+			task = asyncio.ensure_future(c)
+			
+			# 回调函数
+			def callback_full(task):
+				print(task.result())
+			
+			# 将回调函数绑定到任务对象中
+			task.add_done_callback(callback_full)
+			loop.run_until_complete(task)
+			
+		多任务协程
+			import asyncio
+			import time
+
+			start = time.time()
+
+
+			async def request(url):
+				print("正在下载", url)
+				# 在异步协程如果出现了同步模块相关的代码, 那么久无法实现异步
+				# time.sleep(2)
+				# 基于异步模块， 当asyncio中遇到阻塞操作必须进行手动挂起
+				await asyncio.sleep(2)
+				print("下载完毕", url)
+				return url
+
+
+			urls = [
+				"www.baidu.com",
+				"www.sougou.com",
+				"www.goubanjia.com"
+			]
+
+			# 任务列表：存放多个任务对象
+			stasks = []
+			for url in urls:
+				c = request(url)
+				task = asyncio.ensure_future(c)
+				stasks.append(task)
+
+			loop = asyncio.get_event_loop()
+			# 需要将任务列表封装到wait中
+			loop.run_until_complete(asyncio.wait(stasks))
+			print(time.time() - start)
+		
+		多任务异步爬虫
+			import asyncio
+			import time
+			import requests
+
+			start = time.time()
+			urls = [
+				'http://www.jd.com',
+				'https://www.baidu.com',
+				'https://www.python.org'
+			]
+
+
+			async def get_page(url):
+				print("正在下载", url)
+				# request.get是基于同步, 必须使用基于异步的网络请求模块进行指定url的请求发送
+				# aiohttp: 基于异步网络请求模块
+				response = requests.get(url=url)
+				print("下载完毕", response.text)
+
+
+			tasks = []
+
+			for url in urls:
+				c = get_page(url)
+				task = asyncio.ensure_future(c)
+				tasks.append(task)
+
+			loop = asyncio.get_event_loop()
+			loop.run_until_complete(asyncio.wait(tasks))
+			end = time.time()
+			print(end - start)

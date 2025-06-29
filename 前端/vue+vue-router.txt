@@ -1,0 +1,529 @@
+vue+vue-router 主要来做单页面应用
+一 前端路由的实现原理
+	为什么要做单页面应用？
+	(1) 传统的开发方式url改变后，立马发送请求响应整个页面, 有可能资源过多,传统开发会让前端的页面出现"白屏", 用户体验较差
+	(2) SPA单页面应用：锚点值的改变后不会立刻发送请求, 而是在某个合适的时机,  发送ajax请求, 局部改变页面中的数据, 页面不立刻跳转
+
+	前端路由
+		1 锚点值监视
+		2 ajax获取动态的数据
+		3 核心点是锚点值的改变
+		前段中 vue|react|angula都很适合做单页面应用
+
+二 如何使用vue-router
+	下载 vue-router
+		npm init --yes
+		npm install vue-router --save
+	
+	 1 引入vue-router模块 默认会抛出一个VueRouter对象 另外还有两个全局的组件 router-link, router-view
+	 2  Vue.use(VueRouter)
+	 3 创建路由对象
+		// 创建一个路由对象
+		var router = new VueRouter({
+				// 配置路由对象
+
+				routes:[
+					{
+						path:'/login',
+						component:Login
+					},
+					{
+						path:'/register',
+						component:Register
+					}
+				]
+
+			});
+	4  路由对象挂载到vue实例化对象中
+		
+		var App = {
+				template:`
+					<div>
+						<!--router-link默认会被渲染成a标签 to属性默认会被渲染成href属性-->
+						<router-link :to="{name:'login'}">登录页面</router-link>
+						<router-link :to="{name:'register'}">注册页面</router-link>
+				
+						<!--路由组件的出口-->
+
+						<router-view></router-view>
+
+					</div>
+				`
+			};
+
+			new Vue({
+				el:'#app',
+				components:{
+					App
+				},
+				//挂载
+				router,
+				template:`<App />`
+			});
+	使用示例：
+		<div id="app"></div>
+		<script type="text/javascript" src="node_modules/vue-router/dist/vue-router.js"></script>
+		<script type="text/javascript" src="node_modules/vue/dist/vue.js"></script>
+
+		<script>
+			// 让vue使用VueRouter创建
+			Vue.use(VueRouter);
+
+			var Login = {
+				template: `
+						<div>登录页面</div>
+					`
+			};
+
+			var Register = {
+				template: `
+						<div>注册页面</div>
+					`,
+
+			}
+			// 创建一个路由对象
+			var router = new VueRouter({
+					// 配置路由对象
+
+					routes:[
+						{
+							path:'/login',
+							component:Login
+						},
+						{
+							path:'/register',
+							component:Register
+						}
+					]
+
+				});
+
+			var App = {
+				// router-link默认会被渲染成a标签 to属性默认会被渲染成href属性
+				template: `
+					<div>
+
+						<router-link to="/login">登录页面</router-link>
+						<router-link to="/register">注册页面</router-link>
+							<!--路由组件的出口-->
+						<router-view></router-view>
+					</div>
+				`
+			};
+			new Vue({
+				el: '#app',
+				components: {
+					App
+				},
+				router,
+				template: `<App/>`
+
+			})
+	5 命名路由 		
+		给当前的配置路由信息对象设置name:'login'属性
+		:to = "{name:'login'}"
+	
+	
+	6 路由规范：
+		(1)xxxx.html#/user/1
+        配置路由对象中  
+    
+        	 {
+        	 	path:'/user/:id',
+        	 	component:User
+        	 }
+
+        	 <router-link :to = "{name:'user',params:{id:1}}"></router-link>
+			 
+	    (2)xxxx.html#/user?userId = 1
+
+			{
+				path:'/user'
+			}
+			 <router-link :to = "{name:'user',query:{id:1}}"></router-link>
+
+			在组件内部通过this.$route 获取路由信息对象
+	
+	7 嵌套路由:
+		<body>
+			<div id="app"></div>
+			<script type="text/javascript" src="./node_modules/vue/dist/vue.min.js"></script>
+			<!-- 1.引入 vue-router的对象 -->
+			<script type="text/javascript" src="./node_modules/vue-router/dist/vue-router.js"></script>
+			<!-- 全局的VueRouter对象   vue-router 还给咱们提供了两个全局的组件 router-link  router-view-->
+			<script type="text/javascript">
+
+				// 嵌套路由:
+				// 需求:进入首页之后 点击音乐/hone/music  电影 /home/movie
+				Vue.use(VueRouter);
+
+
+				var Home = {
+					template:`
+						<div>
+							<br/>
+							<router-link to="/home/music">音乐</router-link>
+							<router-link to="/home/moive">电影</router-link>
+							<! --子路由组件-->
+							<router-view></router-view>
+						</div>
+					`,
+
+				};
+
+				var Music = {
+					template:`
+						<div> 我是音乐</div>
+					`
+				};
+
+				var Moive = {
+					template:`
+						<div> 我是电影</div>
+					`
+				};
+
+				// 3.创建一个路由对象
+				var router = new VueRouter({
+					// 配置路由对象
+
+					routes:[
+						{
+							path:'/',
+							redirect:'/home'
+							// redirect:{name:'home'}
+						},
+
+						{
+							path: '/home',
+							name:'home',
+							component:Home,
+							children:[
+								// 动态路由匹配表示自组件中的结构是不同的
+
+								// 当访问/home时， Home组件的出口是不会渲染任何内容, 这是因为没有匹配到合适的子路由
+								{
+									path:'',
+									component:Music
+								},
+								{
+									path:'music',
+									component:Music
+								},
+								{
+									path:'moive',
+									component:Moive
+								}
+							]
+
+						}
+					]
+
+				});
+				var App = {
+					template:`
+						<div>
+							<router-link :to="{name:'home'}">首页</router-link>
+
+							<router-view></router-view>
+						</div>
+					`,
+
+				};
+
+				new Vue({
+					el:'#app',
+					components:{
+						App
+					},
+					router,
+					template:`<App />`
+				});
+			</script>
+		</body>
+		</html>
+		
+	8 动态路由匹配
+		<body>
+			<div id="app"></div>
+			<script type="text/javascript" src="./node_modules/vue/dist/vue.min.js"></script>
+			<!-- 1.引入 vue-router的对象 -->
+			<script type="text/javascript" src="./node_modules/vue-router/dist/vue-router.js"></script>
+			<!-- 全局的VueRouter对象   vue-router 还给咱们提供了两个全局的组件 router-link  router-view-->
+			<script type="text/javascript">
+
+				// 嵌套路由:
+				// 需求:进入首页之后 点击音乐/hone/music  电影 /home/movie
+				Vue.use(VueRouter);
+
+
+				var Timeline = {
+
+
+
+					template:`
+						<div>
+							<router-link :to="{name:'comDesc', params:{id:'andorid'}}">安卓</router-link>
+							<router-link :to="{name:'comDesc', params:{id:'frontend'}}">前端</router-link>
+							<router-view></router-view>
+						</div>
+					`,
+
+				};
+
+				var Pins = {
+					template:`
+						<div> 我是沸点</div>
+					`
+				};
+
+				var Moive = {
+					template:`
+						<div> 我是电影</div>
+					`
+				};
+
+				// 共同的子组件
+				var ComDesc = {
+					 data(){
+						return {
+							msg:''
+						}
+					},
+					template:`
+						<div>
+							我是一个{{msg}}
+						</div>
+					`,
+
+					 created(){
+						this.msg = '安卓'
+					},
+
+					watch:{
+						 '$route'(to, from){
+							 console.log(to);
+							 console.log(from);
+							 this.msg = to.params.id
+						 }
+					}
+
+				};
+
+
+				// 3.创建一个路由对象
+				var router = new VueRouter({
+					// 配置路由对象
+
+					routes:[
+						// 动态的路由参数以冒号开头
+						{
+							path: '/timeline',
+							name: 'timeline',
+							component: Timeline,
+							children:[
+								{
+									path: "",
+									component:ComDesc
+								},
+								{
+									path:"/timeline/:id",
+									name:'comDesc',
+									component:ComDesc
+								}
+							]
+						},
+
+
+						{
+							path: '/pins',
+							name: 'pins',
+							component: Pins
+						}
+					]
+
+				});
+				var App = {
+					template:`
+						<div>
+							 <router-link to = "/timeline">首页</router-link>
+							 <router-link to = "/pins">沸点</router-link>
+							<!--路由组件的出口-->
+
+							<router-view></router-view>
+						</div>
+					`,
+
+				};
+
+				new Vue({
+					el:'#app',
+					components:{
+						App
+					},
+					router,
+					template:`<App />`
+				});
+			</script>
+		</body>
+	
+	9 权限控制
+		<body>
+			<div id="app"></div>
+			<script type="text/javascript" src="./node_modules/vue/dist/vue.min.js"></script>
+			<!-- 1.引入 vue-router的对象 -->
+			<script type="text/javascript" src="./node_modules/vue-router/dist/vue-router.js"></script>
+			<!-- 全局的VueRouter对象   vue-router 还给咱们提供了两个全局的组件 router-link  router-view-->
+			<script type="text/javascript">
+
+
+				Vue.use(VueRouter);
+
+				// 导航栏上 有首页  智能题库  登录退出 四个按钮
+
+				// 用户访问首页时 看到的是首页的内容
+
+				 // 1.当用户访问智能题库时，此时我们检测用户是否有权限访问该智能题库的内容，
+				 // 如果没有 检测用户是否登录过，如果没有，则跳转登录页面，登录完成之后。
+
+				 // 在localStroage中通存储该用户的用户名和密码，并且立刻跳转到智能题库页面
+				 // 2.当用户点击黜退，该用户直接删除
+
+				var Home = {
+
+					template:`
+						<div>
+							我是首页
+							<router-view></router-view>
+						</div>
+					`
+
+				};
+
+				var Questionbank = {
+
+					template:`
+						<div>
+							我是题库
+							<router-view></router-view>
+						</div>
+					`
+
+				};
+
+				var Login ={
+
+					data(){
+						return{
+							name:'',
+							pwd:''
+						}
+					},
+					template:`
+					   <div>
+						   <input type="text" v-model = 'name'/>
+						   <input type="text" v-model = 'pwd'/>
+						   <input type="submit" value="登录"  @click = 'loginHandler'/>
+
+					   </div>
+					`,
+					methods:{
+						loginHandler(){
+
+							// 要登录了
+							// 存储用户名和密码保存到locaStorage 然后跳转相应的路由
+							localStorage.setItem('user', {name: this.name, pwd: this.pwd});
+
+							// 编程式导航
+							this.$router.push({name:'questionbank'})
+						}
+					}
+				}
+
+
+
+				var router = new VueRouter({
+					// 配置路由对象
+
+					routes:[
+						// 动态的路由参数以冒号开头
+						{
+							path: '/home',
+							name: 'home',
+							component: Home
+
+						},
+
+						{
+							path: '/questionbank',
+							name: 'questionbank',
+							component: Questionbank,
+							//  给未来的路由做权限控制
+							meta:{
+								// 如果是true表明该组件需要登录
+								auth:true
+							}
+						},
+						{
+							path:'/login',
+							component:Login
+						}
+					]
+				});
+
+				// 全局的导航守卫
+				router.beforeEach(function (to, from, next) {
+					console.log(to);
+					console.log(from);
+
+					if(to.meta.auth){
+						// 用户点击了智能题库导航 该用户未登录, 需要登录判断
+						 if(localStorage.getItem('user')){
+							 // 不为空 放行
+							 next()
+						 }else {
+							 // 为空 进行登录页面
+							 next({path:'/login'})
+						 }
+
+					}else {
+						 // 如果不调用next那么页面会卡住
+						 // 直接放行
+						 next();
+					}
+
+				});
+
+				var App = {
+					template:`
+						<div>
+							 <router-link to = "/home">首页</router-link>
+							 <router-link to = "/questionbank">智能题库</router-link>
+							 <router-link to = "/login">登录</router-link>
+							 <a href="javascripy:void(0)" @click ='clear'>退出</a>
+							<!--路由组件的出口-->
+							<keep-alive>
+								<router-view></router-view>
+							</keep-alive>
+						</div>
+					`,
+					methods:{
+						clear(){
+							// 退出
+							localStorage.removeItem('user');
+							this.$router.push('/log')
+						}
+					}
+
+				};
+
+				new Vue({
+					el:'#app',
+					components:{
+						App
+					},
+					router,
+					template:`<App />`
+				});
+			</script>
+		</body>

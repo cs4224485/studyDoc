@@ -1,0 +1,1086 @@
+一 spring boot简介
+	spring boot框架抛弃了繁琐的xml配置过程，采用大量的默认配置简化我们的开发过程。
+	所以采用Spring boot可以非常容易和快速地创建基于Spring 框架的应用程序，它让编码变简单了，配置变简单了，部署变简单了，监控变简单了。
+	说的直白一些使用spring boot之后就不用像以前使用ssm的时候添加那么多配置文件了，spring boot除了支持ssm之外，还支持非常多的第三方技术。spring boot就像是一个百宝箱，你要用那些技术，直接告诉他就行了。在spring boot中写的代码跟以前一样，所以在学习的时候非常容易上手。
+	
+	第一个spring boot项目
+		在idea中通过插件创建一个spring boot项目，创建好之后会生成一些目录和类。
+		
+		Application类
+			里面的@SpringBootApplication注解是springboot的核心注解，主要作用是开启spring自动配置。使用这个注解相当于加上了下面三个注解：
+				@Configuration 允许将其他@bean注解标识的类加入到spring容器中，相当于spring配置文件中的beans标签
+				@EnableAutoConfiguration 启动自动配置
+				@ComponentScan 会自动扫描当前包和子包下的标有@Component,@Service,@Repository,@Controller的类。相当于以前spring配置文件中的context:component-scan
+			main方法中的SpringApplication.run在启动的时候会启动springboot程序，启动spring容器，启动内嵌的tomcat容器。
+			不要创建一个比Application类包级别高的类，需要创建子包，因为spring boot会自动扫描application类的子包或者是平级的类。如果是高与application的话就无法扫描了。
+		
+		resources目录
+			application.properties 是spring boot配置文件
+			static存放静态资源
+			templatesspring boot动态的数据不建议使用jsp，而是使用thymeleaf模板语言,跟velocity和freemarker类似，是一个模板引擎。是独立于spring boot的，并不是spring boot的一部分。
+		
+		在Application类的下面再创建一个controller包，创建一个Controller：
+			import org.springframework.stereotype.Controller;
+			import org.springframework.web.bind.annotation.RequestMapping;
+			import org.springframework.web.bind.annotation.ResponseBody;
+
+			@Controller
+			public class FirstController {
+
+				@RequestMapping("/boot/first")
+				@ResponseBody
+				public String first(){
+					return "first";
+				}
+			}
+		
+	总结：
+		spring boot就相当于一个平台，把我们需要一些东西准备好了，我们在这个平台里面填充业务代码即可，即代码跟以前代码区别不大。
+		
+			1、能够快速创建基于Spring的应用程序；
+			2、能够直接使用java main方法启动内嵌的Tomcat服务器运行Spring boot程序，不需要部署war包文件；
+			3、提供约定的starter POM来简化Maven配置，让Maven的配置变得简单；
+			4、根据项目的Maven依赖配置，Spring boot自动配置Spring、Spring mvc等；
+			5、提供了程序的健康检查等功能；
+			6、基本可以完全不使用XML配置文件，采用注解配置。
+
+二 spring boot核心配置文件
+	配置文件的分类
+		虽然spring boot可以帮助我们进行一些配置项，但是有些内容还是需要开发者自己进行配置，因此spring boot提供了配置文件以供开发者配置。spring boot除了支持我们比较熟悉的properties文件之外，还支持yml格式的配置文件，默认是会创建properties格式的，这两个格式二选一即可。
+		我们在配置文件中输入的时候会有提示，提示的数据是从这里获取的spring-configuration-metadata.json第三方技术基本都会提供这样的json数据到spring boot里面，这样子我们在配置文件中配置这些第三方技术的时候也会有提示。
+		
+	application.properties
+		基本可以将所有支持spring boot相关技术的配置文件都统一配置到application.properties里面。即如果你想添加或修改一些配置的话，直接操作application.properites即可。
+		#修改内置tomcat端口号
+		server.port=8080
+		#设置项目上下文
+		server.servlet.context-path=/myspringboot
+		
+	application.yml
+		spring boot支持的另外一种配置文件的格式是yml类型的，编写的yml配置文件时候要注意缩进，冒号后面要有空格，如果yml和properties两个配置文件都存在的话，properties优先级高。下面是yml中的格式，类似一棵树形结构，整体看上去要比properties简洁一些。
+		server:
+		  servlet:
+			context-path: /myspringboot
+		  port: 9090
+		  
+	多环境配置
+		在实际工作中通常会有多个环境，例如开发环境，测试环境，生产环境，每个环境都有自己独特的配置内容，这样可以创建多个配置文件用来区分。
+			开发环境：application-dev.properties
+			测试环境：application-test.properties
+			生产环境：application-online.properties
+		
+		此时如果想要使用开发环境的配置文件，只需要在application.properties文件中添加下面内容：
+			spring.profiles.active=dev
+			
+		这样就激活了application-dev.properties配置文件，激活之后当前的application配置文件中的内容如果跟激活中的相同，此时application中的配置就失效了。
+		
+	自定义配置
+		在spring boot的配置文件中可以添加自定义的一些内容。
+
+		为了避免乱码，先统一设置为utf-8
+		
+		#字符编码位置要放到下面中文的上面，下面是指定字符编码
+		spring.http.encoding.charset=UTF-8
+		spring.http.encoding.enabled=true
+		spring.http.encoding.force=true
+		#自定义配置
+		school.name=蔡爽
+		school.address=西安
+		school.age=24
+		
+		读取方式一
+			使用@value注解，创建controller：
+				import org.springframework.beans.factory.annotation.Value;
+				import org.springframework.stereotype.Controller;
+				import org.springframework.web.bind.annotation.RequestMapping;
+				import org.springframework.web.bind.annotation.ResponseBody;
+
+				@Controller
+				public class ConfigInfoController {
+
+					@Value("${school.name}")
+					private String name;
+
+					@Value("${school.address}")
+					private String address;
+
+					@Value("${school.age}")
+					private int age;
+
+					@RequestMapping("/initConfig")
+					@ResponseBody
+					public String initConfig() {
+						return name + "," + address + "," + age;
+					}
+				}
+		读取方式二
+			单独编写配置类：
+				import org.springframework.boot.context.properties.ConfigurationProperties;
+				import org.springframework.stereotype.Component;
+
+				@Component
+				@ConfigurationProperties(prefix = "school")//前缀，对应的是配置文件中的school
+				public class ConfigInfo {
+
+					private String name;//对应的配置文件中的name
+
+					private String address;
+
+					private int age;
+
+					public String getName() {
+						return name;
+					}
+
+					public void setName(String name) {
+						this.name = name;
+					}
+
+					public String getAddress() {
+						return address;
+					}
+
+					public void setAddress(String address) {
+						this.address = address;
+					}
+
+					public int getAge() {
+						return age;
+					}
+
+					public void setAge(int age) {
+						this.age = age;
+					}
+				}
+			
+	外部配置文件
+		如果要编写很多自定义配置到application.properties中的话，就会导致该配置文件冗余了，此时我们可以自己定义一个配置文件将自定义配置写到这个配置文件中。比如在resources目录下创建一个school.properties的配置文件：
+			school.name=蔡爽
+			school.address=上海
+			school.age=24
+			
+		在之前的ConfigInfo类上加入@PropertySource注解
+			/**
+			 * 读取自定义配置文件
+			 */
+			@Component
+			@PropertySource(value = "classpath:school.properties")//指定外部配置文件的名字
+			@ConfigurationProperties(prefix = "school")//前缀，这里是配置文件中的school
+			public class ConfigInfo {
+
+				private String name;//对应配置文件中的name
+
+				private String address;
+
+				private int age;
+			}
+			
+		
+	热部署
+		热部署是指当我们修改代码后，服务能自动加载新修改的内容，这样大大提高了我们开发的效率，否则每次都要手动重启，这样就比较耗时。Spring boot热部署通过添加一个插件实现，在pom中添加下面依赖：
+		<!-- springboot 开发自动热部署 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<optional>true</optional>
+		</dependency>
+		
+三 spring boot集成mybatis
+	mybatis不是spring旗下的框架，因此需要进行配置，当然，这里的配置也是非常简单的，这里以操作之前的learnmybatis这个数据库为例进行演示。
+	创建表：
+		CREATE TABLE `learnmybatis`.`t_student` (
+		  `id` INT NOT NULL AUTO_INCREMENT,
+		  `name` VARCHAR(20) NULL,
+		  `age` INT NULL,
+		  `score` DOUBLE NULL,
+		  PRIMARY KEY (`id`));
+		
+	添加mybatis相关依赖
+		<!-- 加载mybatis整合springboot -->
+		<dependency>
+			<groupId>org.mybatis.spring.boot</groupId>
+			<artifactId>mybatis-spring-boot-starter</artifactId>
+			<version>1.3.2</version>
+		</dependency>
+
+		<!-- MySQL的jdbc驱动包 -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+		</dependency>
+
+		<!-- springboot 开发自动热部署 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<!-- alibaba的druid数据库连接池 -->
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>druid-spring-boot-starter</artifactId>
+			<version>1.1.10</version>
+		</dependency>
+		
+	在pom中加入下面内容使maven将xml文件也添加到target目录下
+		<resources>
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>
+		</resources>
+		
+	
+	添加数据源相关配置
+		server.port=8081
+		# 指定mapper文件的位置
+		mybatis.mapper-locations=classpath:com/harry/mybatis/mapper/*.xml
+		# 指定bean的位置
+		mybatis.type-aliases-package=com.harry.mybatis.bean
+		# 数据源
+		spring.datasource.username=root
+		spring.datasource.password=123456
+		spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+		spring.datasource.url=jdbc:mysql://192.168.0.108:3306/learnmybatis?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+		spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
+		# 查看sql日志
+		logging.level.com.harry.mybatis.mapper=debug
+
+	创建Student类
+		public class Student {
+
+			private Integer id;
+
+			private String name;
+
+			private Integer age;
+
+			private Double score;
+		}
+		
+	创建mapper和dao接口
+		<?xml version="1.0" encoding="UTF-8" ?>
+		<!DOCTYPE mapper
+				PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+				"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+		<mapper namespace="com.harry.mybatis.mapper.StudentMapper">
+
+			<!--查询多条数据-->
+			<select id="selectAllStudent" resultType="student">
+				SELECT id,name,age,score FROM t_student
+			</select>
+
+		</mapper>
+		
+	dao接口，与之前不同的是这里需要在接口上面加上Mapper注解：
+		import com.harry.mybatis.bean.Student;
+		import org.apache.ibatis.annotations.Mapper;
+
+		import java.util.List;
+
+		@Mapper
+		public interface StudentMapper {
+			List<Student> selectAllStudent();
+		}
+		
+	创建service和controller
+		import java.util.List;
+
+		@Service
+		@Transactional
+		public class StudentServiceImpl implements StudentService {
+
+			@Autowired
+			private StudentMapper studentMapper;
+
+			@Override
+			public List<Student> selectAllStudent() {
+
+				return studentMapper.selectAllStudent();
+			}
+		}
+		
+		
+		@RestController
+		public class StudentController {
+
+			@Autowired
+			private StudentService studentService;
+
+			@GetMapping("/students")
+			public List<Student> selectAllStudent(){
+				return studentService.selectAllStudent();
+			}
+		}
+		
+	@MapperScan注解和开启事务
+		在上面的dao接口中，我们添加了@mapper注解，这样spring boot就可以扫描到该接口从而使用mybatis动态代理了。除了这种方式之外，可以在spring boot的启动类上添加@MapperScan注解，这样就无需再dao接口上添加@mapper注解了。
+		@SpringBootApplication
+		@MapperScan("com.harry.mybatis.mapper") // 会扫描该包下所有mapper文件
+		@EnableTransactionManagement // 开启事务支持
+		public class Application {
+
+			public static void main(String[] args) {
+				SpringApplication.run(Application.class, args);
+			}
+		}
+		
+		在service类上添加@Transactional
+	
+	使用lombok
+		在之前所编写的代码中，我们写了很多bean，这里面加了很多set、get方法，这些方法冗余，但却也不可缺少。这里我们可以使用lombok包，通过该工具，就不用在bean源码中手动添加set、get方法了，除此之外equals，hashcode，toString方法也无需手动在源码中添加了。lombok会在生成的bean的class字节码中添加这些方法，在使用lombok之后，代码就清爽多了。
+		要使用lombok需要先添加依赖
+			<dependency>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+			</dependency>
+			
+		在Student类上面加上@Data注解，然后set、get等方法就可以去掉了
+		
+	
+	mapper放到resources目录下
+		在之前的pom中我们加了让maven将xml文件也编译放到target目录下的代码，除了将mapper放到dao包下这种方式之外，还可以直接将mapper文件放到resources下。在resources下创建mappers目录，然后将mapper.xml文件放到这个目录下。
+		修改配置文件，指定mapper文件路径：
+			#指定mapper文件的位置
+			mybatis.mapper-locations=classpath:mappers/*.xml
+			
+	
+		
+四 spring boot配置拦截器和过滤器
+	1.拦截器
+		自定义一个普通的拦截器
+			/*
+			自定义拦截器
+			 */
+			public class MyInterceptor implements HandlerInterceptor {
+				@Override
+				public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+					System.out.println("我的拦截器");
+					return true;
+				}
+
+				@Override
+				public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+
+				}
+
+				@Override
+				public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+
+				}
+
+			}
+			
+		创建配置类
+			import com.harry.interceptor.interceptor.MyInterceptor;
+			import org.springframework.context.annotation.Configuration;
+			import org.springframework.web.servlet.config.annotation.InterceptorRegistration;
+			import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+			import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+			@Configuration
+			public class InterceptorConfig implements WebMvcConfigurer {
+
+				@Override
+				public void addInterceptors(InterceptorRegistry registry) {
+					// 注册拦截器
+					InterceptorRegistration ir = registry.addInterceptor(new MyInterceptor());
+					// 添加拦截请求
+					ir.addPathPatterns("/*");
+					// 添加不拦截的请求
+					ir.excludePathPatterns("/login");
+					// 上面的三行代码通过此行代码即可实现同样功能
+					// registry.addInterceptor(new MyInterceptor()).addPathPatterns("/*").excludePathPatterns("/login");
+				}
+			}
+			
+	2.过滤器
+		方式一：
+			创建普通的filter
+				/*
+				自定义过滤器
+				 */
+				@WebFilter(urlPatterns = "/*")
+				public class MyFileter implements Filter {
+					@Override
+					public void init(FilterConfig filterConfig) throws ServletException {
+
+					}
+
+					@Override
+					public void destroy() {
+
+					}
+
+					@Override
+					public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+						System.out.println("我的过滤器");
+						filterChain.doFilter(servletRequest, servletResponse);
+					}
+				}
+
+			在入口方法上添加注解配置filter所在的包，@ServletComponentScan会扫描servlet相关的注解，比如@WebServlet、@WebFilter、@WebListener。
+				@SpringBootApplication
+				@ServletComponentScan(basePackages={"com.harry.filter"})
+				public class Application {
+
+					public static void main(String[] args) {
+						SpringApplication.run(Application.class, args);
+					}
+
+				}
+				
+		方法二：
+			创建配置类配置过滤器，这里的@Bean相当于以前spring配置文件中的bean标签
+			/**
+			 * 过滤器配置类
+			 */
+			@Configuration
+			public class FilterConfig {
+				@Bean
+				public FilterRegistrationBean myFilterRegistration(){
+					FilterRegistrationBean regist = new FilterRegistrationBean(new MyFileter());
+					// 过滤全部请求
+					regist.addUrlPatterns("/*");
+					return regist;
+				}
+			}
+			
+	3.配置servlet
+		方式一：
+			创建普通的servlet
+				/**
+				 * 自定义Servlet
+				 */
+				@WebServlet("/myServlet")
+				public class MyServlet extends HttpServlet {
+					@Override
+					protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+						resp.getWriter().write("hello");
+					}
+
+					@Override
+					protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+						this.doGet(req, resp);
+					}
+				}
+				
+			在主类上加入注解并配置servlet所在的包
+				@SpringBootApplication
+				@ServletComponentScan(basePackages="com.harry.servlet")
+				public class Application {
+
+					public static void main(String[] args) {
+						SpringApplication.run(Application.class, args);
+					}
+
+				}
+				
+		方式二：
+			@Configuration
+			public class MyServletConfig {
+				@Bean
+				public ServletRegistrationBean myServletResgistration(){
+					ServletRegistrationBean regist = new ServletRegistrationBean(new MyServlet());
+					regist.addUrlMappings("/myServlet");
+					return regist;
+				}
+			}
+
+五 使用actuator监控spring boot
+	在生产环境中，需要实时监控程序的可用性，出现问题之后我们需要快速定位，spring-boot 的 actuator 功能提供了很多监控所需的接口。actuator是spring boot提供的对应用系统的自省和监控的集成功能，可以对应用系统进行配置查看、健康检查、相关功能统计等；方便运维人员查看spring boot的运行状况。
+	
+	使用actuator
+		spring boot为actuator提供了起步依赖starter，我们需要在pom中添加下面starter：
+		
+			<!--web依赖-->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-web</artifactId>
+			</dependency>
+			<!--添加actuator依赖-->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-actuator</artifactId>
+			</dependency>
+			<!--spring boot admin依赖-->
+			<dependency>
+				<groupId>de.codecentric</groupId>
+				<artifactId>spring-boot-admin-starter-client</artifactId>
+			</dependency>
+			
+		在配置文件中添加下面配置
+			# 设置actuator监控端口
+			management.server.port=8082
+			# 开启所有监控端点(endpoint), 默认值开启了health和info
+			management.endpoints.web.exposure.include=*
+
+			# 添加info信息
+			info.author=harry
+			info.url=www.harry.com
+			
+		启动spring boot程序，在浏览器中输入：
+			http://localhost:8082/actuator/info
+			
+	spring boot admin图形化界面
+		上面通过actuator提供的rest接口，返回的数据都是json格式，这个对于不懂json格式的人来说不太方便，因此就产生了spring boot admin，它提供了图形化界面，通过界面来展示这些数据。
+		
+		创建新的模块，加入相关依赖
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-actuator</artifactId>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-web</artifactId>
+			</dependency>
+			<!--spring boot admin相关依赖-->
+			<dependency>
+				<groupId>de.codecentric</groupId>
+				<artifactId>spring-boot-admin-starter-server</artifactId>
+			</dependency>
+			
+		在spring boot的启动类上添加下面注解，开启admin
+			@SpringBootApplication
+			@EnableAdminServer // 开启SBA server
+			public class ApplicationServer {
+
+				public static void main(String[] args) {
+					SpringApplication.run(ApplicationServer.class, args);
+				}
+
+			}
+			
+		在配置文件中设置下端口号：
+			server.port=8085
+		
+		上面的项目是作为server端，将之前的spring boot项目作为client端，由server端统一监控client端。
+
+		client的模块中，在配置文件里面添加下面内容：
+			# 配置SBA server端的地址和端口号
+			spring.boot.admin.client.url=http://localhost:8085
+			# 开启所有监控端点(endpoint), 默认值开启了health和info
+			management.endpoints.web.exposure.include=*
+			
+		启动server和client，访问server端，http://localhost:8082 就可以看到spring boot admin的页面了。
+		
+六 spring boot自动配置原理
+
+	自动配置原理
+		
+		spring boot中的@EnableAutoConfiguration注解的作用就是开启自动配置，正是因为开启了自动配置，开发者在使用spring boot的时候就不用再填写繁琐的的配置项了，那么spring boot是如何实现这个自动配置的呢?
+		
+			1.spring boot会根据开发者添加的依赖判断是否使用了某个技术，比如在依赖中有DispatcherServlet，那就说明使用了spring mvc技术。
+			2.spring boot判断出开发者所使用的技术之后，会从自动配置（AutoConfigure）相关的包下找到该技术相关的配置类。
+			3.spring boot会加载这些配置类，如果配置文件有写相关的配置信息的话会将该信息读取到配置类的对象中，然后加载到spring容器中，这样就完成了自动配置了。
+			
+		如果自动配置AutoConfigure包下没有这些配置类，我们需要手动配置。在spring boot中自动配置类和配置类命名都是符合下面格式的
+		
+		自动配置类：
+			*AutoConfiguration
+			
+		配置类：
+			*Properties
+		在spring boot中使用了很多@Conditional相关的注解，该注解有很多派生的注解用来判断一些情况，通过这些注解，spring boot来判断加载哪些自动配置。我们可以在application配置文件中添加
+			debug=true
+		这样就开启了spring boot的debug模式，在启动spring boot的时候可以在控制台中看到目前已经加载的配置类。
+	
+	源码分析
+		在spring boot的主类的上面添加了@SpringBootApplication注解，该注解中包含了@EnableAutoConfiguration注解，该注解的作用就是开启自动配置，那么它是如何实现的呢？
+		在@EnableAutoConfiguration注解中引入了AutoConfigurationImportSelector类。在该类中有一个selectImports方法，代码如下：
+			public String[] selectImports(AnnotationMetadata annotationMetadata) {
+				if (!this.isEnabled(annotationMetadata)) {
+					return NO_IMPORTS;
+				} else {
+					AutoConfigurationMetadata autoConfigurationMetadata = AutoConfigurationMetadataLoader.loadMetadata(this.beanClassLoader);
+					//通过该方法获取的数据，最终被转成数组返回
+					AutoConfigurationImportSelector.AutoConfigurationEntry autoConfigurationEntry = this.getAutoConfigurationEntry(autoConfigurationMetadata, annotationMetadata);
+					return StringUtils.toStringArray(autoConfigurationEntry.getConfigurations());
+				}
+			}
+			
+		上面中将autoConfigurationEntry.getConfigurations()转成数组返回了，该数据是通过getAutoConfigurationEntry方法返回的，我们进入到该方法内看下：
+			protected AutoConfigurationImportSelector.AutoConfigurationEntry getAutoConfigurationEntry(AutoConfigurationMetadata autoConfigurationMetadata, AnnotationMetadata annotationMetadata) {
+				if (!this.isEnabled(annotationMetadata)) {
+					return EMPTY_ENTRY;
+				} else {
+					AnnotationAttributes attributes = this.getAttributes(annotationMetadata);
+					//这里获取了一个list类型的配置数据
+					List<String> configurations = this.getCandidateConfigurations(annotationMetadata, attributes);
+					configurations = this.removeDuplicates(configurations);
+					Set<String> exclusions = this.getExclusions(annotationMetadata, attributes);
+					this.checkExcludedClasses(configurations, exclusions);
+					configurations.removeAll(exclusions);
+					configurations = this.filter(configurations, autoConfigurationMetadata);
+					this.fireAutoConfigurationImportEvents(configurations, exclusions);
+					return new AutoConfigurationImportSelector.AutoConfigurationEntry(configurations, exclusions);
+				}
+			}
+			
+		在该方法中通过调用getCandidateConfigurations方法获取了一个list类型的配置数据，我们进入到该方法中：
+			 protected List<String> getCandidateConfigurations(AnnotationMetadata metadata, AnnotationAttributes attributes) {
+				//这里返回的是list类型的配置数据
+				List<String> configurations = SpringFactoriesLoader.loadFactoryNames(this.getSpringFactoriesLoaderFactoryClass(), this.getBeanClassLoader());
+				Assert.notEmpty(configurations, "No auto configuration classes found in META-INF/spring.factories. If you are using a custom packaging, make sure that file is correct.");
+				return configurations;
+			}
+			
+		上面是通过调用了loadFactoryNames方法来获取的list类型的配置数据，我们再进入到该方法内部：
+			 public static List<String> loadFactoryNames(Class<?> factoryClass, @Nullable ClassLoader classLoader) {
+				String factoryClassName = factoryClass.getName();
+				//这里返回的是list类型的配置数据
+				return (List)loadSpringFactories(classLoader).getOrDefault(factoryClassName, Collections.emptyList());
+			}
+			
+		根据上面注释的地方，我们再进入到loadSpringFactories方法里面，在该方法中，可以看到会读取该文件中的内容：
+			META-INF/spring.factories
+			
+		也就是说spring boot会读取该文件中的内容，在spring-boot-autoconfigure.jar包中的spring.factories文件里面，可以看到EnableAutoConfiguration配置了很多类。从配置文件中可以找到MultipartAutoConfiguration这个类，该类是文件上传的自动配置类，进入到这个类中，可以看到在类名上面加了下面注解：
+			@Configuration
+			加入到spring容器中
+
+			@ConditionalOnClass({ Servlet.class, StandardServletMultipartResolver.class,
+					MultipartConfigElement.class })
+			当前项目中要存在Servlet，StandardServletMultipartResolver，MultipartConfigElement这三个类。
+
+			@ConditionalOnProperty(prefix = "spring.servlet.multipart", name = "enabled", matchIfMissing = true)
+
+			当前application配置文件中spring.servlet.multipart.enabled的如果没有配置，那么他的值是true
+
+			@ConditionalOnWebApplication(type = Type.SERVLET)
+			当前项目需要是一个web项目
+
+			@EnableConfigurationProperties(MultipartProperties.class)
+			将配置文件类MultipartProperties加入到spring容器中
+			
+		上面会将MultipartProperties这个类加入到spring容器中，我们打开这个类之后，可以看到里面的一些成员变量，这些成员变量就是可以在配置文件中配置的，如果我们没有配置，那么就会使用默认值：
+			@ConfigurationProperties(prefix = "spring.servlet.multipart", ignoreUnknownFields = false)
+			public class MultipartProperties {
+
+				/**
+				 * Whether to enable support of multipart uploads.
+				 */
+				private boolean enabled = true;
+
+				/**
+				 * Intermediate location of uploaded files.
+				 */
+				private String location;
+
+				/**
+				 * Max file size.
+				 */
+				private DataSize maxFileSize = DataSize.ofMegabytes(1);
+
+				/**
+				 * Max request size.
+				 */
+				private DataSize maxRequestSize = DataSize.ofMegabytes(10);
+
+				/**
+				 * Threshold after which files are written to disk.
+				 */
+				private DataSize fileSizeThreshold = DataSize.ofBytes(0);
+
+				}
+				
+七 spring boot自定义starter
+	1.创建starter模块
+		创建的starter模块是一个空的jar包，里面只是做依赖管理，使用者只需将starter引入即可使用。
+		在starter模块中加入autoconfigure模块的依赖
+			 <!-- 自动配置依赖 -->
+			<dependency>
+				<groupId>com.harry</groupId>
+				<artifactId>08-autoconfigure</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			
+	2.创建autoconfigure模块
+		创建一个autoconfigure模块
+		添加下面依赖
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter</artifactId>
+			</dependency>
+			
+			<!-- 为properties类生成json文件 -->
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-configuration-processor</artifactId>
+				<optional>true</optional>
+			</dependency>
+			
+		创建UserProperties类
+			/**
+			 * 自定义配置类
+			 */
+			@ConfigurationProperties(prefix = "harry.user")
+			public class UserProperties {
+				private String name;
+
+				private String password;
+			}
+			
+		创建UserService类
+			public class UserService {
+
+				private UserProperties userProperties;
+
+				public UserService(UserProperties userProperties) {
+					this.userProperties = userProperties;
+				}
+
+				public UserService() {}
+				public boolean validate() {
+					if ("admin".equals(userProperties.getName()) && "123".equals(userProperties.getPassword())) {
+						return true;
+					}
+
+					return false;
+				}
+
+			}
+			
+		创建UserAutoConfiguration类
+			@Configuration
+			@ConditionalOnWebApplication//在web应用下启用
+			@EnableConfigurationProperties(UserProperties.class)//开启配置类
+			public class UserAutoConfiguration {
+
+				@Autowired
+				private UserProperties userProperties;
+
+				@Bean
+				@ConditionalOnMissingBean(UserService.class)//当容器中不存在该对象的时候创建
+				public UserService addUserService() {
+					return new UserService(userProperties);
+				}
+			}
+			
+		创建spring.factories文件
+			根据之前源码分析，我们需要在resources下创建META-INF文件夹，在该文件夹下创建spring.factories文件，里面内容如下：
+			org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+				com.harry.autoconfigure.UserAutoConfiguration
+				
+	3.创建测试模块
+		创建测试web模块将上面的starter依赖导入。在配置文件中添加下面内容：
+			harry.user.name=admin
+			harry.user.password=123
+			
+		创建controller
+			@RestController
+			public class UserController {
+				@Autowired
+				private UserService userService;
+
+				@GetMapping("/validate")
+				public String validate(){
+					boolean validate = userService.validate();
+					return validate + "";
+				}
+			}
+八 thymeleaf模板语言
+	
+	Thymeleaf是一个流行的模板引擎，该模板引擎采用Java语言开发，模板引擎是一个技术名词，是跨领域跨平台的概念，在Java语言体系下有模板引擎，在C#、PHP语言体系下也有模板引擎。除了thymeleaf之外还有Velocity、FreeMarker等模板引擎，功能类似。
+	
+	1.第一个thymeleaf程序
+		添加thymeleaf依赖
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-thymeleaf</artifactId>
+			</dependency>
+			
+		修改spring boot配置文件
+			# 开发阶段，建议关闭thymeleaf缓存
+			spring.thymeleaf.cache=false
+			# 去掉严格校验
+			spring.thymeleaf.mode=LEGANCYHTML5
+
+		thymeleaf会对html中的标签进行严格校验，如果html标签缺少结束标签的话，thymeleaf会报错，我们可以通过下面方式去除thymeleaf的校验，添加依赖：
+			<dependency>
+			  <groupId>net.sourceforge.nekohtml</groupId>
+			  <artifactId>nekohtml</artifactId>
+			  <version>1.9.22</version>
+			</dependency> 
+			
+		创建controller准备数据
+			@Controller
+			public class ThymeleafController {
+				@RequestMapping("/hello")
+				public String helloThymeleaf(Model model) {
+					model.addAttribute("name", "jack");
+
+					return "index";
+				}
+			}
+			
+		创建html页面
+			<!DOCTYPE html>
+			<html xmlns:th="http://www.thymeleaf.org">
+			<head>
+				<meta charset="UTF-8"/>
+				<title>Spring boot集成 Thymeleaf</title>
+			</head>
+			<body>
+			<p th:text="${name}">Spring boot集成 Thymeleaf</p>
+			</body>
+			</html>
+			
+	2.表达式
+		标准变量表达式
+			@RequestMapping(value="/userInfo")
+			public String userInfo (Model model) {
+				User user = new User();
+				user.setId(1001);
+				user.setName("jack");
+				user.setPhone("13711111111");
+				model.addAttribute("user", user);
+				model.addAttribute("hello", "helloworld");
+				return "user";
+			}
+			
+		创建user.html,通过th:text表达式来获取controller中返回的数据。
+			<!DOCTYPE html>
+			<html xmlns:th="http://www.thymeleaf.org">
+			<head>
+				<meta charset="UTF-8"/>
+				<title>Spring boot集成 Thymeleaf</title>
+			</head>
+			<body>
+				<table>
+					<tr>
+						<td th:text="${user.id}">1</td>
+						<td th:text="${user.name}">a</td>
+						<td th:text="${user.phone}">137</td>
+					</tr>
+				</table>
+				<div th:text="${hello}"></div>
+			</body>
+			</html>
+		
+		选择变量表达式
+			这里相当于是先使用th:object将user对象取出，然后在里面的th:text中获取user对象中的属性值。
+			<table>
+				<tr th:object="${user}">
+					<td th:text="*{id}">1</td>
+					<td th:text="*{name}">a</td>
+					<td th:text="*{phone}">137</td>
+				</tr>
+			</table>
+			
+		url表达式
+			将后台传入的数据拼接到url中
+				<a href="info.html" th:href="@{/user/info(id=${user.id})}">参数拼接</a>
+				<a href="info.html" th:href="@{/user/info(id=${user.id}, name=${user.name})}">多参数拼接</a>
+				<a href="info.html" th:href="@{/user/info/{id}/{name}(id=${user.id}, name=${user.name})}">restful风格1</a>
+				<a href="info.html" th:href="@{/user/info/{id}/abc(id=${user.id})}">restful风格2</a>
+	
+	3.字符串拼接
+		方式一： <span th:text="'当前是第'+${page}+'页 ,共'+${page}+'页'"></span>
+		方式二：<span th:text="|当前是第${page}页，共${page}页|"></span>
+		
+		
+	4.三目运算符	
+		<span th:text="${sex eq 0} ? '男' : '女'">未知</span>
+		
+	5.基本运算和关系判断
+		算术运算：+ , - , * , / , %
+		关系比较: > , < , >= , <= ( gt , lt , ge , le )
+		相等判断：== , != ( eq , ne )
+		
+	6.内置对象
+		#request：相当于是HttpServletRequest对象 ${#request.getContextPath()}
+		#session：相当于是HttpSession对象	${#session.getAttribute("phone")}
+		#dates: java.util.Date对象的实用方法，可以调用里面的方法。 <span th:text="${#dates.format(curDate, 'yyyy-MM-dd HH:mm:ss')}"></span>
+		#numbers: 格式化数字对象的实用方法；
+		#strings: 字符串对象的实用方法；
+		#objects: 对objects操作的实用方法；
+		#lists: list的实用方法，比如<span th:text="${#lists.size(datas)}">
+		#aggregates: 对数组或集合创建聚合的实用方法；
+		
+	7.thymeleaf常用属性
+		th:each
+			该属性较为常用，比如从后台传来一个对象集合那么就可以使用此属性遍历输出，它与JSTL中的<c: forEach>类似，此属性既可以循环遍历集合，也可以循环遍历数组及Map。
+			循环list
+				@RequestMapping(value="/users")
+				public String selectAllUser (Model model) {
+
+					ArrayList<User> userList = new ArrayList<>();
+					for (int i = 0; i < 10; i++) {
+						User user = new User();
+						user.setId(i);
+						user.setName("jack" + i);
+						user.setPhone("13"+i+"11111111");
+						userList.add(user);
+					}
+
+					model.addAttribute("userList", userList);
+					return "user";
+				}
+			
+			html，这里的interStat类似于jstl里面foreach的varStatus，可以获取到当前的迭代信息。
+				<table>
+					<tr th:each="user, interStat : ${userList}">
+						<td th:text="${interStat.index}"></td>
+						<td th:text="${user.id}"></td>
+						<td th:text="${user.name}"></td>
+						<td th:text="${user.phone}"></td>
+					</tr>
+				</table>
+				
+			可以省略interStat，默认会在user后面加上stat，即userStat
+				<table>
+					<tr th:each="user : ${userList}">
+						<td th:text="${userStat.index}"></td>
+						<td th:text="${user.id}"></td>
+						<td th:text="${user.name}"></td>
+						<td th:text="${user.phone}"></td>
+					</tr>
+				</table>
+				
+			interStat里面一些属性的含义：
+				index: 当前迭代对象的index（从0开始计算）
+				count: 当前迭代对象的个数（从1开始计算）
+				size: 被迭代对象的大小
+				current: 当前迭代变量
+				even/odd: 布尔值，当前循环是否是偶数/奇数（从0开始计算）
+				first: 布尔值，当前循环是否是第一个
+				last: 布尔值，当前循环是否是最后一个
+				
+			循环map
+				@RequestMapping(value="/usersMap")
+				public String selectAllUserMap (Model model) {
+
+					HashMap<String, User> userMap = new HashMap<>();
+					for (int i = 0; i < 10; i++) {
+						User user = new User();
+						user.setId(i);
+						user.setName("jack" + i);
+						user.setPhone("13"+i+"11111111");
+						userMap.put(String.valueOf(i), user);
+					}
+
+					model.addAttribute("userMap", userMap);
+					return "user";
+				}
+				
+			html，myMapVal.key相当于map的键，myMapVal.value相当于map中的值。
+				<div th:each="myMapVal : ${userMap}">
+					<span th:text="${myMapValStat.count}"></span>
+					<span th:text="${myMapVal.key}"></span>
+					<span th:text="${myMapVal.value.name}"></span>
+					<span th:text="${myMapVal.value.phone}"></span>
+					<br/>
+				</div>
+				
+			
+			循环数组
+				@RequestMapping(value="/usersArray")
+				public String selectAllUserArray (Model model) {
+
+					User[] userArray = new User[10];
+
+					for (int i = 0; i < 10; i++) {
+						User user = new User();
+						user.setId(i);
+						user.setName("jack" + i);
+						user.setPhone("13"+i+"11111111");
+						userArray[i] = user;
+					}
+
+					model.addAttribute("userArray", userArray);
+					return "user";
+				}
+			
+			html
+				<div th:each="myArrayVal : ${userArray}">
+					<div th:text="${myArrayVal.name}"></div>
+					<div th:text="${myArrayVal.phone}"></div>
+				</div>
+				
+		th:id
+			动态设置html标签中的id属性，这样会获取从后台传入的hello的值，然后将这个值作为id的值。比如：
+				<span th:id="${hello}">good</span>
+				
+		
+		th:if
+			条件判断，比如后台传来一个变量，判断该变量的值，0为男，1为女：
+				<span th:if="${sex} == 0" >
+					男：<input type="radio" name="sex"  th:value="男" />
+				</span>
+				<span th:if="${sex} == 1">
+					女：<input type="radio" name="sex" th:value="女"  />
+				</span>
+				
+		th:switch/th:case
+			switch，case判断语句， 这里的*表示默认，当上面的case都是false的时候，会执行默认的内容。比如：
+				<div th:switch="${sex}">
+				  <p th:case="0">性别：男</p>
+				  <p th:case="1">性别：女</p>
+				  <p th:case="*">性别：未知</p>
+				</div>
+				
+				
+		th:value
+			类似html标签中的value属性，能对某元素的value属性进行赋值，比如：
+				<input type="hidden" id="userId" name="userId" th:value="${userId}">
+				
+		
+		th:inline
+			text
+				从后台取出数据展示
+				
+				<span th:inline="text">Hello, [[${user.nick}]]</span>
+				等同于：
+				<span>Hello, <span th:text="${user.nick}"></span></span>
+				
+			none
+				有时候希望在html中直接显示[[1, 2, 3], [4, 5]]，此时可以使用none
+				<p th:inline="none"> [[1, 2, 3], [4, 5]]!</p>
+				
+			
+			javascript
+				如果希望在JavaScript中获取后台相应的数据，可以使用下面内容：
+				<script th:inline="javascript" type="text/javascript">
+					var msg  = "Hello," + [[${user.phone}]];
+					alert(msg);
+				</script>
+				
+九 spring boot部署与运行
+	1. spring boot打jar包
+		之前创建的spring boot项目中的打包方式都是jar，此时使用maven的package命令将项目打成jar包。之后在项目的target目录下可以找到这个jar包，然后在cmd或者IDEA的terminal中进入到这个jar包所在的目录，然后使用下面命令即可运行：
+		java -jar jar包的名字
+		web项目的话，此时会使用spring boot内置的tomcat启动，在浏览器中正常访问即可。
+		
+	2.spring boot打war包
+		spring boot也可以打成我们熟悉的war包，此时可以将war包手动部署到tomcat中启动，需要注意的是部署的tomcat需要支持servlet 3.1以上的版本，推荐tomcat9以上的版本。
+		打成war包就无需内置的tomcat了，内置的tomcat无需打包：
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-tomcat</artifactId>
+				<scope>provided</scope>
+			</dependency>
+			
+		创建一个类继承SpringBootServletInitializer
+			import org.springframework.boot.builder.SpringApplicationBuilder;
+			import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+
+			public class ServletInitializer extends SpringBootServletInitializer {
+
+				@Override
+				protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+					//这里写上spring boot的启动类的名字
+					return application.sources(WartestApplication.class);
+				}
+
+			}
+		通过maven的package命令打包，然后将war包部署到tomcat的webapp目录中，启动tomcat即可。
+		
+	3.jar包和war包的对比
+		打成jar包，方便快捷，不过要替换单个文件的话比较麻烦。
+		打成war包，可以针对tomcat调优，更换单个文件方便，这里需要手动配置tomcat的环境。
+		
+	

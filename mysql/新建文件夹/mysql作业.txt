@@ -1,0 +1,407 @@
+一 建立数据
+	1 建立班级表
+		create table class (cid int primary key not null auto_increment, caption char(50), grade_id int);
+		insert into class (cid,caption,grade_id) values (1,'一年一班',1),values (2,'二年一班',2),values (3,'三年一班',3);
+	2 建立学生表
+		create table student (sid int primary key not null auto_increment, sname char(20),gender enum('女','男'), class_id int);
+		insert into studen (sid,sname,gender,class_id) values (1,'乔丹','女',1),(2,'艾弗森','女',1),(3,'科比',2);
+	3 建立老师表
+		create table teacher (tid int primary key not null auto_increment,tname char(30));
+		insert into teacher (tid,tname) values (1,'张三'),('李四'),('王五');
+	4 建立课程表
+		create table course (cid int primary key not null auto_increment,cname char(30),teacher_id int);
+		insert into course (cid,cname,teacher_id) values(1,'生物',1),(2,'体育',1),(3,'物理',2);
+	5 建立成绩表
+	    create table score (sid int primary key not null auto_increment,cname char(30),student_id int, course_id int,score int);
+		insert into score (sid,student_id,course_id,score) values(1,1,1,60),(2,1,2,59),(3,2,2,99);
+	6 年级表
+		create table class_grade (gid int primary key not null auto_increment,gname char(30));
+		insert into class_grade (gid,gname) values (1,'一年级'), (2,'二年级'),(3,'三年级');
+	7 班级任职表
+		create table teach2cls (tcid int primary key not null auto_increment, tid int,cid int);
+		insert into teach2cls (tcid,tid,cid) values (1,1,1), (2,1,2), (3,2,1), (4,3,2);
+	8 设置外键
+		alter table teach2cls add CONSTRAINT teach2cls_teach foreign key teach2cls(tid) references teache(tid)
+二 查询学生总人数
+	SELECT
+	    count(sid) AS student_count
+	FROM
+		student
+		
+三  查询生物课程和物理课程成绩都及格的学生id和姓名
+思路： 先取得课程表中生物和物理的id，然后在成绩表取出生物和物理的所有成绩，再将结果与学生表连表过滤大于等于60分的条件，再安装学生id，和姓名
+ select student.sid,student.sname from 
+	(select * from score where course_id in 
+		(select cid from course where cname = '生物' or  cname = '物理')) as score_tb
+left join student on student_id = student.sid where score>=60 group by sname,sid
+
+四 查询每个年级的班级数，取出班级数最多的三个年级
+
+思路： 先将班级表和年级表连表，然后以年级表name进行分组并统计grade_id得出每个年级的班级，然后通过order by对统计结果进行降序并取出前三行
+SELECT
+	gname,
+	count(grade_id) AS counts
+FROM
+	class
+LEFT JOIN class_grade ON class.grade_id = class_grade.gid
+GROUP BY
+	gname
+ORDER BY
+	counts DESC
+LIMIT 3
+
+五 查询平均成绩最高和最低的学生id和姓名以及平均成绩
+
+思路：先统计学生的平均成绩，然后找到最大平均成绩和最小平均成绩，将student和score连表找出平均成绩满足前面查询到的最大成绩和最小成绩的条件
+select student.sid,student.sname,avg(score) from score  
+	inner join student on student_id = student.sid 
+	   group by student.sid,student.sname  
+	        having avg(score)=(
+			    select avg(score) as avg_score from score group by student_id order by avg_score desc limit 1)
+	        or avg(score)=(
+				select avg(score) as avg_score from score group by student_id order by avg_score asc limit 1)
+				
+六 查询每个年级的学生人数
+
+思路：现将学生表和班级表进行连表取出每个学生grade_id 存放在t1临时表, 再将年级表和t1连表用grade_id分组并统计人数
+select gname,count(grade_id) 
+    from  class_grade 
+	inner join 
+	    (select  grade_id from student inner join class on class_id = cid) as t1 
+	on gid = grade_id 
+	group by gname;
+
+七 查询每位学生的学号，姓名，选课数，平均成绩
+
+思路：先统计出每个学生选课数和平均成绩保存到t1表，然后再查student和t1表连表取出需要的数据
+select t1.sid,sname,count_course,avg_score
+   from student inner join (
+            select student.sid,count(course_id) as count_course,avg(score) as avg_score from student
+          			inner join score on student.sid = student_id 
+					       group by sid) as t1
+on student.sid = t1.sid;
+
+八 查询学生编号为2 的学生的姓名 该学生成绩最高的课程名和成绩最低的课程名以及分数
+思路：先查出学生2课程的最低分和最高分，将成绩表与学生表连表找到学生姓名条件为等于最小成绩和最大成绩的分数保存为t2表，最后将课程表与T2表连表
+过滤出sid为2的学生
+
+select student_id,sname,score,cname from course inner join (
+     select sname,course_id,score,student_id from score inner join student on student_id = student.sid where  
+	  score = (
+          select max(score) from score where student_id = 2) 
+	 or score = (
+          select min(score) from score where student_id = 2)
+ ) as t2 on cid = t2.course_id where student_id = 2
+ 
+ 九 查询姓李的老师个数和所带班级
+思路：这道题只求出来了姓李的老师所带的班级，没想出如何一条语句实现老师个数和所带班级
+ 
+select caption,tname from class inner join(
+     select teach2cls.tid,teach2cls.cid,tname from teach2cls inner join teacher on teacher.tid = teach2cls.tid where tname like '李%') as t2 
+on class.cid = t2.cid 
+
+十 查询班级数小于5的年级id和年级名
+思路：班级表和年级表连表然后对年级id进行分组和统计，再用having过滤小于5的年级
+
+select grade_id,gname,count(grade_id) 
+      from class 
+	  inner join class_grade 
+	  on 
+	  class.grade_id = class_grade.gid 
+	  group by gname,grade_id 
+	  having count(grade_id) <5
+	  
+十一 查询班级信息，包括班级id，班级名称，年级年级级别
+思路：使用 CASE WHEN[test1] THEN [result1]...ELSE [default] END 函数查找
+
+select cid,caption,gname,case when gid between 1 and 2 then '低年级' when gid between 3 and 4 then '中年级' else '高年级' end as '级别'
+   from class inner join class_grade on class.grade_id = class_grade.gid
+  
+十二 查询学过"张三"老师2门课以上的同学的学号，姓名
+思路：首先找到张三老师的tid然后在课程表中找到匹配tid的课程id并使用student_id进行分组过滤count(course_id) 小于2的保存到t2表，最后使用学生表与t2表连表
+select sid,sname from student inner join (
+ select student_id from score where course_id in ( 
+   select cid from course where teacher_id =(
+       select tid from teacher where tname = '张三')) group by student_id having count(course_id) >=2 ) as t2
+on student.sid = t2.student_id
+
+十三 查询教授课程超过2门的老师的id和姓名
+
+思路：先找出超过两门课程老师的tid，然后在于teacher表进行连表
+
+select tid,tname from teacher inner join (
+   select teacher_id from course group by teacher_id having count(teacher_id) >= 2) as t2
+on teacher.tid = t2.teacher_id
+
+十四 查询学过编号1和编号2课程的同学，学号，姓名
+思路： 先过过虑出学过课程1和2学生的学生id并进行分组保存到t2表，然后将student表和
+
+select * from student inner join  (
+    select student_id from score where course_id in  (1,2) group by student_id) as t2
+on student.sid = student_id
+
+十五 查询没有带过高年级的老师id和姓名
+思路: 先找到高年级的班级id，然后找到带过高年级班级的tid，最后查teacher表过滤掉这些带过高年级的tid
+
+select * from teacher where teacher.tid not in (
+   select tid from teach2cls where cid  in (
+      select cid from class where grade_id > 3) group by tid)
+   
+十六 查询学过张三老师所交的所有课的同学的学号，姓名
+思路：先查到张三老师的tid然后查找对应的cid 之后匹配到选有张三老师课程的学生使用student_id 分组并过滤选课数等于张三老师所有授课数的条件
+
+select sid,sname from student inner join(
+  select student_id,count(course_id) from score where course_id in (
+     select cid from course where teacher_id = (
+       select tid from teacher where tname = '张三' )) 
+  group by student_id having count(course_id) = (select count(cid) from course where teacher_id = ( select tid from teacher where tname = '张三'))) as t2
+on sid = t2.student_id
+
+十七 查询带过超过2个班级的老师的id和姓名
+思路：从teach2cls表中找到count(cid)大于等于2的tid保存到t2表，然后呢teacher进行连表
+
+select t2.tid,tname from teacher inner join (
+    select tid from teach2cls group by tid having count(cid) >= 2) as t2
+on teacher.tid = t2.tid
+
+十八 查询课程编号2的成绩比课程标号1课程低的所有同学的学号姓名
+
+select sid,sname  from student where (
+(select score from score where student.sid = score.student_id and course_id = 2) <
+(select score from score where student.sid = score.student_id and course_id = 1)
+) 
+
+十九 查询所带班级数最多的老师id和姓名
+思路：先统计每个老师带的班级然后降序取出第一个保存到t2,然后把再将老师表进行连表
+select t2.tid,tname from teacher inner join (
+     select tid,count(cid) as counts from teach2cls group by tid order by counts desc limit 1) as t2
+on teacher.tid = t2.tid
+
+二十 查询有课程成绩小于60分的同学的学号姓名
+思路：查找到小于60分同学id保存t2然后和学生表进行连表
+select sid,sname from student inner join (
+       select student_id from score where score < 60 group by student_id ) as t2
+on student.sid = t2.student_id
+
+二十一  查询没有学全所有课程的同学的学号和姓名
+思路：在课程表统计出一共有几门课，然后把条件是小于学生总共课程数的同学过滤出来与student连表
+
+select sid,sname from student inner join (
+   select student_id from score group by student_id having count(course_id) < (
+         select count(1) from course )) as t2
+on student.sid = t2.student_id
+
+二十二 查询至少有一门课与学号为1的同学所学相同的同学的学号和姓名
+思路： 先找到学号为1的同学学的课程，然后在成绩表找到学过包含这些各种的同学id再与student连表
+
+select sid,sname from student inner join (
+   select student_id from score where student_id !=1 and course_id in (
+       select course_id from  score where student_id = 1) group by student_id) as t2
+on sid = t2.student_id
+
+二十三 查询至少学过学号为1同学所选课程中任意一门课的其他同学学号和姓名
+思路： 同上 只要把学号为1的同学过滤即可
+
+select sid,sname from student inner join (
+   select student_id from score where student_id !=1 and course_id in (
+       select course_id from  score where student_id = 1) group by student_id) as t2
+on sid = t2.student_id
+
+二十四 查询和2号同学学习的课程完全相同的其他同学的学号和姓名
+思路： 同上 把2号同学所学课程数量统计出来然后其他同学再进行比较过滤
+select sid,sname from student inner join (
+  select student_id from score group by student_id having count(course_id) = (
+    select count(course_id) from score where student_id = 2)) as t2
+on student.sid = t2.student_id where student.sid != 2
+
+二十五 删除张三老师score表记录
+思路：首先在老师表找到张三老师id然后在课程表找到张三教授的课程id，最后在成绩表把匹配的课程id删除
+
+delete  from score where course_id in ( 
+  select cid from course where teacher_id = (
+     select tid from teacher where tname = '张三'))
+	 
+二十六 向score表插入没有上过编号2课程的同学学号和2号课程的平均成绩
+思路：先通过select找到没有上过课程2的学生id和课程2的平均成绩 然后将查询到的结果插入到表中
+insert into score(student_id,course_id,score)
+	select score.student_id,2,(select avg(score) from score where course_id = 2)
+	from score 
+	where student_id not in (
+			 select distinct student_id from score where course_id = 2)
+		
+二十七 按平均成绩从低到高显示所有学生的“语文”、“数学”、“英语”三门的课程成绩，按如下形式显示： 学生ID,语文,数学,英语,有效课程数,有效平均分
+
+select sc.student_id as sid,
+        (select score from score where student_id=sc.student_id  and course_id = (select cid from course where cname = '语文') )  as '语文',
+				(select score from score where student_id=sc.student_id  and course_id = (select cid from course where cname = '数学') )  as '数学',
+				(select score from score where student_id=sc.student_id  and course_id = (select cid from course where cname = '英语') )  as '英语',
+				count(sc.student_id) as '有效课程数',
+				avg(sc.score) 
+from score as sc
+group by sc.student_id
+
+二十八 查询各科成绩最低分和最高分， 如下形式显示：课程ID,最高分，最低分
+思路： 按照course_id 分组求出各课的最低和最高分
+
+select course_id,max(score) as '最高分', min(score) as '最低分' 
+     from score group by  course_id
+
+二十九
+
+select 课程ID,cname as '课程名称',平均分,及格率 from course inner join (	
+	select  course_id as '课程ID',
+			avg(score) as '平均分',
+			100 * sum( case when score >= 60 then 1 else 0 end)/count(score) as '及格率'
+		from score,course 
+		group by course_id  ) as t2
+		
+on cid = t2.`课程ID` 
+order by 及格率 desc
+
+三十 课程平均分从高到低显示
+思路：查到每门课程平均分保存到一张表 然后再用课程表连接，最后用老师表连表得到每门课程任课老师名字
+
+select  cname,tname,平均分 from teacher inner join ( 
+  select teacher_id,cname,平均分 from course inner join (
+    select course_id,avg(score) as '平均分' from score  group by course_id) as t1
+  on course.cid = course_id) as t2
+on teacher.tid = teacher_id
+order by 平均分 desc
+
+三十一 查询各科成绩前三名记录
+
+
+	select course_id,
+			 ( select student_id from score where sc.course_id = course_id order by score desc limit 1)  as '第一名',
+			 ( select student_id from score where sc.course_id = course_id order by score desc limit 2,1) as '第二名',
+			 ( select student_id from score where sc.course_id = course_id order by score desc limit 3,1) as '第三名'
+			
+		from score as sc
+	  group by course_id
+
+三十二 查询每门课程没选修的学生数
+
+select cname,counts from course inner join (
+    select course_id,count(student_id) as counts from score group by course_id) as t2
+on course_id = course.cid
+
+三十三 查询选修了2门以上课程的全部学生的学号和姓名
+思路： 先筛选出选了2门课程以上的学生ID再进行连表
+select sid,sname from student inner join (
+     select student_id from score  group by student_id having count(student_id) > 2) t2
+on sid = student_id
+
+三十四 查询男生和女生人数，按倒序排列
+
+select gender, count(gender)as counts from student group by gender order by counts desc
+
+三十五 查询姓张的学生名单
+
+select * from student where sname like '张%'
+
+三十六 查询同名同姓学生名单并统计人数
+思路： 以姓名分组 统计出姓名相同大于等于2的
+select sname,count(1) from student group by sname having count(sname) >= 2
+
+三十七 查询每门课的平均成绩排序
+
+SELECT
+	course_id,
+	avg(score) as av_score
+FROM
+	score
+GROUP BY
+	course_id
+order BY
+	av_score, course_id asc
+	
+三十八 查询课程名称为数学且分数低于60的学生姓名和学号
+
+select sid,sname from student inner join (
+ select student_id from score where course_id = (  
+    select cid from course where cname = '数学') and score < 60 ) as t2
+on sid = student_id
+
+三十九 查询课程编号为3且课程成绩在80分以上的学生的学号和姓名
+
+select sid,sname from student inner join (
+ select student_id from score where course_id = 3 and score > 80 ) as t2
+on sid = student_id
+
+四十 求选修了课程的学生人数
+思路： 以学生分组找到大于等于1的再进行count
+select count(stu) from ( 
+  select count(student_id) as stu from score group by student_id having count(student_id) >= 1) as t2
+  
+四十一 查询选修王五老师所教授的学生中成绩最高和最低的学生姓名和成绩
+思路： 类似第五题
+select student.sid,sname,score from score inner join student on student_id = student.sid where score =
+		(select score from score where course_id in (select cid  from course where teacher_id = (select tid from teacher where tname = '王五')) order by score limit 1)
+		or
+		score = 
+		(select score from score where course_id in (select cid  from course where teacher_id = (select tid from teacher where tname = '王五')) order by score desc limit 1)
+
+四十二 查询各个课程相应的选修人数		
+
+SELECT
+	course_id,
+	cname,
+	count(student_id)
+FROM
+	score
+INNER JOIN course ON course_id = course.cid
+GROUP BY
+	course_id,
+	cname
+	
+四十三 查询不同课程但成绩相同的学生的学号，课程号，学生成绩
+
+select DISTINCT t1.course_id,t2.course_id,t1.score,t2.score from score as t1,score as t2
+	where t1.score = t2.score and t1.course_id != t2.course_id 
+	
+四十四 查询每门课程成绩最好的前两名学生的id和姓名
+
+	select course_id,
+					 (select score from score as s2 where s1.course_id = s2.course_id order by score desc limit 0,1) as '第一',
+					 (select score from score as s2 where s1.course_id = s2.course_id order by score desc limit 1,1) as '第二'
+		from 
+			 score as s1
+	group by course_id
+
+四十五 检索至少选修两门课程的学生学号
+
+select student_id,count(student_id) from score group by student_id having count(course_id) >= 2
+
+四十六 查询没有学生选修的课程到的课程号和课程名
+
+思路：先找出所有有选修的课程id，然后再查course表找不包含这些id的课程
+select cid,cname from course where not cid in (
+   select course_id from score group by course_id )
+
+四十七 查询没有带过任何班级的老师id和姓名
+
+思路同上
+
+select tid,tname from teacher where tid not in ( 
+    select tid from teach2cls group by tid)
+	
+四十八 查询有两门以上课程超过80分的学生id及平均成绩
+
+select student_id,avg(score) from score where score > 80 group by student_id having count(student_id) > 2
+
+四十九 线索课程3分数小于60，按分数降序排列同学学号
+
+select student_id,score from score where course_id = 3 and score < 60 order by student_id desc
+
+五十 删除编号为2的同学的1课程的成绩
+
+delete from score where student_id = 2 and course_id =1
+
+五十一 查询同时选修了物理课和生物课的学生id和姓名
+
+select sid,sname from student inner join (	 
+    select student_id from score where course_id in (
+			select cid from course where cname = '生物' or cname = '物理')
+		group by student_id having count(student_id) >2 ) as t2
+on sid = student_id 
+	

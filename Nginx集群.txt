@@ -1,0 +1,347 @@
+一 什么是集群
+
+计算机集群简称集群，是一种计算机系统， 它通过一组松散集成的计算机软件或硬件连接起来高度紧密地协作完成计算工作。在某种意义上，他们可以被看作是一台计算机
+
+组成要素：
+
+	* VIP: 1个IP地址
+	* 分发器: nginx
+	* 数据服务器： Web服务器
+	
+二 Nginx集群
+
+在该集群中Nginx扮演的角色是： 分发器
+任务：接受请求、分发请求、响应请求
+功能模块: 
+	* ngx_http_upstream_module 基于应用层分发模块
+	* ngx_stream_core_module 基于传输层分发模块 （1.9开始提供）
+
+Nginx集群其实是：虚拟主机+反向代理+upstream分发模块组成的
+	* 虚拟主机：接受和响应请求
+	* 反向代理: 带用户去数据服务器拿数据
+	* upstream: 告诉Nginx去哪个数据服务器拿数据
+	
+数据走向：
+
+	* 虚拟主机接受用户请求
+	* 虚拟主机去找反向代理
+	* 反向代理让去找upstream
+	* upstream告诉一个数据服务器IP
+	* Nginx去找数据服务器 并发起用户的请求
+	* 数据服务器接受请求并处理请求
+	* 数据服务器响应请求给Nginx
+	* Nginx响应请求给用户
+
+三 配置Nginx集群
+	
+  主机名 				IP 					角色
+Master.ayitula.com   192.168.10.40 		  主分发器
+Backup.ayitula.com   192.168.10.41        备分发器
+Web01.ayitula.com    192.168.10.42        数据服务器1
+Web02.ayitula.com 	 192.168.10.43        数据服务器2
+
+
+#web02
+[root@web02 ~]# sh nginx_install
+[root@web02 ~]# echo web02 > /usr/local/nginx/html/index.html
+[root@web02 ~]# yum -y install elinks &>/dev/null
+[root@web02 ~]# /usr/local/nginx/sbin/nginx
+[root@web02 ~]# elinks http://localhost -dump
+
+Syntax: upstream name { ... }
+Default: —
+Context: http
+
+#upstream 模块
+upstream web {
+	server 192.168.10.42;
+	server 192.168.10.43;
+}
+server {
+ listen 80;
+ server_name localhost;
+ location / {
+	proxy_pass http://web;   # 找upstream的名字(此处为web)
+ }
+ error_page 500 502 503 504 /50x.html;
+ location = /50x.html {
+	root html;
+	}
+ }
+
+
+测试：
+	[root@web02 ~]# elinks http://192.168.10.40 -dump
+	 web01
+	[root@web02 ~]# elinks http://192.168.10.40 -dump
+	 web02
+	[root@web02 ~]# elinks http://192.168.10.40 -dump
+	 web01
+	[root@web02 ~]# elinks http://192.168.10.40 -dump
+	 web02
+
+四 Nginx集群分发算法
+	Nginx默认算法     
+		upstream module
+		nginx的upstream目前支持4种方式的分配
+		1、轮询（默认）
+			每个请求按时间顺序逐一分配到不同的后端服务器，如果后端服务器down掉，能自动剔除。
+		2、weight
+			指定轮询机率，weight和访问机率成正比，用于后端服务器性能不均的情况。
+		3、ip_hash
+			每个请求按访问ip的hash结果分配，这样每个访客固定访问一个后端服务器，可以解决session的问题。
+		4、fair（第三方）
+			按后端服务器的响应时间来分配请求，响应时间短的优先分配。
+		5、url_hash（第三方）
+			按访问url的hash结果来分配请求，使每个url定向到同一个后端服务器，后端服务器为缓存时比较有效。
+	
+	Nginx服务器状态
+		每个设备的状态设置为:
+		1.down 表示单前的server暂时不参与负载
+		2.weight 默认为1.weight越大，负载的权重就越大。
+		3.max_fails ：允许请求失败的次数默认为1.当超过最大次数时，返回proxy_next_upstream 模块定义的错误
+		4.fail_timeout: 失败超时时间，在连接Server时，如果在超时时间之内超过max_fails指定的失败次数，会认为在fail_timeout时间内Server不可用。默认为10s。
+		5.backup： 其它所有的非backup机器down或者忙的时候，请求backup机器。所以这台机器压力会最轻
+
+五 部署Nginx分发
+	1 轮询分发
+		upstream web {
+			server 192.168.10.42;
+			server 192.168.10.43; 
+		}
+		server {
+			listen 80;
+			server_name localhost;
+			location / {
+				proxy_pass http://web;
+			}
+		}
+		
+	2 基于权重分发
+		upstream web {
+			server 192.168.10.42 weight=1;
+			server 192.168.10.43 weight=2; 
+		}
+		server {
+			listen 80;
+			server_name localhost;
+			location / {
+				proxy_pass http://web;
+			}
+		}
+		
+	3 ip_hash
+		ip_hash算法能够保证来自同样源地址的请求，都分发到同一台主机
+		upstream web {
+			ip_hash;
+			server 192.168.10.42;
+			server 192.168.10.43;
+			}
+		server {
+			listen 80;
+			server_name localhost;
+			location / {
+				proxy_pass http://web;
+			}
+		}
+	4 基于host分发
+		http ｛
+			upstream web1 {
+				server 192.168.10.42;
+			}
+			upstream web2 {
+				server 192.168.10.43;
+			}
+		server {
+			listen 80;
+			server_name www.web1.com;
+			location / {
+				proxy_pass http://web1;
+			}
+		}
+		server {
+			listen 80;
+			server_name www.web2.com;
+			location / {
+				proxy_pass http://web2;
+			}
+		}
+		｝
+		
+	5 基于开发语言分发
+		http { 
+			upstream php { 
+				server 192.168.10.42;	 
+			}
+			upstream html {	 
+				server 192.168.10.43; 
+			} 
+			
+			server { 
+				location ~* \.php$ {
+					proxy_pass http://php;
+				}
+			}
+
+			location ~* \.html$ {
+				 proxy_pass http://html;
+
+			}
+		}
+	
+	6 基于浏览器分发
+	
+		upstream elinks { server 192.168.10.42; }
+		upstream chrome { server 192.168.10.43; }
+		upstream any { server 192.168.10.42:81; }
+		server {
+			listen 80;
+			server_name www.web1.com;
+		 
+			location / {
+				proxy_pass http://any;
+				 
+				if ( $http_user_agent ~* Elinks ) {
+					proxy_pass http://elinks;
+				}
+		 
+				if ( $http_user_agent ~* chrome ) {
+					proxy_pass http://chrome;
+				}
+			}
+		}
+		
+	7 基于源IP分发
+	
+		upstream bj.server {
+			server 192.168.10.42;
+		}
+		upstream sh.server {
+			server 192.168.10.43;
+		}
+		upstream default.server {
+			server 192.168.10.42:81;
+		}
+		# geo是nginx中的一个模块负责做ip匹配
+		geo $geo {
+			default default;
+			192.168.10.241/32 bj;
+			192.168.10.242/32 sh;
+		}
+		location / {
+			proxy_pass http://$geo.server$request_uri;
+		}
+		
+六 构建高可用集群
+	1 keepalived
+		Keepalived的作用是检测服务器的状态，如果有一台web服务器宕机，或工作出现故障，Keepalived将检测到，并将有故障的服务器从系统中剔除，同时使用其他服务器代
+		替该服务器的工作，当服务器工作正常后Keepalived自动将服务器加入到服务器群中，这些工作全部自动完成，不需要人工干涉，需要人工做的只是修复故障的服务器。
+	2 keepalived的安装脚本
+		#cat keepalived_install.sh
+		#!/bin/bash
+		pkg=keepalived-2.0.8.tar.gz
+		tar xf $pkg
+		yum -y install kernel-devel
+		ln -s /usr/src/kernels/3.10.0-862.14.4.el7.x86_64/ /usr/src/linux
+		cd keepalived-2.0.8/
+		yum install openssl-* -y
+		./configure --prefix=/usr/local/keepalived
+		make
+		make install
+		mkdir -pv /etc/keepalived
+		cp /usr/local/keepalived/etc/keepalived/keepalived.conf /etc/keepalived/
+		ln -s /usr/local/keepalived/sbin/keepalived /sbin/
+	3 配置Nginx集群
+		upstream web {
+			server 192.168.10.42 max_fails=2 fail_timeout=3;
+			server 192.168.10.43 max_fails=2 fail_timeout=3；
+			}
+		server {
+			listen 80;
+			server_name localhost;
+			location / {
+				proxy_pass http://web;
+			}
+		}
+	
+	4 配置keepalived
+		#cat /etc/keepalived/keepalived.conf
+		! Configuration File for keepalived
+		global_defs {
+			router_id NGINX_DEVEL
+		}
+		vrrp_script check_nginx {
+			script "/etc/keepalived/nginx_pid.sh"
+			interval 2
+			fall 1
+		}
+		vrrp_instance nginx {
+			state MASTER
+			interface ens33
+			mcast_src_ip 192.168.10.40
+			virtual_router_id 51
+			priority 100
+			advert_int 1
+			authentication {
+				auth_type PASS
+				auth_pass 1111
+			}
+		track_script {
+			check_nginx
+		}
+		virtual_ipaddress {
+			192.168.10.213/24
+			}
+		}
+		
+	5 关联脚本nginx_pid.sh
+		#chmod 755 /etc/keepalived/nginx_pid.sh
+		#cat /etc/keepalived/nginx_pid.sh
+		#!/bin/bash
+		nginx_kp_check () {
+			nginxpid=`ps -C nginx --no-header |wc -l`
+			if [ $nginxpid -eq 0 ];then
+				/usr/local/nginx/sbin/nginx
+				sleep 1
+				nginxpid=`ps -C nginx --no-header |wc -l`
+				if [ $nginxpid -eq 0 ];then 
+					systemctl stop keepalived
+				fi
+			fi
+		}
+		nginx_kp_check 
+		
+	6 启动keepalived
+		systemctl start keepalived
+		
+	7 配置备份Nginx分发器
+		backuo.ayitula.com
+		#cat /etc/keepalived/keepalived.conf
+		! Configuration File for keepalived
+		global_defs {
+			router_id NGINX_DEVEL
+		}
+		
+		vrrp_script check_nginx {
+			script "/etc/keepalived/nginx_pid.sh"
+			interval 2
+			fall 1
+		}
+		vrrp_instance nginx {
+			state BACKUP
+			interface ens33
+			mcast_src_ip 192.168.10.41
+			virtual_router_id 51
+			priority 90
+			advert_int 1
+			authentication {
+				auth_type PASS
+				auth_pass 1111
+			}
+			track_script {
+				check_nginx
+			}
+			virtual_ipaddress {
+				192.168.10.213/24
+			}
+		}

@@ -1,0 +1,12 @@
+Djang启动时，且在读取项目中路由之前执行某个py文件
+在任意app的apps.py中的Config类中定义ready方法，并调用autodiscover_modules
+
+from django.apps import AppConfig
+from djngo.utils.module_loading import autodiscover_modules
+
+class StarkConfig(AppConfig)
+	name = 'stark'
+	def read(self)
+		autodiscover_modules('stark')
+	
+	程序启动时,会先去每个app中找stark.py并加载

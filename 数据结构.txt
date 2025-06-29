@@ -1,0 +1,756 @@
+一 什么是数据结构
+数据结构是指相互之间存在着一种或多种关系的数据元素的集合和该集合中数据元素之间的关系组成。
+简单来说,数据结构就是设计数据以何种方式组织并存储在计算机中。
+比如：列表，集合与字典等都是一种数据结构
+
+二 栈
+ 栈是一个数据集合，可以理解为只能在一段进行插入或删除操作的列表
+ 栈的特点：后进先出
+ 栈的概念：栈顶，栈底
+ 栈的操作：
+	进栈(压栈)：push
+	出栈：pop
+	取栈顶：gettop
+ 使用一般的列表结构可实现栈
+	进栈： li.append
+	出栈： li.pop
+	取栈顶: li[-1]
+ 实现代码：
+	class stack：
+		def __init__(self):
+			self.stack = []
+			
+		def push(self, element):
+			self.stack.append(element)
+		
+		def pop(self):
+			return self.stack.pop()
+		
+		def get_top(self):
+			if len(self.stack) > 0:
+				return self.stack[-1]
+			else:
+				return None
+		def is_empty:
+			return len(self.stack) == 0
+		
+ 栈的应用示例 --- 括号匹配问题
+	括号匹配问题： 给一个字符串,其中包括小括号，中括号，大括号，求该字符串中的括号是否匹配
+	例如：
+		()()[]{}       匹配
+		([{()}])       匹配
+	    [](			   不匹配
+		[(])		   不匹配
+	
+	def brace_match(s)：
+		match = {'}':'{', ']':'[', ')':'('}
+		stack = Stack()
+		for ch in s：
+			if ch in {'(', '[', '{' }:
+				Stack.push(ch)
+			else:
+				if stack.is_empty():
+					return False
+				elif stack.get_top() == match[ch]:
+					stack.pop()
+				else： # stack.get_top() != match[ch]
+					return False
+					
+三 队列
+
+栈和队列的应用----- 迷宫问题
+
+给一个二维列表, 表示迷宫(0表示通道，1表示围墙)。给出算法，求一条走出迷宫的路径
+
+1 栈实现回溯法
+	思路：从一个节点开始，任意找下一个能走的点，当找不到能走的点时，退回上一个点寻找是否有其他方向的点
+	使用栈存储当前路径
+	maze = [
+			[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+			[1, 0, 0, 1, 0, 0, 0, 1, 0, 1],
+			[1, 0, 0, 1, 0, 0, 0, 1, 0, 1],
+			[1, 0, 0, 0, 0, 1, 1, 0, 0, 1],
+			[1, 0, 1, 1, 1, 0, 0, 0, 0, 1],
+			[1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+			[1, 0, 1, 0, 0, 0, 1, 0, 0, 1],
+			[1, 0, 1, 1, 1, 0, 1, 1, 0, 1],
+			[1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+			[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+		]
+
+		dirs = [
+			lambda x, y: (x + 1, y),
+			lambda x, y: (x - 1, y),
+			lambda x, y: (x, y - 1),
+			lambda x, y: (x, y + 1)
+		]
+
+
+		def maze_path(x1, y1, x2, y2):
+			stack = []
+			stack.append((x1, y1))
+			while (len(stack) > 0):
+				curNode = stack[-1]  # 当前位置
+				if curNode[0] == x2 and curNode[1] == y2:
+					# 走到终点了：
+					for p in stack:
+						print(p)
+					return True
+				# 四个方向坐标 上x-1,y; 下x+1,y;  左:x, y-1; 右 x,y+1
+				for dir in dirs:
+					nextNode = dir(curNode[0], curNode[1])  # 下一个节点
+					# 如果下一个节点能走
+					if maze[nextNode[0]][nextNode[1]] == 0:
+						stack.append(nextNode)
+						maze[nextNode[0]][nextNode[1]] = 2  # 2表示这个玩位置已经走过
+						break
+				else:
+					maze[nextNode[0]][nextNode[1]] = 2
+					stack.pop()
+			else:
+				print('没有出路')
+				return False
+		maze_path(1,1,8,8)
+		
+2  队列实现广度搜索
+	思路：
+		从一个节点开始，寻找所有接下来能继续走的点，继续不断寻找,直到找到出口
+		使用队列存储当前正在考虑的节点
+		
+		maze = [
+			[1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+			[1, 0, 0, 1, 0, 0, 0, 1, 0, 1],
+			[1, 0, 0, 1, 0, 0, 0, 1, 0, 1],
+			[1, 0, 0, 0, 0, 1, 1, 0, 0, 1],
+			[1, 0, 1, 1, 1, 0, 0, 0, 0, 1],
+			[1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+			[1, 0, 1, 0, 0, 0, 1, 0, 0, 1],
+			[1, 0, 1, 1, 1, 0, 1, 1, 0, 1],
+			[1, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+			[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+		]
+
+		dirs = [
+			lambda x, y: (x + 1, y),
+			lambda x, y: (x - 1, y),
+			lambda x, y: (x, y - 1),
+			lambda x, y: (x, y + 1)
+		]
+
+		from collections import deque
+
+
+		def print_r(path):
+			real_path = []
+			i = len(path) - 1
+			while i >= 0:
+				real_path.append(path[i][0:2])
+				i = path[i][2]
+			real_path.reverse()
+			for node in real_path:
+				print(node)
+
+		def maze_path_queue(x1, y1, x2, y2):
+			queue = deque()
+			path = []
+			queue.append((x1, y1, -1))
+			while len(queue) > 0:  # 当队列不空时循环
+				cur_node = queue.popleft()
+				path.append(cur_node)
+				if cur_node[0] == x2 and cur_node[1] == y2:
+					# 到达终点
+					print_r(path)
+					return True
+				for dir in dirs:
+					next_node = dir(cur_node[0], cur_node[1])
+					if maze[next_node[0]][next_node[1]] == 0:
+						queue.append((next_node[0], next_node[1], len(path) - 1))
+						maze[next_node[0]][next_node[1]] = 2
+			return False
+
+		maze_path_queue(1,1,8,8)
+		
+四 链表
+	链表是由一系列节点组成的元素集合。每个节点包含两部分，数据域item和指向一下个节点的指针next。通过节点之间相互连接，最终串联成一个链表
+	class Node:
+		def __init__(self, item):
+			self.item = item
+			self.next = None
+
+	a = Node(1)
+	b = Node(2)
+	c = Node(3)
+
+	a.next = b
+	b.next = c
+
+	print(a.next.next.item)
+	
+	头插法：
+		class Node:
+			def __init__(self, item):
+				self.item = item
+				self.next = None
+
+
+		def create_linklist(li):
+			head = Node(li[0])
+			for element in li[1:]:
+				node = Node(element)
+				node.next = head
+				head = node
+			return head
+		lk = create_linklist([1,2,3])
+
+		print(lk.item)
+		def print_linklist(lk):
+			while lk:
+				print(lk.item, end=',')
+				lk = lk.next
+
+		print_linklist(lk)
+	
+	2 双链表
+	双链表的每个节点有两个指针：一个指向后一个节点,另一个指向前一个节点。
+	class Node(object):
+		def __init__(self, item=None):
+			self.item = item
+			self.next = None
+			self.prior = None
+	
+	双链表的插入：
+		p.next = curNode.next
+		curNode.next.prior = p
+		p.prior = curNode
+		curNode.next = p
+		
+	双列表删除：
+		p = curNode.next
+		curNode.next = p.next
+		p.next.prior = curNode
+		del p
+	
+五 哈希表
+	哈希表是一个通过哈希函数来计算数据存储位置的数据结构，通常支持如下操作：
+		insert(key, value):插入键值对(key,value)
+		get(key): 如果存在键为key的键值对则返回其value, 否则返回空值
+		delete(key): 删除键为key的键值对
+	哈希：
+		直接寻址表： key为k的元素放到k位置上
+		改进直接寻址表： 哈希表
+			构建大小为m的寻址表T
+			key为k的元素放到h(k)位置上
+			h(k)是一个函数, 其将域U映射到表T[0,1,...,m-1]
+			
+	哈希表的应用---集合和字典
+	字典与集合都是通过哈希表来实现的
+	a = {'name':'Alex', 'age':18, 'gender':'Man'}
+	使用哈希表存储字典, 通过哈希函数将字典映射为下标。假设h('name') =3， h('age')=1, h('gender')=4, 则哈希表存储为[None, 18,None, 'Alex', 'Man']
+	如果发生哈希冲突,则通过拉链法或开发寻址方法解决
+	
+	class LinkList:
+		class Node:
+			def __init__(self, item=None):
+				self.item = item
+				self.next = None
+
+		class LinkListIterator:
+			def __init__(self, node):
+				self.node = node
+
+			def __next__(self):
+				if self.node:
+					cur_node = self.node
+					self.node = cur_node.next
+					return cur_node.item
+				else:
+					raise StopIteration
+
+			def __iter__(self):
+				return self
+
+		def __init__(self, iterable=None):
+			self.head = None
+			self.tail = None
+			if iterable:
+				self.extend(iterable)
+
+		def append(self, obj):
+			s = LinkList.Node(obj)
+			if not self.head:
+				self.head = s
+				self.tail = s
+			else:
+				self.tail.next = s
+				self.tail = s
+
+		def extend(self, iterable):
+			for obj in iterable:
+				self.append(obj)
+
+		def find(self, obj):
+			for n in self:
+				if n == obj:
+					return True
+			else:
+				return False
+
+		def __iter__(self):
+			return self.LinkListIterator(self.head)
+
+		def __repr__(self):
+			return "<<"+", ".join(map(str, self))+">>"
+
+
+	# 类似于集合的结构
+	class HashTable:
+		def __init__(self, size=101):
+			self.size = size
+			self.T = [LinkList() for i in range(self.size)]
+
+		def h(self, k):
+			return k % self.size
+
+		def insert(self, k):
+			i = self.h(k)
+			if self.find(k):
+				print("Duplicated Insert.")
+			else:
+				self.T[i].append(k)
+
+		def find(self, k):
+			i = self.h(k)
+			return self.T[i].find(k)
+	
+六 树与二叉树
+	1 树的概念
+		数是一种数据结构   比如：目录结构
+		数是一种可以递归定义的数据机构
+		数是由n个节点组成的集合：
+			如果n=0, 这是一棵空树；
+			如果n>0, 那存在1个节点作为数的根节点,其他节点可以分为m个集合,每个集合本身又是一棵树
+	
+		树模拟文件系统：
+			class Node:
+				def __init__(self, name, type='dir'):
+					self.name = name
+					self.type = type  # "dir" or "file"
+					self.children = []
+					self.parent = None
+
+				def __repr__(self):
+					return self.name
+
+			class FileSystemTree:
+				def __init__(self):
+					self.root = Node("/")
+					self.now = self.root    # 当前目录
+
+				def mkdir(self, name):
+					# name已/结尾的文件夹
+					if name[-1] != "/":
+						name += "/"
+					node = Node(name)
+					self.now.children.append(node)
+					node.parent = self.now
+
+				def ls(self):
+					return self.now.children
+
+				def cd(self, name):
+					if name[-1] != "/":
+						name += "/"
+					if name == "../":
+						self.now = self.now.parent
+						return
+					for child in self.now.children:
+						if child.name == name:
+							self.now = child
+							return
+					raise ValueError("invalid dir")
+
+			tree = FileSystemTree()
+			tree.mkdir("var/")
+			tree.mkdir("bin/")
+			tree.mkdir("usr/")
+			print(tree.root.children)
+			print(tree.ls())
+			tree.cd('bin/')
+			tree.mkdir('python/')
+			print(tree.ls())
+			tree.cd("../")
+			print(tree.ls())
+	2 二叉树
+		二叉树的链式存储： 将二叉树的节点定义为一个对象，节点之间通过类似链表的链接方式来连接
+		节点定义：
+			class BiTreeNode:
+				def __init__(self, data):
+					self.data = data
+					self.lchild = None
+					self.rchild = None
+		
+		
+		二叉树的遍历方式：
+			前序遍历： EACBDGF
+			中序遍历： ABCDEGF
+			后序遍历： BDCAFGE
+			层次遍历： EAGCFBD
+			
+			# 层次遍历队列实现
+			from collections import deque
+
+			def level_order(root):
+				queue = deque()
+				queue.append(root)
+				while len(queue) > 0: # 只要栈不空
+					node = queue.popleft()
+					print(node.data, end=',')
+					if node.lchild:
+						queue.append(node.lchild)
+					if node.rchild:
+						queue.append(node.rchild)
+						
+	3 二叉搜索树
+		二叉搜索树是一棵二叉树且满足性质：设X是二叉树的一个节点。如果y是x左子树的一个节点，那么y.key <= x.key;
+		如果y是x右子树的一个节点，那么y.key >= x.key。
+		二叉搜索树的操作：查询 插入 删除
+		
+		class BiTreeNode:
+			def __init__(self, data):
+				self.data = data
+				self.lchild = None
+				self.rchild = None
+				self.parent = None
+
+
+		class BST:
+			def __init__(self, li=None):
+				self.root = None
+				if li:
+					for val in li:
+						self.insert_no_rec(val)
+
+			def insert(self, node, val):
+				if not node:
+					node = BiTreeNode(val)
+				elif val < node.data:
+					node.lchild = self.insert(node.lchild, val)
+					node.lchild.parent = node
+				elif val > node.data:
+					node.rchild = self.insert(node.rchild, val)
+					node.rchild.parent = node
+				return node
+
+			def insert_no_rec(self, val):
+				'''
+				非递归插入
+				:param val:
+				:return:
+				'''
+				p = self.root
+				if not p:  # 空树
+					self.root = BiTreeNode(val)
+					return
+				while True:
+					if val < p.data:
+						if p.lchild:
+							p = p.lchild
+						else:  # 左子树不存在直接插入
+							p.lchild = BiTreeNode(val)
+							p.lchild.parent = p
+					elif val > p.data:
+						if p.rchild:
+							p = p.rchild
+						else:
+							p.rchild = BiTreeNode(val)
+							p.rchild.parent = p
+					else:
+						return
+
+			def query(self, node, val):
+				if not node:
+					return None
+				if node.data < val:
+					return self.query(node.rchild, val)
+				elif node.data > val:
+					return self.query(node.lchild, val)
+				else:
+					return node
+
+			def query_no_rec(self, val):
+				p = self.root
+				while p:
+					if p.data < val:
+						p = p.rchild
+					elif p.data > val:
+						p = p.lchild
+					else:
+						return p
+				return None
+
+			def pre_order(self, root):
+				if root:
+					print(root.data, end=",")
+					self.pre_order(root.lchild)
+					self.pre_order(root.rchild)
+
+			def in_order(self, root):
+				if root:
+					self.in_order(root.lchild)
+					print(root.data, end=',')
+					self.in_order(root.rchild)
+
+			def post_order(self, root):
+				if root:
+					self.post_order(root.lchild)
+					self.post_order(root.rchild)
+					print(root.data, end=',')
+
+			def __remove_node_1(self, node):
+				# 情况1: node是叶子节点
+				if not node.parent:
+					self.root = None
+				if node == node.parent.lchild:  # node是它父亲的左孩子
+					node.parent.lchild = None
+				else:  # 右孩子
+					node.parent.rchild = None
+
+			def __remove_node_21(self, node):
+				# 情况2: node只有一个左孩子
+				if not node.parent:  # 根节点
+					self.root = node.lchild
+					node.lchild.parent = None
+				elif node == node.parent.lchild:
+					node.parent.lchild = node.lchild
+					node.lchild.parent = node.parent
+				else:
+					node.parent.rchild = node.lchild
+					node.lchild.parent = node.parent
+
+			def __remove_node_22(self, node):
+				# 情况2.2： node只有一个右孩子
+				if not node.parent:
+					self.root = node.rchild
+				elif node == node.parent.lchild:
+					node.parent.lchild = node.rchild
+					node.rchild.parent = node.parent
+				else:
+					node.parent.rchild = node.rchild
+					node.rchild.parent = node.parent
+
+			def delete(self, val):
+				if self.root:  # 不是空树
+					node = self.query_no_rec(val)
+					if not node:  # 要删除的节点不存在
+						return False
+					if not node.lchild and not node.rchild:
+						self.__remove_node_1(node)
+					elif not node.rchild:  # 只有一个左孩子
+						self.__remove_node_21(node)
+					elif not node.lchild:  # 只有一个右孩子
+						self.__remove_node_22(node)
+					else:  # 两个孩子都有
+						min_mode = node.rchild  # 找右子树最小的节点
+						while min_mode.lchild:
+							min_mode = min_mode.lchild
+						node.data = min_mode.data
+						# 删除min_node
+						if min_mode.rchild:
+							self.__remove_node_22(min_mode)
+						else:
+							self.__remove_node_1(min_mode)
+							
+			import random
+
+			li = list(range(0, 500, 2))
+			random.shuffle(li)
+			tree = BST([1,4,2,5,3,8,6,9,7])
+			tree.in_order(tree.root)
+			print("")
+
+			tree.delete(4)
+			tree.delete(1)
+			tree.in_order(tree.root)
+			
+	4 AVL树
+		AVL树是一棵自平衡的二叉搜索树
+		AVL树具有以下性质：
+			根的左右子树的高度只差的绝对值不能超过1
+			根的左右子树都是平衡二叉树
+		
+		AVL树的插入
+			插入一个节点可能会破坏AVL树的平衡, 可以通过旋转操作来进行修正
+			插入一个节点后,只有从插入节点到根节点的路径上的节点的平衡可能被改变。我们需要找出第一个破坏了平衡条件的节点,称之为K。K的两颗子树高度相差2
+			不平衡的出可能有4种情况
+				* 不平衡是由于对k的右孩子的右子树插入导致的：左旋
+				* 不平衡是由于对k的左孩子的左子树插入导致的：右旋
+				* 不平衡是由于对k的右孩子的左子树插入导致的：右旋-左旋
+				* 不平衡是由于对k的左孩子的右子树插入导致的：左旋-右旋
+				
+			插入代码：
+				class AVLNode(BiTreeNode):
+					def __init__(self, data):
+						BiTreeNode.__init__(self, data)
+						self.bf = 0
+
+
+				class AVLTree(BST):
+					def __init__(self, li=None):
+						BST.__init__(self, li)
+
+					def rotate_left(self, p, c):
+						s2 = c.lchild
+						p.rchild = s2
+						if s2:
+							s2.parent = p
+						c.lchild = p
+						p.parent = c
+						p.bf = 0
+						c.bf = 0
+						return c
+
+					def rotate_right(self, p, c):
+						s2 = c.rchild
+						p.lchild = s2
+						if s2:
+							s2.parent = p
+						c.rchild = p
+						p.parent = c
+						p.bf = 0
+						c.bf = 0
+						return c
+
+					def rotate_right_left(self, p, c):
+						g = c.lchild
+						s3 = g.rchild
+						c.lchild = s3
+						if s3:
+							s3.parent = c
+						g.rchild = c
+						c.parent = g
+
+						s2 = g.lchild
+						p.rchild = s2
+						if s2:
+							s2.parent = p
+						g.lchild = p
+						p.parent = g
+
+						# 更新bf
+						if g.bf > 0:
+							p.bf = -1
+							c.bf = 0
+						elif g.bf < 0:
+							p.bf = 0
+							c.bf = 1
+						else:  # 插入的是g
+							p.bf = 0
+							c.bf = 0
+						return g
+
+					def rotate_left_right(self, p, c):
+						g = c.rchild
+						s2 = g.lchild
+						c.rchild = s2
+						if s2:
+							s2.parent = c
+						g.lchild = c
+						c.parent = g
+
+						s3 = g.rchild
+						p.lchild = s3
+						if s3:
+							s3.parent = p
+						g.rchild = p
+						p.parent = g
+
+						# 更新bf
+						if g.bf < 0:
+							p.bf = 1
+							c.bf = 0
+						elif g.bf > 0:
+							p.bf = 0
+							c.bf = -1
+						else:
+							p.bf = 0
+							c.bf = 0
+						return g
+
+					def insert_no_rec(self, val):
+						# 1 和BST一样插入
+						p = self.root
+						if not p:  # 空树
+							self.root = AVLNode(val)
+							return
+						while True:
+							if val < p.data:
+								if p.lchild:
+									p = p.lchild
+								else:  # 左子树不存在直接插入
+									p.lchild = AVLNode(val)
+									p.lchild.parent = p
+									node = p.lchild  # node存储就是插入的节点
+									break
+							elif val > p.data:
+								if p.rchild:
+									p = p.rchild
+								else:
+									p.rchild = AVLNode(val)
+									p.rchild.parent = p
+									node = p.rchild
+									break
+							else:  # val == p.data 一颗树如果插入同样的元素 不操作
+								return
+						# 更新balance factor
+						while node.parent:  # node的parent不空
+							if node.parent.lchild == node:  # 传递是从左子树来的， 左子树更沉了
+								# 更新node.parent的bf -=1
+								if node.parent.bf < 0:  # 原来node.parent.bf == -1, 更新后变成-2
+									# 看node哪边沉
+									g = node.parent.parent  # 为了连接旋转之后的子树
+									x = node.parent # 旋转之前子树的根
+									if node.bf > 0:
+										n = self.rotate_left_right(node.parent, node)
+									else:
+										n = self.rotate_right(node.parent, node)
+								elif node.parent.bf > 0:  # 原来node.parent.bf=1 更新之后变成0
+									node.parent.bf = 0
+									break
+								else:  # 原来node.parent.bf=0 更新之后变成-1
+									node.parent.bf = -1
+									node = node.parent
+									continue
+							else:  # 传递是从右子树来的， 右子树更沉了
+								# 更新node.parent.bf += 1
+								if node.parent.bf > 0:  # 原来node.parent.bf ==1， 更新后变成2
+									# 做旋转
+									# 看node那边沉
+									g = node.parent.parent  # 为了连接旋转之后的子树
+									x = node.parent  # 旋转之前子树的根
+									if node.bf < 0:  # node.bf = 1
+										n = self.rotate_left_right(node.parent, node)
+									else:  # node.bf = -1
+										n = self.rotate_left(node.parent, node)
+
+								elif node.parent.bf < 0:  # 原来node.parent.bf = -1 更新后变成0
+									node.parent.bf = 0
+									break
+								else:  # 原来node.parent.bf =0 更新之后变成1
+									node.parent.bf = 1
+									node = node.parent
+									continue
+							# 链接旋转后的子树
+							n.parent = g
+							if g:  # g不是空
+								if x == g.lchild:
+									g.lchild = n
+								else:
+									g.rchild = n
+								break
+							else:
+								self.root = n
+								break
+				tree = AVLTree([9,8,7,6,5,4,3,2,1])
+				tree.pre_order(tree.root)
+				print("")
+				tree.in_order(tree.root)

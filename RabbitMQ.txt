@@ -1,0 +1,337 @@
+一 安装RabbitMQ
+
+Linux系统
+yum install rabbitmq-server
+
+启动服务
+service rabbitmq-server start 默认端口5672
+
+Python环境安装pika模块
+pip install pika
+
+查看当前有多少个队列并且队列中有多少消息
+rabbitmqctl list_queues
+
+
+二 一个简易的生产者消费者模型
+
+生产者：
+	import pika
+
+	connection = pika.BlockingConnection(
+		pika.ConnectionParameters('192.168.0.108')
+	)
+
+	channel = connection.channel()  # 声明一个管道
+
+	# 声明queue
+	channel.queue_declare(queue='hello queue2', durable=True)  # durable 持久化队列
+
+	channel.basic_publish(
+        exchange='',
+        routing_key='hello queue2',# queue名字
+        body='Hello World!',       # 消息内容
+        properties=pika.BasicProperties(
+            delivery_mode=2      # 使队列中的消息持久化
+        )
+	)
+	print("[x] Sent 'Hello World!'")
+	connection.close()
+
+消费者：
+	import pika
+
+	connection = pika.BlockingConnection(pika.ConnectionParameters('192.168.0.108'))
+
+	channel = connection.channel()
+
+	channel.queue_declare(queue='hello queue')
+
+
+	def callback(ch, method, properties, body):
+		print('ch', ch)     # 管道的内存对象地址
+		print('me', method)
+		print('pro', properties)
+		print('body', body)   # 消息内容
+		print("[x] Received %r" % body)
+		ch.basic_ack(delivery_tag=method.delivery_tag) # 向生产者发送确认消息
+		
+		
+	channel.basic_qos(prefetch_count=1) # 处理完当前这条信息再发送下一条消息，公平消息机制，这样就不会因为某些处理速度慢的机器一直收到消息而处理不完
+	channel.basic_consume(# 消费信息
+						  callback, # 如果收到消息，就调用CALLBACK函数来处理消息
+						  queue='hello queue',
+						  no_ack=True)
+	print('[*] Waiting for message. to exit press CTRL+C')
+
+	# 开始收消息
+	channel.start_consuming()
+
+三 消息发布与订阅
+之前的例子基本都是1对1的消息发送和接收，即消息只能发送到指定的queue里,但有些时候你想让你的消息被所有的Queue收到,类似广播的效果,这时候就要用到exchange了
+
+Exchange在定义的时候是有类型的，以决定到底哪些Queue符合条件。
+
+fanout：所有bind到此exchange的queue都可以接收消息
+direct：通过routingKey和exchage决定的那个唯一的queue可接收消息
+topic： 所有符合routingKey(此时可以说一个表达式)的routingKey所bind的queue可以接收消息
+	表达式符号说明：#代表一个或多个字符， *代表任何字符
+	例: #.a会匹配a.a, aa.a, aaa.a等
+	    *.a会匹配a.a, b.a, c.a 等
+	主：使用RoutingKey为#， Exchange Type为topic的时候相当于fanout
+
+headers： 通过headers来决定把消息发给哪些queue	
+
+1 fanout 模式：
+
+	生产者：
+		import pika
+		import sys
+
+		connection = pika.BlockingConnection(pika.ConnectionParameters(
+			host='192.168.0.108'))
+
+		channel = connection.channel()
+
+		channel.exchange_declare(exchange='logs',
+								exchange_type='fanout')
+
+		message = ''.join(sys.argv[1:]) or "info: Hello World!"
+
+		channel.basic_publish(exchange='logs',
+							  routing_key='',
+							  body=message)
+		print("[x] Sent %r" % message)
+	
+	消费者：	
+		import pika
+
+		connection = pika.BlockingConnection(pika.ConnectionParameters(host='192.168.0.108'))
+
+		chanel = connection.channel()
+
+		chanel.exchange_declare(exchange='logs',
+								exchange_type='fanout')
+
+		# 不指定queue名字， rabbit会随机分配一个名字，exclusive=True会在使用此queue的消费者断开后，自动将queue删除
+		result = chanel.queue_declare(exclusive=True)
+
+		# 拿到随机的queue名字
+		queue_name = result.method.queue
+		print(queue_name)
+
+		chanel.queue_bind(exchange='logs',
+						  queue=queue_name)
+
+
+		def callback(ch,method, properties,body):
+			print(body)
+
+		chanel.basic_consume(
+				callback,
+				queue=queue_name,
+				no_ack=True
+		)
+		print('[*] Waiting for message. to exit press CTRL+C')
+
+		chanel.start_consuming()
+		
+2 direct模式
+	生产者：
+		import pika
+		import sys
+
+		connection = pika.BlockingConnection(pika.ConnectionParameters(host='192.168.0.108'))
+
+		chanel = connection.channel()
+
+		chanel.exchange_declare(exchange='direct_logs',
+								exchange_type='direct')
+
+		severity = sys.argv[1] if len(sys.argv) > 1 else 'info'
+		message = ' '.join(sys.argv[2:]) or 'Hello World'
+
+		chanel.basic_publish(
+				exchange='direct_logs',
+				routing_key=severity,
+				body=message
+		)
+		print("[x] Sent %r:%r" % (severity, message))
+		connection.close()
+		
+	消费者：
+		import pika
+		import sys
+		connection = pika.BlockingConnection(pika.ConnectionParameters(host='192.168.0.108'))
+
+		chanel = connection.channel()
+
+		chanel.exchange_declare(exchange='logs',
+								exchange_type='fanout')
+
+		result = chanel.queue_declare(exclusive=True)
+		queue_name = result.method.queue
+
+		severities = sys.argv[1:]
+		if not severities:
+			sys.stderr.write("Usage:%s [info] [warning] [error]\n" % sys.argv[0])
+			sys.exit(1)
+
+		for severity in severities:
+			chanel.queue_bind(exchange='direct_logs',
+							  queue=queue_name,
+							  routing_key=severity)
+
+
+		def callback(ch,method,properties, body):
+			print("[x] %r:%r" % (method.routing_key, body))
+
+
+		chanel.basic_consume(callback,
+							 queue=queue_name,
+							 no_ack=True)
+
+		print('[*] Waiting for message. to exit press CTRL+C')
+		chanel.start_consuming()
+		
+3 topic模式
+	生产者：
+		import pika
+		import sys
+
+		connection = pika.BlockingConnection(pika.ConnectionParameters(host='192.168.0.108'))
+
+		channel = connection.channel()
+
+		channel.exchange_declare(exchange='topic_logs',
+								 exchange_type='topic')
+
+		routing_key = sys.argv[1] if len(sys.argv) > 1 else 'anonymous.info'
+		message = ' '.join(sys.argv[2:]) or 'Hello World'
+
+		channel.basic_publish(exchange='topic_logs' ,
+							  routing_key=routing_key,
+							  body=message)
+
+		print("[x] sent %r:%r " % (routing_key, message))
+		connection.close()
+	消费者：
+		import pika
+		import sys
+
+		connection = pika.BlockingConnection(pika.ConnectionParameters(host='192.168.0.108'))
+
+		chanel = connection.channel()
+
+		chanel.exchange_declare(exchange='topic_logs',
+								 exchange_type='topic')
+
+
+		result = chanel.queue_declare(exclusive=True)
+		queue_name = result.method.queue
+
+		binding_keys = sys.argv[1:]
+		if not binding_keys:
+			sys.stderr.write("Usage:%s [binding_keys]\n" % sys.argv[0])
+			sys.exit(1)
+
+		for severity in binding_keys:
+			chanel.queue_bind(exchange='topic_logs',
+							  queue=queue_name,
+							  routing_key=severity)
+
+							  
+
+		def callback(ch,method,properties, body):
+			print("[x] %r:%r" % (method.routing_key, body))
+
+
+		chanel.basic_consume(callback,
+							 queue=queue_name,
+							 no_ack=True)
+
+		print('[*] Waiting for message. to exit press CTRL+C')
+		chanel.start_consuming()
+		
+四 RPC
+	
+	服务器端：
+		import pika
+		import time
+
+		connection = pika.BlockingConnection(pika.ConnectionParameters(host="192.168.0.108"))
+
+		channel = connection.channel()
+
+		channel.queue_declare(queue='rpc_queue')
+
+
+		def fib(n):
+			if n == 0:
+				return 0
+			elif n == 1:
+				return 1
+			else:
+
+				return fib(n - 1) + fib(n - 2)
+
+
+		def on_request(ch, method, props, body):
+			n = int(body)
+			print("[.]fib(%s)" % n)
+			response = fib(n)
+			ch.basic_publish(exchange='',
+							  routing_key=props.reply_to,
+							  properties=pika.BasicProperties(correlation_id=props.correlation_id),
+							  body=str(response))
+			ch.basic_ack(delivery_tag=method.delivery_tag)
+
+
+		channel.basic_qos(prefetch_count=1)
+		channel.basic_consume(on_request, queue='rpc_queue')
+		
+	客户端：
+		
+		import pika
+		import uuid
+
+
+		class FibonacciRpcClient(object):
+			def __init__(self):
+				self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='192.168.0.108'))
+				self.channel = self.connection.channel()
+				result = self.channel.queue_declare(exclusive=True)
+				self.callback_queue = result.method.queue
+				self.channel.basic_consume(self.on_response, no_ack=True,
+										   queue=self.callback_queue)
+				self.response = None
+
+			def on_response(self, ch, method, props, body):
+				if self.corr_id == props.correlation_id:
+					self.response = body
+
+			def call(self, n):
+
+				self.corr_id = str(uuid.uuid4())
+				self.channel.basic_publish(exchange='',
+										   routing_key='rpc_queue',
+										   properties=pika.BasicProperties(
+											   reply_to=self.callback_queue,
+											   correlation_id=self.corr_id
+										   ),
+										   body=str(n)
+										   )
+
+				while self.response is None:
+
+					self.connection.process_data_events()
+				return int(self.response)
+
+
+		fibonacci_rpc = FibonacciRpcClient()
+		print("[X]Requesting fib")
+		response = fibonacci_rpc.call(30)
+		print("[.]Got %r" %response)
+
+		print("[X] Awaiting RPC request")
+		channel.start_consuming()

@@ -1,0 +1,3974 @@
+一 java常用API
+	
+	1 基本数据类型包装类
+		基本数据类型是没有面向对象的特征
+		java提供基础数据类型的包装类
+		
+		byte	—>  Byte
+		short   ->  Short
+		int	    ->  Integer
+		long    ->  Long
+		float   ->  Float
+		double  ->  Double
+		char    ->  Charater
+		boolean ->  Boolean
+		这些类再jaba.lang包
+		包装类存在的意义：
+			1. 让基本数据类型有面向对象的特征
+			2. 封装了字符串转换成基本数据类型的方法
+		类型转换：
+			String i = "10" 
+			Integer.parseInt(i)  // 字符串转化成int唯一的方案
+			// int --> interger
+				Integer i1 = Integer.valueOf(10);
+			// integer ---> int
+				int i2 = i1.intValue();
+			// String ---> Integer
+				Interger i3 = Integer.valueOf("10");
+			// Interger ---> String
+				String s1 = i3.toString();
+			// int ---> String
+				String s2 = 10 + "";
+
+	
+	2 数学类
+		System.out.println(Math.abs(-12));      // 绝对值
+        System.out.println(Math.max(1, 18));    // 最大值
+        System.out.println(Math.min(98, 90));   // 最小值
+        System.out.println(Math.pow(3,3));      // 算次方
+        System.out.println(Math.round((4.7)));  // 四舍五入
+        System.out.println(Math.sqrt(9));       // 平方根
+		
+		解一元二次方程
+			public class TestMath {
+				public static void main(String[] args) {
+					System.out.println("计算一元二次方程：");
+					Scanner sc = new Scanner(System.in);
+					System.out.println("请输入a:");
+					double a = sc.nextInt();
+
+					System.out.println("请输入b");
+					double b = sc.nextInt();
+
+					System.out.println("请输入C：");
+					double c = sc.nextInt();
+
+					double dt = Math.pow(b, 2) - 4*a*c;
+					if (dt < 0){
+						System.out.println("无解");
+					}else if (dt == 0){
+						System.out.println("此方程只有一个解");
+						double x= (-b) / (2*a);
+						System.out.println("解x="+x);
+					}else {
+						System.out.println("此方程有两个解");
+						double x1 = (-b+Math.sqrt(dt))/(2*a);
+						double x2 = (-b-Math.sqrt(dt))/(2*a);
+
+						System.out.println("解：x1="+x1);
+						System.out.println("解：x2="+x2);
+					}
+				}
+			}
+			
+	3 JAVA中的时间
+		Date     日期
+			new Date()   	 				可以获取系统时间
+			getTime()     					能获取时间的long的表示形式，可以用来计算时间差
+			System.currentTimeMillis()		时间戳 自从1970年1月1日00时00分00秒至今毫秒数
+		Calendar 日历
+			Calendar cal = Calendar.getInstance();
+			System.out.println(cal);
+			System.out.println(cal.get(Calendar.YEAR));        // 获取年
+			System.out.println(cal.get(Calendar.MONTH)+1);    // 获取月份
+			System.out.println(cal.get(Calendar.DATE));       // 获取日
+			System.out.println(cal.get(Calendar.HOUR_OF_DAY));    // 小时
+			System.out.println(cal.get(Calendar.MINUTE));         // 分钟
+			System.out.println(cal.get(Calendar.SECOND));         // 秒钟
+			cal.set(Calendar.DATE, cal.get(Calendar.DATE)+30);	  // 设置时间->计算时间
+			cal.get()										      // 获取时机某一个部分
+			cal.set(Calendar.DATE, cal.get(Calendar.DATE)+30);
+			Date d = new Date();								 // 拿到的是Date对象
+			cal.setTime(d);										 // 把Date转为成Calender
+		
+		格式化时间
+			SimpleDateFormat:帮我们格式化时间的工具类
+				Date d = new Date();
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss" );
+				String s = sdf.format(d); // 格式化时间把时间转换成字符串
+			将字符串转化为时间对象
+				Scanner sc = new Scanner(System.in);
+				System.out.println("请输入一个时间：");
+				String s = sc.nextLine();
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+				Date d = sdf.parse(s); // 把字符串转化时间
+				System.out.println(d);
+			
+			练习一 查看2008年08月08日是星期几
+				public static void main(String[] args){
+					String s = '2008年08月08日';
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日");
+					// 将Calendar的时间转成2008年8月8日
+					Calendar c = Calendar.getInstance();
+					c.setTime(d);
+					System.out.println(c.get(Calendar.DAY_OF_WEEK));
+				}
+			
+			练习二 算一下你来到这个世界多少天了
+				public static void main(String[] args){
+					Date d = new Date();
+					String s = "1993-04-13";
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+					Date birthday = sdf.parse(s);
+					
+					long now = d.getTime();
+					long birth = birthday.getTime();
+					// 将今天的毫秒数减去生日当天的毫米数
+					long day = now - birthday;
+					// 将毫秒换算成天数
+					System.out.println(day/1000/60/60/24);
+					
+				}
+			
+			
+	
+	4 字符串详细使用
+		字符串是不可变的数据类型， 所有的字符串操作都会返回一个新的字符串
+		
+		字符串常用方法
+			String s = "你好啊, 我是小刁民";
+			System.out.println(s.charAt(1)); // 获取到第1个位置的字符
+
+			// 字符串是不可变的数据类型
+			// 几乎所有的字符串操作都会返回一个新的字符串
+			s.concat("哈哈哈"); // 在字符串s上进行拼接
+			
+			String s1 = "王宇是傻逼";
+			System.out.println(s.contains("傻逼")); 			    // 是否包含指定的字符串如果是返回flase否则true
+			System.out.println("明天下雨".endsWith("下雨")); 	    // 判断是否以xxx结尾
+			System.out.println("今天下雨了".startsWith("今天"));    // 判断是否以xxx开头
+			System.out.println(s.equalsIgnoreCase(s1)); 			// 判断左右两端内容在忽略大小写时是否一致
+			System.out.println(s.indexOf("你"));        			// 获取指定字符串出现的索引
+			System.out.println(s.length());            				// 获取字符串的长度
+			s.replace("刁民", "王宇"); 							    // 把xx替换成xx
+			byte[] b1 = s.getBytes()								// 转换成byte数组
+			String[] s2 = s.split(",");                      	    // 字符串切割返回数组
+			System.out.println(s2[0]);
+			String s3 = "今天天气还不错";
+			System.out.println(s3.substring(2,4));                  // 字符串截取 
+			System.out.println(s3.trim());                          // 去掉左右两边的空格
+			int i = 10;
+			System.out.println(String.valueOf(i));                  // 转换为字符串类型 建议使用
+			
+		StringBuffer和StringBuilder
+			可变的字符串 
+			
+			工作原理：StringBuffer的底层是char数组, 如果没有明确设定, 则系统会默认创建一个长度为16的char类型数组，在使用时如果数组容量不够了，则会通过数组的拷贝对数组进行扩容，所以在使用时最好预测并手动初始化长度，这样能减少数组的拷贝从而提高效率
+			StringBulder和StringBuffe的区别
+				StringBuffer 	是线程安全的，效率相对低
+				StringBuilder   是线程不安全的 效率高
+			
+			// 建议预估好字符长度
+			StringBuilder sb = new StringBuilder(129); // 一个空字符串 ""
+			StringBuilder sb2 = new StringBuilder("Winter is coming");
+			System.out.println(sb2);
+			sb2.append("Django");       // 在sb2后面插入
+			System.out.println(sb2);
+
+			sb2.insert(3, "haha"); // 在指定位置插入值
+			System.out.println(sb2);
+
+			// 把StringBuilder转化成String
+			String s = sb2.toString();
+			
+		练习将字符串反转, 例如"abc"转成"cba"：
+			public class Exercise01{
+				public static void main(String[] args){
+					Scanner sc = new Scanner(System.in);
+					String input = s.next();
+					// 将字符串转换为字符数组
+					char[] c = input.toCharArray();
+					for(int i=c.length-1; i>=0; i--){
+						System.out.print(c[i]);
+					}
+				}
+			}
+		
+		练习 统计字符串里面另一个字符串出现的次数
+			public  class Exercise02{
+				public static void main(String[] args){
+					String src = "I am monkey1024.monkey like banana.little monkey"
+					String dest = "monkey"
+					
+					// 用来统计次数
+					int count = 0;
+					
+					// 索引值
+					int index = 0；
+					while((index = src.indexOf(dest))!= -1){
+						count++;
+						// 对大字符串进行截取， 截取的索引位置是index + 小字符串的长度
+						src = src.substring(index + dest.length())
+					}
+				}
+			}
+		练习统计字符串中大写字母出现的次数
+			public class Exercise03{
+				public static void main(String[] args){
+					String scr = "monKEY";
+					// 统计出现大写字母的次数
+					int count = 0;
+					char[] c = src.toCharArray();
+					for(int i=0; i<c.length; i++){
+						//判断是否为大写字母
+						if(c[i] >= "A" && c[i] <= 'Z'){
+							count++；
+						}
+					}
+				}
+			}
+	5 DecimalFormat
+		double d = 10/3.0;
+        System.out.println(d);
+        // . 小数点儿
+        // 0和# 表示数字
+        // 保留两位小数
+        DecimalFormat df = new DecimalFormat(".00");
+        String s =  df.format(d);
+        System.out.println(s);
+		
+	6 BigDecimal
+		精确小数计算
+		
+		// 开发中不要这样写,还不够精确
+		BigDecimal bd1 = new BigDecimal(2.0);
+		BigDecimal bd2 = new BigDecimal(1.1);
+		System.out.println(bd1.subtract(bd2));
+		
+		// 建议写法
+		BigDecimal bd3 = new BigDecimal("2.0");
+		BigDecimal bd4 = new BigDecimal("1.1");
+		System.out.println(bd3.subtract(bd4));
+		
+	7 Random
+		生成随机数
+		Random r = new Random();
+		// 循环生成5个随机数
+		for(int i-0;j<5;i++){
+			System.out.println(r.nextInt(101));
+		}
+		练习：完成一个彩票机选号码生成器,这里以双色球为例，双色球每注中奖号码由6个不同的红色球号号码和1个蓝色球号码组成。红色球号码从1~33中选择；蓝色去号码从1~16中选择
+			Public class ColorBall {
+				publc static void main(Sring[] args){
+					// 将号码初始化到数组里
+					int[] balls = new int[33];
+					
+					if(isUsed[red] == true){
+						continue;
+					}
+					
+					for(int i=0; i<33; i++){
+						balls[i] = i + 1;
+					}
+					// 初始化存放红球号码的数组
+					int[] result = new int[6];
+					// 初始化数组的下标
+					int index = 0;
+					
+					boolean[] isUsed = new Boolean[33];
+					
+					Random r = new Random();
+					// 直到生成6个不同的数字， 然后结束循环break
+					while(true){
+						int red = r.nextInt(33); // 随机生成0~32的数字作为数组下标
+						// 将随机生成的数字作为balls里面的下标，通过下标获取到对应的元素值, 将值赋值给result数组， 将值赋值给result数组
+						// 并且result数组的下标要做自增运算， 从而方便存放下一个循环获得的元素值
+						result[index++] = balls[red];
+						if(index == 6){
+							break;
+						}
+						
+						// 将生成的红球元素下标修改为true
+						isUsed[red] = true;
+						
+					}
+					// 将生成的红球进行排序操作
+					Arrays.sort(result);
+					// 生成0-15之间的数字作为数组下标
+					int blue = r.nextInt(16);
+					for(int i=0; i<result.length; i++){
+						if(i == result.length-1){
+							System.out.println(result[i]);
+						}else{
+							System.out.println(result[i] + ",");
+						}
+					}
+					
+					System.out.println("篮球:" + balls[blue]);
+					
+				}
+			}
+		
+二 容器
+	
+	1 List
+		ArrayList  	# 底层是连续的内存地址, 自动扩容		查询效率比较高
+		LinkedList	# 通过指针的方式指向下一个元素的内存地址 添加和删除效率高 查询效率较低
+		列表可以存放重复的数据，按照我们存储的顺序进行存储
+		对于程序员使用都一样, 用的最大是ArrayList
+		
+		列表为什么增加和删除快？
+			链表里面的内存地址不是连续的,每个元素里面都保留着上一元素和下一个元素的内存地址(首尾除外), 如果要增加或删除元素时,只有与他相邻的两个位置发生变化，其他元素不同任何改变。
+		为什么查询和修改慢
+			链表里面的内存不是连续的,要查找的话需要从头或者尾部挨个查找不能直接定位
+		
+		
+		对List的常用的操作
+			* add(index, element) 		向列表添加元素
+			* remove(index)				删除元素
+			* size()					列表中装了多少个元素
+			* set(index,element)        将传入的索引改成对应的值
+			* get(i)					从列表中获取某个元素   拿到的数据是Object obj = list.get(1) 变回字符串 Sting s = (Sting) obj;
+			* contains()				判断容器中是否有xxx东西
+			* isEmpty()					判断列表里边是否有元素
+			* toArray()					将集合转换为数组
+		
+		遍历列表
+			for(int i=0; i<list.length; i++){
+				String s = (Sting) list.get(i);
+				
+			}
+		判断一个list里面是否包含monkey 如果包含的话向集合中添加1024这个字符串
+			public class ListTest02 {
+				publc static void main(String[] args){
+					List list = new ArrayList();
+					list.add("a");
+					list.add("b");
+					list.add("monkey");
+					list.add("d");
+					list.add("e");
+					ListIterator listIter = list.iterator();
+					while(listIter.hasNext()){
+						String s = (String)listIter.next();
+						if("monkey".equals(s)){
+							// list.add("1024"); 不能使用list中的add方法 会报错
+							// 使用ListIterator中的add方法向集合添加元素
+							listIter.add("1024");
+						}
+					}
+			
+					
+				}
+			}
+		
+		使用LinkedList来实现一个栈的数据结构
+	
+			import java.util.LinkedList;
+			public class Stack {
+
+				private LinkedList list = new LinkedList();
+
+				// 压栈
+				public void push(Object o){
+					list.addLast(o);
+				}
+
+				// 弹栈
+				public Object pop(){
+					return list.removeLast();
+				}
+
+				// 判断Stack是否为空
+				public  boolean isEmpty(){
+					return list.isEmpty();
+				}
+
+			}
+
+		向List里面添加一些Person对象,其中Person中有name和age两个成员变量,  编写去除List中重复的对象
+			// ！注意要重写Person类的equals方法再进行比较
+			
+			import com.xyq.IO.Person;
+
+			import java.util.ArrayList;
+			import java.util.Iterator;
+			import java.util.LinkedList;
+			import java.util.List;
+
+			public class ListTest {
+				public static void main(String[] args) {
+					List list = new ArrayList();
+					list.add(new Person(1, "张三", 20));
+					list.add(new Person(1, "张三", 20));
+					list.add(new Person(2, "李四", 25));
+					list.add(new Person(3, "赵六", 26));
+
+					// 去重之后的list
+					List newList = new LinkedList();
+					Iterator iter = list.iterator();
+					while (iter.hasNext()) {
+						Person p = (Person) iter.next();
+						if (!newList.contains(p)) {
+							newList.add(p);
+						}
+					}
+					System.out.println(newList);
+
+
+				}
+			}
+
+				
+	2 Set集合
+		HashSet
+			无序 不重复 乱的 只能存入基本数据类型
+		
+		TreeSet
+			默认进行排序, 不重复
+		
+		Set的操作
+			add()   	添加元素
+			remove()	删除元素
+			size()		set中的元素的个数
+			contains()	判断容器中是否有xxx东西
+		
+		向Set中添加自定义类型的数据
+			Set<Person> set = new HashSet<>();
+			set.add(new Person(10, "张三", 20))
+			set.add(new Person(10, "张三", 20))
+			set.add(new Person(11, "李四", 21))
+			set.add(new Person(11, "李四", 21))
+		
+		HashCode方法的使用
+			在HashSet中的元素是不能重复的, jvm可以通过equals方法来判断两个对象是否相同,假设自定义一个Person类里面有10个成员变量，每调用一次equals方法需要做10次if判断分别比较这10个成员变量是否相等。
+			如果想HashSet中存放100个对象,那就会做1000此if判断,数据量大的话严重音箱性能。
+			要解决这个问题可以这样做, 将一些特征相似或相近的对象归类到一起给他们一个编号, 这个编号可以通过HashCode方法获得。
+			HashCode方法的作用就是将对象进行分类，然后火球到编号值
+		
+		重新HashCode
+			HashCode的算法决定了对象的归类, 如果算法编写的不好可能不会对性能有所提升。在编写时最好可以让对象均匀的散列开
+		
+		生成10个1~20之间的整数，这些整数不能重复
+			import java.util.HashSet;
+			import java.util.Random;
+
+			public class HashSetTest {
+				public static void main(String[] args) {
+					HashSet<Integer> hs = new HashSet<>();
+					Random r = new Random();
+					while (hs.size() != 10) {
+						//随机生成1~20之间的整数
+						int i = r.nextInt(20) + 1;
+						hs.add(i);
+					}
+					for (Integer i : hs){
+						System.out.println(i);
+					}
+				}
+			}
+
+		将List中的元素进行去重
+			import java.util.ArrayList;
+			import java.util.LinkedHashSet;
+			import java.util.List;
+
+			public class HashSetExercise02 {
+				public static void main(String[] args) {
+					List<String> list = new ArrayList<>();
+					list.add("a");
+					list.add("a");
+					list.add("b");
+					list.add("b");
+					list.add("c");
+					list.add("c");
+					list.add("d");
+					list.add("d");
+					list.add("e");
+					LinkedHashSet<String> lhs = new LinkedHashSet<>();
+					// 将list中的数据放入到LinkedHashSet去重
+					lhs.addAll(list);
+					// 清空list
+					list.clear();
+					list.addAll(lhs);
+					for(String s : list ){
+						System.out.println(s);
+					}
+				}
+			}
+
+		
+		
+	3 Map容器
+		HashMap
+			不排序
+		TreeMap
+			排序
+			
+		map的操作：
+			put(key, value) 		存储数据
+			remove(key)				删除数据
+			size()					map存储了多个键值对
+			containsKey(key)		是否包含了某个Key
+			containsValue(value)	是否包含了某个value
+			keySet()				拿到所有的key
+			get(key)				通过key查询value
+			values()				返回所有的value值,返回类型是collection
+	
+	4 迭代器Iterator
+		一个一个往出拿数据
+		在ArrayList里面实现了Iterator的方法
+		
+		常用方法：
+			next()  		获取下一个
+			hasNext()		判断是否存在下一个元素
+			
+		遍历迭代器
+			while (it.hasNext()){ // 判断有没有下一个元素
+				String s = (String) it.next();
+				System.out.println(s);
+			}
+		
+		遍历map方案一：
+			Map map = new HashMap();
+			map.put("1", "Java");
+			map.put("2", "Python");
+			map.put("3", "C#");
+			map.put("4", "C++");
+
+			Set set = map.keySet(); // 拿到所有的key
+			Iterator it = set.iterator(); // 拿到迭代器
+			while (it.hasNext()){
+				String key = (String) it.next(); // 所以key
+				System.out.println(map.get(key)); // 通过key获取到value
+			}
+		
+		遍历map方案二：
+			Map map = new HashMap();
+			map.put(1, "Java");
+			map.put(2, "Python");
+			map.put(3, "C#");
+			map.put(4, "C++");
+
+			Set<Map.Entry<Interger,String>> set = map.entrySet();
+			Iterator<Map.Entry<Interger,String>> it = set.iterator();
+
+			while (it.hasNext()){
+				Map.Entry<Integer,String> entry = (Map.Entry) it.next();
+				System.out.println(entry.getKey());
+				System.out.println(entry.getValue());
+			}
+		遍历方案三(常用)：
+			Map <String,String>map = new HashMap<String,String>();
+			map.put("熊大", "棕色");
+			map.put("熊二", "黄色");
+			for(Map.Entry<String, String> entry : map.entrySet()){
+				String mapKey = entry.getKey();
+				String mapValue = entry.getValue();
+				System.out.println(mapKey+":"+mapValue);
+			}
+	
+	5 泛型
+		规范容器内的数据类型
+		容器<数据类型> 表示容器里只能装括号里的数据类型
+		使用泛型的优点：
+			1 可以统一数据类型,提高安全性
+			2 可以减少类型判断
+		
+		Set和List的泛型都是相同的	
+			List<String> strList = new ArrayList<String>();
+			strList.add("python");
+			strList.add("java");
+			strList.add("c++");
+			String s  = strList.get(1); // 不需要再转型了
+			System.out.println(s);
+			// 遍历
+			Iterator<String> iter = strList.iterator();
+			while(iter.hasNext()){
+				String s = (String)iter.next();
+			}
+		
+		map的泛型
+			Map<String, List> map = new HashMap<String, List>();
+			List list = new ArrayList();
+			list.add("java");
+			list.add("python");
+			List list2 = new ArrayList();
+			map.put("面向对象", list );
+			map.put("面向过程", list2);
+
+			Set en = map.entrySet();
+			Iterator it = en.iterator();
+			while (it.hasNext()){
+				Map.Entry entry = (Map.Entry) it.next();
+				System.out.println(entry.getValue());
+				System.out.println(entry.getKey());
+			}
+			
+	6 增强for
+		# 注意增强for循环不能删除元素
+		语法：
+			for(类型 变量:数组或者集合){
+				循环体
+			}
+		
+		示例：
+			String[] arr = {"hello", "你好", "how are you"};
+			for(String s:arr){
+				System.out.println(s);
+			}
+			
+	7 collections工具类
+		List<Integer> list = new ArrayList<Integer>();
+        list.add(123);
+        list.add(124);
+        list.add(127);
+        list.add(176);
+        Integer min = Collections.min(list);
+        System.out.println(min);
+        Collections.sort(list);     		 // 对列表进行排序
+        Collections.shuffle(list);   		// 对列表属性打乱
+        Collections.addAll(list, 10,66,78); // 添加多个数据
+		Collections.max(list) 				// 将集合中的最大值返回
+		Collections.reverse(list) 			//	将集合的数据反转
+		Collections.binarySearch(list, key)  	// 二分法查找
+		
+	8 List中嵌套Map的循环
+		public class MapInList {
+			public static void main(String[] args) {
+				List<Map> li = new ArrayList<Map>();
+				Map<String, String> score = new HashMap<String, String>();
+				Map<String, String> score2 = new HashMap<String, String>();
+				score.put("王宇", "10");
+				score.put("王五", "20");
+				score.put("咪哥", "20");
+				score2.put("哈哈", "50");
+				li.add(score);
+				li.add(score2);
+				System.out.println(li);
+				for (Map item:li){
+					System.out.println(item instanceof Map);
+					Map<String,String> map = item;
+					for(Map.Entry<String, String> entry:map.entrySet()){
+						System.out.println(entry.getValue());
+					}
+				}
+			}
+		}
+		
+	9 可变参数
+		//可变参数， 可以传任意个数的参数， 可以将可变参数看做是一个数组
+		publc static void print(int ... arr){
+			for(int i:arr){
+				System.out.println(i);
+			}
+		}
+		// 如果方法有多个参数并且有可变参数，那么可变参数应该在最后 
+		public static void print(String s, boolen flg, int ... arr){
+		
+		}
+		
+	10 数组和集合的互相转换
+		
+		import com.xyq.IO.Person;
+
+		import java.util.ArrayList;
+		import java.util.Iterator;
+		import java.util.LinkedList;
+		import java.util.List;
+
+		public class ListTest {
+			public static void main(String[] args) {
+				List list = new ArrayList();
+				list.add(new Person(1, "张三", 20));
+				list.add(new Person(1, "张三", 20));
+				list.add(new Person(2, "李四", 25));
+				list.add(new Person(3, "赵六", 26));
+
+				// 去重之后的list
+				List newList = new LinkedList();
+				Iterator iter = list.iterator();
+				while (iter.hasNext()) {
+					Person p = (Person) iter.next();
+					if (!newList.contains(p)) {
+						newList.add(p);
+					}
+				}
+				System.out.println(newList);
+
+
+			}
+		}
+	
+	11 集合实现扑克的洗牌和发牌功能
+		未排序代码：
+			import java.util.ArrayList;
+			import java.util.Collections;
+			import java.util.List;
+
+			public class Poker {
+				public static void main(String[] args) {
+
+					String[] num = {"A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"};
+					String[] color = {"黑桃", "红桃", "方片", "梅花"};
+					List<String> pokers = new ArrayList<>();
+					// 循环生成扑克
+					for (String col : color) {
+						for (String n : num) {
+							pokers.add(col + n);
+						}
+					}
+					pokers.add("大王");
+					pokers.add("小王");
+					Collections.shuffle(pokers);
+					// 底牌
+					ArrayList<String> dipai = new ArrayList<>();
+					// 创建三个玩家
+					ArrayList<String> p1 = new ArrayList<>();
+					ArrayList<String> p2 = new ArrayList<>();
+					ArrayList<String> p3 = new ArrayList<>();
+					// 发牌
+					for (int i = 0; i < pokers.size(); i++) {
+						// 留3张底牌
+						if (i >= pokers.size() - 3) {
+							dipai.add(pokers.get(i));
+						} else if (i % 3 == 0) {
+							p1.add(pokers.get(i));
+						} else if (i % 3 == 1) {
+							p2.add(pokers.get(i));
+						} else {
+							p3.add(pokers.get(i));
+						}
+					}
+					System.out.println(p1);
+					System.out.println(p2);
+					System.out.println(p3);
+
+				}
+			}
+
+		将扑克排序：
+			import java.util.ArrayList;
+			import java.util.Collections;
+			import java.util.HashMap;
+			import java.util.TreeSet;
+
+			public class Poker2 {
+
+				private static void check(HashMap<Integer, String> pokerMap, TreeSet<Integer> ts, String name){
+					System.out.print(name+":");
+					for(Integer key : ts){
+						System.out.print(pokerMap.get(key)+",");
+					}
+					System.out.println();
+				}
+
+				public static void main(String[] args) {
+					// 将扑克牌放到map的value里面,手动初始化索引作为key，将索引再list也存放一份
+					String[] num = {"A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"};
+					String[] color = {"黑桃", "红桃", "方片", "梅花"};
+					HashMap<Integer, String> pokerMap = new HashMap<>();
+					ArrayList<Integer> indexList = new ArrayList<>();
+					// 索引
+					int index = 0;
+					for (String s1 : num) {
+						for (String s2 : color) {
+							pokerMap.put(index, s2 + s1);
+							indexList.add(index);
+							index++;
+						}
+					}
+
+					pokerMap.put(index, "大王");
+					indexList.add(index++);
+					pokerMap.put(index, "小王");
+					indexList.add(index);
+					// 洗牌
+					Collections.shuffle(indexList);
+					// 发牌
+					TreeSet<Integer> P1 = new TreeSet<>();
+					TreeSet<Integer> P2 = new TreeSet<>();
+					TreeSet<Integer> P3 = new TreeSet<>();
+					TreeSet<Integer> dipai = new TreeSet<>();
+					for (int i = 0; i <indexList.size() ; i++) {
+						if(i >= indexList.size() - 3){
+							dipai.add(indexList.get(i));
+						}else if (i % 3 == 0){
+							P1.add(indexList.get(i));
+						}else if (i % 3 == 1){
+							P2.add(indexList.get(i));
+						}else {
+							P3.add(indexList.get(i));
+						}
+					}
+				   check(pokerMap, P1, "P1");
+				   check(pokerMap, P2, "P2");
+				   check(pokerMap, P3, "P3");
+				   check(pokerMap, dipai, "底牌");
+				}
+			}
+	
+	12 购物车功能
+		分析：
+			创建一个Product商品类
+			创建一个ShopCart购物车类
+			创建一个测试类
+		
+		ShoopingCar:
+			package monkeyMap;
+
+			import java.math.BigDecimal;
+			import java.util.HashMap;
+			import java.util.Iterator;
+			import java.util.Map;
+			import java.util.Set;
+
+			public class ShoppingCar {
+
+				// 用来存放商品信息和数量
+				Map<Product, Integer> productMap;
+				BigDecimal totalPrice = BigDecimal.valueOf(0.0);
+
+				public ShoppingCar(){
+					productMap = new HashMap<>();
+				}
+
+				// 向购物车中添加商品和数量
+				public  void add(Product product, int num){
+					// 判断map中是否包含当前商品,如果不包含则直接将商品和数量添加到map里面
+					if(!productMap.containsKey(product)){
+						productMap.put(product, num);
+					}else {
+						// 如果之前已经向购物车中添加过当前商品, 需要将数量进行相加运算
+						int before = productMap.get(product); // 取得之前购物车的商品数量
+						int after = before + num;
+						productMap.put(product, after);
+					}
+
+					// 总价 = 商品单价 * 数量
+					totalPrice = totalPrice.add(product.getPrice().multiply(BigDecimal.valueOf(num)));
+
+				}
+				// 从购物者中删除商品和数量
+				public void remove(Product product, int num){
+					// 获取购物车中的商品数量
+					int before = productMap.get(product);
+					if(num >= before){
+						// 将该商品从购物车中删除
+						productMap.remove(product);
+						totalPrice = totalPrice.subtract(product.getPrice().multiply(BigDecimal.valueOf(before)));
+					}else {
+						int after = before - num;
+						productMap.put(product, after);
+						totalPrice = totalPrice.subtract(product.getPrice().multiply(BigDecimal.valueOf(num)));
+					}
+
+
+				}
+				// 清空购物车
+				public void clear(){
+					productMap.clear();
+					totalPrice = BigDecimal.valueOf(0.0);
+				}
+
+				//打印详单
+				public  void print(){
+					System.out.println("商品清单：");
+					Set<Product> key = productMap.keySet();
+					Iterator<Product> iter = key.iterator();
+
+					while (iter.hasNext()){
+						Product p = iter.next();
+						Integer i = productMap.get(p);
+						System.out.println(i+"个 " + p.getName() + "\t\t" + p.getPrice().multiply(BigDecimal.valueOf(i)));
+					}
+					System.out.println("\t\t\t\t\t\t总价：" + totalPrice);
+				}
+
+			}
+
+		Product:
+			package monkeyMap;
+
+			import java.math.BigDecimal;
+			import java.util.Objects;
+
+			public class Product {
+				private int id;
+				private String name;
+
+				public Product(){
+
+				}
+
+				public Product(int id, String name, BigDecimal price) {
+					super();
+					this.id = id;
+					this.name = name;
+					this.price = price;
+				}
+
+				private BigDecimal price;
+
+				public int getId() {
+					return id;
+				}
+
+				public void setId(int id) {
+					this.id = id;
+				}
+
+				public String getName() {
+					return name;
+				}
+
+				public void setName(String name) {
+					this.name = name;
+				}
+
+				public BigDecimal getPrice() {
+					return price;
+				}
+
+				public void setPrice(BigDecimal price) {
+					this.price = price;
+				}
+
+				@Override
+				public boolean equals(Object o) {
+					if (this == o) return true;
+					if (o == null || getClass() != o.getClass()) return false;
+					Product product = (Product) o;
+					return id == product.id &&
+							Objects.equals(name, product.name) &&
+							Objects.equals(price, product.price);
+				}
+
+				@Override
+				public String toString() {
+					return "商品{" +
+							"id=" + id +
+							", name='" + name + '\'' +
+							", price=" + price +
+							'}';
+				}
+
+				@Override
+				public int hashCode() {
+					return Objects.hash(id, name, price);
+				}
+			}
+
+		
+		Test:
+			package monkeyMap;
+
+			import java.math.BigDecimal;
+
+			public class Test {
+				public static void main(String[] args) {
+					Product orange = new Product(1001, "橘子", BigDecimal.valueOf(10));
+					Product apple = new Product(1002, "苹果", BigDecimal.valueOf(15));
+					Product grape = new Product(1003, "葡萄", BigDecimal.valueOf(20));
+					Product banana = new Product(1004, "香蕉", BigDecimal.valueOf(5));
+					ShoppingCar sc = new ShoppingCar();
+					sc.add(apple, 5);
+					sc.add(orange, 10);
+					sc.add(banana, 4);
+					sc.add(grape, 20);
+					sc.add(apple, 5);
+					sc.remove(apple, 3);
+					sc.print();
+
+				}
+}
+
+		
+三 IO流
+	
+	1 文件操作File类
+		File类 表示操作系统中的文件或者文件夹
+		
+		文件常用操作：
+			File file = new File("abc/def/student.txt");
+			file.createNewFile();						// 创建一个文件 如果存在了就不创建返回false 否则返回true
+			file.mkdir()								// 创建一个文件夹同样会返回一个布尔值
+            System.out.println(file.getParentFile()); 	// 拿到上一层文件夹对象
+            System.out.println(file.getParent()); 		// 拿到文件路径字符串
+			file.mkdirs(); 								// 创建多级文件夹
+            file.renameTo(new File("abc/def/haha.txt")); // 重命名
+			file.delete();  // 删除一个文件
+            System.out.println(file.exists());      // 查看文件是否存在
+            System.out.println(file.isAbsolute());  // 查看文件是否是一个绝对路径
+            System.out.println(file.isDirectory()); // 判断是否是一个文件夹
+            System.out.println(file.isFile());      // 判断是否是一个文件
+            System.out.println(file.length());      // 查看文件大小 返回单位是字节
+            System.out.println(file.getName());     // 查看文件名
+			// 查看最后修改时间
+			Date date = new Date(file1.lastModified());
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd")
+			System.out.printIn(sdf.format(date));
+			// 查看某个路径下全部文件或文件夹的文件名
+			File file = new File("C:\\Users\\harry.cai\\Desktop\\学习文档\\java")
+			String[] nameArray = file.list();
+			for(String name : nameArray){
+				System.out.printIn(name);
+			}
+			
+			// 获取目录下的统计文件或文件夹的File对象
+			File[] fileArray = file.listFiles();
+			for(File file : fileArray){
+				// 打印出文件的绝对路径
+				System.out.printIn(file);
+			}
+		
+		创建文件的完整步骤
+			File file = new File("abc/def/吃饭.txt");
+			
+            // 1 先判断上层文件是否存在
+            File parentFile = file.getParentFile();
+            if(!parentFile.exists()){
+                parentFile.mkdirs();  // 创建尚层文件夹
+            }
+			
+            // 2 创建文件
+            file.createNewFile();
+		
+		文件重命名：
+			File oldFile = new File("D:\\hello.txt");
+			File newFile = new File("D:\\world.txt");
+			oldFile.renameTo(newFile);
+			
+		练习 统计项目根目录下以.txt结尾的文件数量并将文件名打印出来
+			import java.io.File;
+			import java.lang.reflect.Field;
+
+			public class FileExcrise01 {
+				public static void main(String[] args) {
+					File file = new File("G:\\Core");
+					File[] fileArray = file.listFiles();
+					int count = 0;
+					for (File name : fileArray){
+						String s = name.toString();
+						// 判断是否是以.txt文件结尾
+						if(s.endsWith(".txt")){
+							if(name.isFile()){
+								count++;
+								System.out.println(name);
+							}
+						}
+					}
+					System.out.println("以txt结尾的数量是" + count + "个");
+				}
+
+				// 会将根目录下以.txt结尾的文件夹也统计出来,严格来说不正确
+				@Deprecated
+				private static void method1() {
+					File file = new File("G:\\Core");
+					String[] nameArray = file.list();
+					int count = 0;
+					for (String name : nameArray) {
+						if (name.endsWith(".txt")) {
+							count++;
+							System.out.println(name);
+						}
+					}
+					System.out.println("以txt结尾的数量是" + count + "个");
+				}
+			}
+
+		练习：使用文件过滤器实现统计项目根目录下以.txt结尾的文件数量并将文件名打印出来
+			import java.io.File;
+
+			public class FilenameFilter {
+				public static void main(String[] args) {
+					File file = new File("G:\\Core");
+					String[] nameArray = file.list(new java.io.FilenameFilter(){
+						@Override
+						public boolean accept(File dir, String name){
+							// 获取根目录下每个文件的File对象
+							File file1 = new File(dir, name);
+							// 编写筛选条件
+							return file1.isFile() && file1.getName().endsWith(".txt");
+						}
+					});
+					System.out.println("以.txt结尾的文件个数是" + nameArray.length);
+					for(String name : nameArray){
+						System.out.println(name);
+					}
+				}
+			}
+		
+		练习：从键盘接收一个路径,将这个路径下的所有的文件和文件夹的名字按层级打印
+			import java.io.File;
+			import java.util.Scanner;
+
+			public class FileNames {
+				// 用来记录缩进次数
+				private static int count = 0;
+				public static void main(String[] args) {
+					File file = getFile();
+					getFileNames(file);
+				}
+
+				// 每次调用该方法时,说明进入到一个新的文件夹的内部,需要增加一个缩进
+				public static void getFileNames(File file) {
+					File[] fileArray = file.listFiles();
+					// 遍历数 取得file对象
+					for (int i = 0; i < fileArray.length; i++) {
+						// 通过遍历count来公职打印几个缩进
+						for (int j=0; j<count; j++){
+							System.out.print("\t");
+						}
+						// 打印文件或文件夹的名字
+						System.out.println(fileArray[i]);
+
+						// 如果是一个文件夹的话使用递归重复上面的操作
+						if(fileArray[i].isDirectory()){
+							count++;
+							getFileNames(fileArray[i]);
+						}
+					}
+					// 当前文件夹已经遍历结束,需要做自减运算
+					count--;
+
+				}
+
+				// 获取用户输入路径的File对象
+				public static File getFile() {
+					System.out.println("请输入一个文件夹路径：");
+					Scanner sc = new Scanner(System.in);
+					while (true) {
+						// 获取用户输入的路径
+						String input = sc.nextLine();
+						File file = new File(input);
+						if (!file.exists()) {
+							System.out.println("您输入的文件路径有误，请重新输入文件路径");
+						} else if (file.isFile()) {
+							// 用户输入的路径是一个文件
+							System.out.println("您输入的路径是一个文件,请输入一个文件夹路径");
+						} else {
+							return file;
+						}
+					}
+				}
+			}
+
+		
+	2 IO流-节点流
+		
+		流的分类：
+			* 按照读写的方向来讲, 分为输入流和输出流, 站在程序的角度分析
+			* 按照读写内容的单位来讲, 字节流和字符流
+			* 按照流的功能不同,分为节点流和处理流
+		
+		流的家族体系
+			字节流  InputStream		OutputStream
+			字符流	Reader			Writer
+			
+		文件流
+			FileinputStrea		文件字节输入流
+			FileOutputStream	
+			FileReader
+			FileWriter
+			
+		读取字节流
+			// 创建流
+			FileInputStream fis = new FileInputStream(new File("a.txt"));
+			// 读一个字节的数据
+			int b = fis.read();
+			// 创建一个字节数组接收数据
+			byte[] bs = new byte[1024];
+			int len = fis.read(bs); // 返回读取了多少字节
+			System.out.println(new String(bs, 0, len));
+			
+		
+		读取文件最重要的一套写法
+			// 创建流
+			FileInputStream fis = new FileInputStream(new File("a.txt"));
+			byte[] bs = new byte[1024];
+			int len = 0; // 返回读取了多少字节
+			while ((len = fis.read(bs)) != -1) {
+				String s = new String(bs, 0,len);
+				System.out.println(s);
+			}
+			// 关闭文件流
+			fis.close();
+			
+		写入文件字节流
+			// 传入true会在文件内容的后面写入文字,而不会覆盖之前的内容
+			FileOutputStream fos = new FileOutputStream(new File("a.txt"), true);
+			fos.write("Mario".getBytes());
+
+			fos.flush();
+			fos.close();
+			
+		读取字符流
+			FileReader fr = new FileReader(new File("a.txt"));
+			char[] cs = new char[1024];
+			int len = 0;
+			while ((len = fr.read(cs)) != -1){
+				System.out.println(new String(cs, 0, len));
+			}
+			fr.close();
+		
+		写入字符流
+			FileWriter fw = new FileWriter(new File("a.txt"), true);
+			fw.write("\n直接可以写字符串");
+			fw.flush();
+			fw.close();
+			
+		注意：在开发中文件分隔符最好不要直接写\, 尽量按照如下写：
+			new FileOutputStream("file" + File.separator + "1024.txt", true)
+		
+		练习将java.txt文件复制到file文件夹里面,并且重名为good.txt
+			import java.io.*;
+
+			public class fileCopy {
+				public static void main(String[] args) {
+					FileInputStream fis = null;
+					FileOutputStream fos = null;
+					try {
+						fis = new FileInputStream("java.txt");
+						fos = new FileOutputStream("file" + File.separator +"good.txt");
+						byte[] arr = new byte[6];
+						int temp;
+						while ((temp = fis.read(arr)) != -1){
+							fos.write(arr,0, temp);
+						}
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}finally {
+						try {
+							fis.close();
+							fos.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+
+		
+	3 IO流-缓冲流
+	
+		缓冲流：带有缓冲区的数据流
+		BufferdInputStream
+			// 一般不用
+			BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File("a.txt")));
+			byte[] bs = bis.readAllBytes();
+			
+		BufferdOutputStream
+		BufferedReader -> 重点,读取文本文件最好的方式
+			BufferedReader br = new BufferedReader(new FileReader(new File("a.txt")));
+			// 一次读取一行
+			System.out.println(br.readLine());
+			String str = "";
+			while ((str=br.readLine())!=null){
+				//读取内容
+				System.out.println(str);
+			}
+			br.close();
+		BufferedWriter
+		
+		练习：将一张图片进行加密和解密
+			codeFile:
+				package monkeyIo;
+
+				import java.io.*;
+
+				public class codeFile {
+					public static void main(String[] args) {
+						BufferedInputStream bis = null;
+						BufferedOutputStream bos = null;
+						try {
+							bis = new BufferedInputStream(new FileInputStream("test.png"));
+							bos = new BufferedOutputStream(new FileOutputStream("code.png"));
+
+							int tmp;
+							while ((tmp = bis.read()) != -1){
+								// 进行异或运算
+								bos.write(tmp ^ 88);
+							}
+						} catch (FileNotFoundException e) {
+							e.printStackTrace();
+						} catch (IOException e) {
+							e.printStackTrace();
+						} finally {
+							try {
+								bis.close();
+								bos.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+				}
+				
+			decodeFile：
+				package monkeyIo;
+
+				import java.io.*;
+
+				public class DecodeFile {
+					public static void main(String[] args) {
+						BufferedInputStream bis = null;
+						BufferedOutputStream bos = null;
+						try {
+							bis = new BufferedInputStream(new FileInputStream("code.png"));
+							bos = new BufferedOutputStream(new FileOutputStream("decode.png"));
+							int tmp;
+							while ((tmp = bis.read()) != -1){
+								bos.write(tmp ^ 88);
+							}
+						} catch (FileNotFoundException e) {
+							e.printStackTrace();
+						} catch (IOException e) {
+							e.printStackTrace();
+						} finally {
+							try {
+								bis.close();
+								bos.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+
+						}
+					}
+				}
+
+
+		
+	4 IO流-转换流
+		把字节流转换成字符流
+			InputStreamReader	
+				// 把字节流转换成字符流
+				InputStreamReader strSteam = new InputStreamReader(System.in);
+				BufferedReader br = new BufferedReader(strSteam);
+				String s = br.readLine();
+				System.out.println("从System.接收到的是：" + s);
+				
+			OutputStreamWriter
+				Writer writer = new OutputStreamWriter(System.out);
+				writer.write("hello world");
+				writer.flush();
+				System.out.println("测试IO流");
+		
+			练习 将utf-8.txt的内容读取并写出到gbk.txt
+				import java.io.*;
+
+				public class TransferCopy {
+					public static void main(String[] args){
+						try {
+							InputStreamReader isr = new InputStreamReader(new FileInputStream("utf-8.txt"), "utf-8");
+							OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream("gbk.txt"), "gbk");
+							BufferedReader br = new BufferedReader(isr);
+							BufferedWriter bw = new BufferedWriter(osw);
+							String msg;
+							while ((msg = br.readLine()) != null){
+								bw.write(msg);
+							}
+							
+						} catch (UnsupportedEncodingException e) {
+							e.printStackTrace();
+						} catch (FileNotFoundException e) {
+							e.printStackTrace();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+
+					}
+				}
+				
+	5 IO流-对象流
+		ObjerctIputStream
+		ObjectOutputStream
+		
+		序列化：把一个对象转化为字节的过程
+		反序列化： 把字节转化成对象
+		在java中只需要给类添加一个实现，Serialiable,就是可以被序列的一个类
+		
+		
+		Person：
+			import java.io.Serializable;
+
+			public class Person implements Serializable {
+				private int id;
+				private String name;
+				private int age;
+
+				public Person(int id, String name, int age){
+					this.id = id;
+					this.name = name;
+					this.age = age;
+				}
+				public void setId(int id) {
+					this.id = id;
+				}
+
+				public void setName(String name) {
+					this.name = name;
+				}
+
+				public void setAge(int age) {
+					this.age = age;
+				}
+
+				public int getId() {
+					return id;
+				}
+
+				public String getName() {
+					return name;
+				}
+
+				public int getAge() {
+					return age;
+				}
+			}
+		
+		Client：
+			// 把对象存储到文件
+			public class Client {
+				public static void main(String[] args) throws Exception {
+					ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File("person.dat")));
+					Person p = new Person(1,"harry",18);
+					oos.writeObject(p);
+					oos.flush();
+					oos.close();
+
+				}
+			}
+			
+		TestReadObj：
+		·	// 反序列化成对象
+			public class TestReadObj {
+
+				public static void main(String[] args) throws Exception {
+					ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("person.dat")));
+					Object obj = ois.readObject();
+					Person p = (Person) obj;
+					System.out.println(p.getName());
+
+				}
+			}
+			
+	6 文件修改操作
+		方法：逐行读取文件中的内容， 根据内容进行替换， 把替换的结果记录在一个新闻界里， 直到数据写入完毕，把源文件删除,把新文件的名称改成源文件的名字
+		
+		代码：
+			public class FileModify {
+				public static void main(String[] args) throws Exception {
+					File oldFile = new File("唐诗三百首");
+					File NewFile = new File("副本_唐诗三百首.txt");
+					BufferedReader br = new BufferedReader(new FileReader(oldFile));
+					BufferedWriter bw = new BufferedWriter(new FileWriter(NewFile));
+					String line = "";
+					while ((line = br.readLine())!=null){
+						line = line.replace("李白", "李太白");
+						bw.write(line);
+						bw.newLine(); // 另起一行
+					}
+					br.close();
+					bw.flush();
+					bw.close();
+
+					// 删除源文件
+					oldFile.delete();
+					// 重命名源文件
+					NewFile.renameTo(oldFile);
+
+				}
+			}
+			
+	7 练习：利用IO流模拟一个软件可试用3次的功能,打开3次之后提示用户购买正版软件
+		import java.io.*;
+
+		public class IOExecrise {
+			public static void main(String[] args) {
+				// code();
+				BufferedInputStream bis = null;
+				BufferedOutputStream bos = null;
+				try {
+					 bis = new BufferedInputStream(new FileInputStream("src" + File.separator + "monkeyIo" + File.separator + "config.txt"));
+
+					 int temp = bis.read();
+					 // 解密处理
+					 int count = temp ^ 66;
+					 if(count > 0 && count <=3){
+						 count --;
+						 System.out.println("您的试用次数还剩余"+count +"次");
+						 bos = new BufferedOutputStream(new FileOutputStream("src" + File.separator + "monkeyIo" + File.separator + "config.txt"));
+						 bos.write(count ^ 66);
+						 bos.flush();
+					 }else {
+						 System.out.println("您的试用次数以超出限制, 请购买正版软件");
+					 }
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				} finally {
+					try {
+						if(bis != null){
+							bis.close();
+						}
+						if(bos != null){
+							bos.close();
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+
+			// 试用次数加密处理
+			private static void code() {
+				BufferedOutputStream bos = null;
+				try {
+					bos = new BufferedOutputStream(new FileOutputStream("src" + File.separator + "monkeyIo" + File.separator + "config.txt"));
+					// 加密处理
+					bos.write(3 ^ 66);
+					bos.flush();
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				} finally {
+					try {
+						// 避免出现空指针异常
+						if (bos != null) {
+							bos.close();
+						}
+
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+
+	
+四 多线程
+	
+	1 java多线程
+		
+		* 继承Thread类， 重写run方法
+			MyThread：
+				public class MyThread extends Thread {
+					@Override
+					public void run() {
+						// 要把子线程执行的内容写在run里
+						for (int i=0; i<1000; i++){
+							System.out.println("我是子线程"+i);
+						}
+					}
+				}
+				
+			Test：
+				public class Test1 {
+					public static void main(String[] args) {
+						// 1 创建线程对象
+						MyThread mt = new MyThread();
+						// 2 调用start()方法启动一个线程
+						mt.start(); // 基础自Thread类, 启动一个子线程-> 子线程> 自动执行()方法
+
+					}
+				}
+		
+		* 实现Runable接口, 实现run方法
+			MyRunable：
+				public class MyRunable implements Runnable {
+
+					@Override
+					public void run(){
+						for (int i=0; i<1000; i++){
+							System.out.println("我是子线程"+i);
+						}
+					}
+				}
+				
+			Test2：
+				public class Test2 {
+					public static void main(String[] args) {
+						// 1 先创建Runnable对象
+						Runnable r = new MyRunable();
+						// 2 创建线程对象 必须执行自己写的Runnable
+						Thread t = new Thread(r);
+						t.start();
+						for (int i = 0; i <1000 ; i++) {
+							System.out.println(">>>>>>>>>我是主线程"+i);
+
+						}
+					}
+				}
+			
+			// 匿名类写法
+				public static void main(String[] args) {
+					new Thread(new Runnable() {
+						@Override
+						public void run() {
+							System.out.println("1232323");
+						}
+					}).start();
+				}
+				
+		* 通过实现callable接口
+			(1) 自定义一个类实现java.util.concurrent包下的Callable接口
+			(2) 重写call方法
+			(3) 将要在线程中执行的代码编写在call方法中
+			(4) 创建ExecutorService线程池
+			(5) 将自定义类的对象放入线程池里面
+			(6) 获取线程的返回结果
+			(7) 关闭线程池,不在接收新的线程,未执行的线程不会被关闭
+			
+			import java.util.concurrent.Callable;
+
+			public class ThreadTest3 implements Callable<Integer> {
+				private int count;
+
+				public ThreadTest3(int count) {
+					this.count = count;
+				}
+
+				@Override
+				public Integer call() throws Exception {
+					int sum = 1;
+					if (count != 0) {
+						for (int i = 1; i <= count; i++) {
+							sum *= i;
+						}
+					} else {
+						sum = 0;
+					}
+					return sum;
+				}
+			}
+			
+			import java.util.concurrent.ExecutionException;
+			import java.util.concurrent.ExecutorService;
+			import java.util.concurrent.Executors;
+			import java.util.concurrent.Future;
+
+			public class Test3 {
+				public static void main(String[] args) throws ExecutionException, InterruptedException {
+					ThreadTest3 t3 = new ThreadTest3(15);
+					ThreadTest3 t4 = new ThreadTest3(5);
+					// 创建ExecutorService线程池
+					ExecutorService es = Executors.newFixedThreadPool(3);
+
+					// 将自定义类的对象放入线程池
+					Future<Integer> f1 = es.submit(t3);
+					Future<Integer> f2 = es.submit(t4);
+
+					// 获取线程的返回结果
+					System.out.println(f1.get());
+					System.out.println(f2.get());
+
+					// 判断线程中的任务是否执行完毕
+					if(f1.isDone()){
+						System.out.println(f1.get());
+					}else {
+						System.out.println("线程中的任务还未执行完毕");
+					}
+
+					// 关闭线程池,不再接收新的线程
+					es.shutdown();
+				}
+			}
+			
+			// 匿名内部类写法：
+				public static void main(String[] args) throws ExecutionException, InterruptedException {
+					ExecutorService es =  Executors.newCachedThreadPool(); // 创建线程池
+					Future<Integer> result = es.submit(new Callable<Integer>() {   // 创建Callable类型对象并重新call方法
+						@Override
+						public Integer call() throws Exception {
+							return 88;
+						}
+					});
+					// 获取线程返回的Future对象
+					System.out.println(result.get());
+					// 关闭线程池
+					es.shutdown();
+				}
+			
+
+				
+		必须有：run(), start()
+		run()：线程执行的时候需要执行的代码
+		start():启动一个线程
+		
+	2 线程相关操作
+		setPrioity() 设置优先级
+			1-10 默认是5
+			
+			MyThread：
+				public class MyThread extends Thread{
+
+					public MyThread(String name){
+						super.setName(name); // 设置线程的名字
+					}
+					@Override
+					public void run() {
+						for (int i = 0; i <1000 ; i++) {
+							System.out.println(super.getName()+"+++++"+i);
+						}
+					}
+				}
+				
+			Test:
+				public class Test {
+					public static void main(String[] args) {
+						MyThread mt1 = new MyThread("A线程");
+						MyThread mt2 = new MyThread("B线程");
+						mt2.setPriority(10);
+						mt1.setPriority(1);
+						mt1.start();
+						mt2.start();
+					}
+				}
+				
+		sleep() 睡眠 重点
+			每隔xxx时间去执行一个xxx操作
+			public class MyThread extends Thread  {
+				@Override
+				public void run() {
+					// 让子线程不停的显示当前系统时间
+					while (true){
+						SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+						Date d = new Date();
+						System.out.println(sdf.format(d));
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+
+				public static void main(String[] args) {
+					MyThread mt = new MyThread();
+					mt.start();
+				}
+			}
+		
+		join()让主线程等待子线程执行完毕
+			public class Test {
+				public static void main(String[] args) throws InterruptedException {
+					MyThread mt = new MyThread();
+					mt.start();
+					// 会让主线程等待子线程程序执行完毕再继续执行
+					mt.join();
+					for (int i = 0; i <100 ; i++) {
+						System.out.println("主线程"+i);
+					}
+				}
+			}
+		
+		yield() 让出CPU,让别人执行一下
+			
+			public class MyThread extends Thread {
+				public MyThread(String name) {
+					super.setName(name);
+				}
+
+				@Override
+				public void run() {
+					for (int i = 0; i < 500; i++) {
+						System.out.println(super.getName() + ":" + i);
+						if (i % 10 == 0) {
+							Thread.yield(); // 当出现i%10 ==0 的时候让出CPU
+						}
+					}
+				}
+
+				public static void main(String[] args) {
+					MyThread mt1 = new MyThread("A线程");
+					MyThread mt2 = new MyThread("B线程");
+					
+					mt1.start();
+					mt2.start();
+				}
+			}
+			
+		interr()打断正在睡眠中的线程
+			MyThread:
+				public class MyThread extends Thread{
+					@Override
+					public void run() {
+						System.out.println("我要睡觉了");
+						try {
+							Thread.sleep(1000000);
+						} catch (InterruptedException e) {
+							System.out.println("被打断了，睡醒了");
+						}
+						System.out.println("工作");
+					}
+				}
+			TEST:
+				public class Test {
+					public static void main(String[] args) {
+						MyThread mt = new MyThread();
+						mt.start();
+						for (int i = 0; i <100 ; i++) {
+							System.out.println(i);
+						}
+						mt.interrupt(); // 打断正在睡眠的子线程
+					}
+				}
+	
+	3 线程同步
+		当多个线程共享同一个资源的时候, 我们可以在某一个线程访问到这个资源的时候, 把这个资源暂时封锁,等待执行结束,释放这个锁.其他线程才可以进行执行
+		
+		实现线程同步：
+			方法一 在方法声明上添加一个synchronized关键字
+				public class Account {
+					private  double balance;
+					public Account(double balance){
+						this.balance = balance;
+					}
+					public synchronized void getMoney(){ // 一旦进入到该方法, 瞬间锁定acc
+						if (this.balance <=0 ){
+							System.out.println("没钱了");
+							return;
+						}
+						System.out.println("我要取钱了, 目前还剩下:"+ this.balance);
+						this.balance -= 1000;
+						System.out.println("取完了, 还剩:"+ this.balance);
+					}
+				}
+			方法二 在方法内部使用synchronized(){}语句块对特定的对象上锁
+				public class Account {
+					private  double balance;
+					public Account(double balance){
+						this.balance = balance;
+					}
+					public  void getMoney(){ 
+						synchronized (this){
+							if (this.balance <=0 ){
+								System.out.println("没钱了");
+								return;
+							}
+						}
+						System.out.println("我要取钱了, 目前还剩下:"+ this.balance);
+						this.balance -= 1000;
+						System.out.println("取完了, 还剩:"+ this.balance);
+					}
+				}
+				
+			方法三 手动上锁 --》用的最少
+				public class Account {
+					private double balance;
+					private Lock lock = new ReentrantLock(); // 创建一个手动锁
+
+					public Account(double balance) {
+						this.balance = balance;
+					}
+
+					public void getMoney() {
+						lock.lock(); // 上锁
+						if (this.balance <= 0) {
+							System.out.println("没钱了");
+							return;
+						}
+
+						System.out.println("我要取钱了, 目前还剩下:" + this.balance);
+						this.balance -= 1000;
+						System.out.println("取完了, 还剩:" + this.balance);
+						lock.unlock(); // 释放这个锁
+					}
+				}
+			
+			GetMoneyThread：
+				public class GetMoneyThread extends Thread{
+					private Account acc;
+					public GetMoneyThread(Account acc){
+						this.acc = acc; // 为了保证柜台和ATM用的是同一个账户
+					}
+
+					@Override
+					public void run() {
+						acc.getMoney();
+					}
+				}
+			
+			Test：
+				public class Test {
+					public static void main(String[] args) {
+						// 创建一个账户
+						Account acc = new Account(1000);
+						// 创建一个ATM线程
+						GetMoneyThread atm = new GetMoneyThread(acc);
+						// 创建一个柜台线程
+						GetMoneyThread table = new GetMoneyThread(acc);
+
+						// 开始取钱
+						atm.start();
+						table.start();
+					}
+				}
+	
+	4 死锁
+		避免死锁：在使用synchronized的时候一定要格外的注意,有没有互相调用的方法锁定
+		模拟出现死锁
+			DeadLock1
+				public class DeadLock1 extends Thread {
+					@Override
+					public void run() {
+						synchronized (Resourse.obj1){
+							System.out.println("锁定第一个资源");
+							try {
+								Thread.sleep(10);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+							synchronized (Resourse.obj2){
+								System.out.println("锁定第二个资源");
+								System.out.println("执行完毕");
+							}
+
+						}
+					}
+				}
+			
+			DeadLock2
+				public class DeadLock2 extends Thread{
+					@Override
+					public void run() {
+						synchronized (Resourse.obj2){
+							System.out.println("锁定第二个资源");
+							try {
+								Thread.sleep(10);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+							synchronized (Resourse.obj1){
+								System.out.println("锁定第一个资源");
+								System.out.println("执行完毕");
+							}
+
+						}
+					}
+				}
+
+			Resourse
+				public class Resourse {
+					public static Object obj1 = new Object();
+					public static Object obj2 = new Object();
+				}
+			
+			Test
+				public class Test {
+					public static void main(String[] args) {
+						DeadLock1 dl1 = new DeadLock1();
+						DeadLock2 dl2 = new DeadLock2();
+						dl1.start();
+						dl2.start();
+
+					}
+				}
+	
+	5 生产者消费者模型
+		生产者消费者模型：读取视频这一个方被称为生产者, 产品就是视频, 再将违规视频发送给公安局
+		Queue队列：BlockingQueue 阻塞队列，当队列中没有数据的时候，需要拿出数据队列会将程序阻塞，阻塞到右数据后队列继续工作
+		
+		Video：
+			/**
+			 * 产品 视频
+			 */
+			public class Video {
+				private String name;
+
+				public String getName() {
+					return name;
+				}
+
+				public void setName(String name) {
+					this.name = name;
+				}
+
+				public Video(String name){
+					this.name =name;
+				}
+
+			}
+
+		
+		ReadVideo：
+			import java.util.concurrent.BlockingQueue;
+			import java.util.concurrent.atomic.AtomicInteger;
+
+			public class ReadVideo extends Thread {
+				// 线程安全
+				private static AtomicInteger i = new AtomicInteger();
+
+				// 准备能装视频的缓冲区
+				private BlockingQueue<Video> videoQueue;
+
+				public ReadVideo(BlockingQueue<Video> videoQueue) {
+					this.videoQueue = videoQueue;
+				}
+
+				@Override
+				public void run() {
+					while (true) {
+						String name = "小视频" + i.incrementAndGet();
+						Video v = new Video(name); // 相当于i++
+						try {
+							videoQueue.put(v); // 添加数据
+							Thread.sleep(200);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						System.out.println("发现一个视频"+name);
+					}
+				}
+			}
+		
+		SendVideo:
+			import java.util.concurrent.BlockingQueue;
+
+			public class SendVideoTread extends Thread {
+				private BlockingQueue<Video> videoQueue;
+
+				public SendVideoTread(BlockingQueue<Video> videoQueue) {
+					this.videoQueue = videoQueue;
+				}
+
+				@Override
+				public void run() {
+					while (true){
+						try {
+							Video video = videoQueue.take();
+							System.out.println("发现了一个视频， 正在发送"+video.getName());
+							Thread.sleep(150);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+
+					}
+				}
+			}
+		
+		Test:
+			import java.util.concurrent.BlockingQueue;
+			import java.util.concurrent.LinkedBlockingQueue;
+
+			public class Test {
+				public static void main(String[] args) {
+					BlockingQueue<Video>  videos = new LinkedBlockingQueue<Video>();
+
+					// 创建三个读取视频的线程
+					ReadVideo rvt1 = new ReadVideo(videos);
+					ReadVideo rvt2 = new ReadVideo(videos);
+					ReadVideo rvt3 = new ReadVideo(videos);
+					// 创建两个发送视频线程
+					SendVideoTread syt1 = new SendVideoTread(videos);
+					SendVideoTread syt2 = new SendVideoTread(videos);
+
+					// 启动线程
+					rvt1.start();
+					rvt2.start();
+					rvt3.start();
+
+					syt1.start();
+					syt2.start();
+				}
+			}
+	
+	6 模拟四个窗口卖1000张火车票
+		Ticket：
+			public class ticket {
+				private String name;
+				private int Number;
+
+				public ticket(String name, int Number){
+					this.name = name;
+					this.Number = Number;
+				}
+
+				public String getName() {
+					return name;
+				}
+
+				public void setName(String name) {
+					this.name = name;
+				}
+
+				public int getNumber() {
+					return Number;
+				}
+
+				public void setNumber(int number) {
+					Number = number;
+				}
+			}
+			
+		windowThread：
+			public class WindowThread extends Thread {
+				private static AtomicInteger i = new AtomicInteger();
+				private String name;
+				private List<ticket> ticket;
+
+				public WindowThread(String name, List<ticket> ticket) {
+					this.ticket = ticket;
+					this.name = name;
+				}
+
+				@Override
+				public void run() {
+					while (true) {
+						if(i.get() +4 < ticket.size()){
+							try {
+								Thread.sleep(new Random().nextInt(150));
+
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+							ticket t = ticket.get(i.incrementAndGet());
+							System.out.println(this.name + "卖票" + t.getName()+i);
+						}else {
+							System.out.println("票卖完了");
+							break;
+						}
+
+					}
+				}
+			}
+		
+		Test：
+			public class Test {
+				public static void main(String[] args) {
+
+					ArrayList<ticket> TicketList = new ArrayList<ticket>();
+					for (int i = 0; i <= 1000; i++) {
+						ticket tic = new ticket("火车票", i);
+						TicketList.add(tic);
+					}
+
+					WindowThread window1 = new WindowThread("窗口一", TicketList);
+					WindowThread window2 = new WindowThread("窗口二", TicketList);
+					WindowThread window3 = new WindowThread("窗口三", TicketList);
+					WindowThread window4 = new WindowThread("窗口四", TicketList);
+
+					window1.start();
+					window2.start();
+					window3.start();
+					window4.start();
+				}
+			}
+			
+	7 volatile关键字
+		volatile的作用是可以保持共享变量的可见性，即一个线程修个一个共享变量后，另一个线程能够读取到这个修改后的值
+
+		定义一个Task类
+			public class TaskVolatile implements Runnable {
+				private volatile  boolean flag = true;
+
+				public boolean isFlag() {
+					return flag;
+				}
+
+				public void setFlag(boolean flag) {
+					this.flag = flag;
+				}
+
+				@Override
+				public void run() {
+					while (flag){
+						System.out.println("while循环");
+					}
+					System.out.println("循环结束");
+				}
+			}
+		
+		测试类
+			public class TestVolatile {
+				public static void main(String[] args) throws InterruptedException {
+					TaskVolatile ts = new TaskVolatile();
+					Thread t1 = new Thread(ts);
+					t1.start();
+					Thread.sleep(10);
+					ts.setFlag(false);
+				}
+			}
+						
+	8 单例模式
+		饿汉式写法
+			class Singleton{
+				// 1. 构造方法私有化
+				private Singleton(){
+
+				}
+				// 2. 创建当前类的对象
+				private static Singleton s = new Singleton();
+
+				// 3. 创建公共方法将对象暴露给外部
+				public static Singleton getInstance(){
+					return s;
+				}
+
+			}
+			
+		单例的延迟加载写法
+			class Singleton{
+				// 1. 构造方法私有化
+				private  Singleton(){
+
+				}
+				// 2.创建当前类的引用
+				private volatile static Singleton s = null;
+
+				// 3.对外提供公共的同步的访问方法，将对象暴露给外部
+				public synchronized static Singleton  getInstance(){
+					// 判断s是否为null, 如果为空则创建一个Singleton对象,否则直接返回s
+					if(s == null){
+						s = new Singleton();
+					}
+					return s;
+				}
+
+			}
+	
+	9 Timer
+		使用Timer执行定时任务, 让计算机每隔5秒，在控制台打印一个cs
+		
+		MyTimerTask:	
+			import java.util.TimerTask;
+			/**
+			 * 继承TimerTask类,将要执行的定时任务编写在run方法中
+			 */
+			public class MyTimerTask extends TimerTask {
+				@Override
+				public void run() {
+					System.out.println("cs");
+				}
+			}
+		
+		TimerTest:
+			import java.text.ParseException;
+			import java.text.SimpleDateFormat;
+			import java.util.Timer;
+
+			public class TimerTest {
+				public static void main(String[] args) throws ParseException {
+					Timer t = new Timer();
+					t.schedule(new MyTimerTask(), new SimpleDateFormat("yyyy-MM-dd hh:mm:ss SSSS").
+							parse("2019-09-22 19:57:00 0000"), 5000);
+				}
+			}
+	10 多线程直接的通信
+		两个线程之间通信,让两个线程交替在控制台输出一行文字
+		public class NotifyTest {
+			public static void main(String[] args) {
+				Print p = new Print();
+				Thread t1 = new Thread() {
+					public void run() {
+						while (true) {
+							p.print1();
+						}
+					}
+				};
+
+				Thread t2 = new Thread() {
+					public void run() {
+						while (true) {
+							p.print2();
+						}
+					}
+				};
+				t1.start();
+				t2.start();
+			}
+
+		}
+
+		class Print {
+			private int flag = 1;
+
+			public void print1() {
+				synchronized (this) {
+					if (flag != 1) {
+						try {
+							// 让当前线程进入等待状态
+							this.wait();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+					System.out.println("harry");
+					flag = 2;
+					// 随机的唤醒单个等待的线程
+					this.notify();
+				}
+			}
+
+			public void print2() {
+				synchronized (this) {
+					if (flag != 2) {
+						try {
+							// 让当前线程进入等待状态
+							this.wait();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+					System.out.println("1024");
+					flag = 1;
+					// 随机的唤醒单个等待的线程
+					this.notify();
+				}
+			}
+		}
+		
+		
+	11 互斥锁
+	
+		public class LockTest01 {
+			public static void main(String[] args) {
+				Print p = new Print();
+				Thread t1 = new Thread() {
+					public void run() {
+						while (true) {
+							p.print1();
+						}
+					}
+				};
+
+				Thread t2 = new Thread() {
+					public void run() {
+						while (true) {
+							p.print2();
+						}
+					}
+				};
+				Thread t3 = new Thread() {
+					public void run() {
+						while (true) {
+							p.print3();
+						}
+					}
+				};
+				t1.start();
+				t2.start();
+				t3.start();
+			}
+		}
+
+
+		class Print {
+			private int flag = 1;
+			// 互斥锁
+			private ReentrantLock r = new ReentrantLock();
+			// 监视器
+			private Condition c1 = r.newCondition();
+			private Condition c2 = r.newCondition();
+			private Condition c3 = r.newCondition();
+			public void print1() {
+				// 在要开始同步的地方加上锁
+				r.lock();
+				while (flag != 1) {
+					try {
+						// 让当前线程进入等待状态
+						c1.await();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				System.out.println("harry");
+				flag = 2;
+				// 唤醒c2线程
+				c2.signal();
+				// 在执行结束后释放锁
+				r.unlock();
+
+			}
+
+			public void print2() {
+				r.lock();
+				while (flag != 2) {
+					try {
+						// 让当前线程进入等待状态
+						c2.await();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				System.out.println("1024");
+				flag = 3;
+				// 唤醒C3线程;
+				c3.signal();
+				r.unlock();
+			}
+
+
+			public void print3() {
+				r.lock();
+				while (flag != 3) {
+					try {
+						// 让当前线程进入等待状态
+						c3.await();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				System.out.println("8888");
+				flag = 1;
+				// 唤醒C1线程
+				c1.signal();
+				r.unlock();
+			}
+
+		}
+		
+六 网络编程
+	1 TCP编程初步
+		Server:
+			package com.xyq.Tcp;
+
+			import java.io.IOException;
+			import java.net.ServerSocket;
+
+			public class Server {
+				public static void main(String[] args) throws IOException {
+					// 1 创建服务器对象
+					ServerSocket ss = new ServerSocket(8000);
+
+					System.out.println("服务器启动成功");
+					// 2. 等待客户端链接
+					ss.accept();
+					System.out.println("客户端链接");
+				}
+			}
+			
+		Client:
+			package com.xyq.Tcp;
+
+			import java.io.IOException;
+			import java.net.Socket;
+
+			public class Client {
+				public static void main(String[] args) throws IOException {
+					// 1. 创建Socket对象链接服务器
+					Socket socket = new Socket("localhost", 8000);
+					System.out.println("客户端链接服务器成功！！");
+				}
+			}
+			
+	2 单向收发通信
+		Server:
+			package com.xyq.Tcp;
+
+			import java.io.*;
+			import java.net.ServerSocket;
+			import java.net.Socket;
+			import java.util.Scanner;
+
+			public class Server {
+				public static void main(String[] args) throws IOException {
+					// 1 创建服务器对象
+					ServerSocket ss = new ServerSocket(8000);
+
+					System.out.println("服务器启动成功");
+					Scanner sc = new Scanner(System.in);
+					// 2. 等待客户端链接
+					Socket s = ss.accept(); // 阻塞
+					System.out.println("客户端链接");
+					while (true){
+						// 3. 服务器接收数据
+						InputStream is = s.getInputStream();
+						BufferedReader br = new BufferedReader(new InputStreamReader(is));
+						String content = br.readLine();
+
+						System.out.println("从客户端收到的数据是："+content);
+
+						// 给客户端发送一条数据
+						OutputStream os = s.getOutputStream();
+						BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+						bw.write(sc.nextLine());
+						bw.newLine();
+						bw.flush();
+					}
+
+				}
+			}
+		
+		Client:
+			package com.xyq.Tcp;
+
+			import java.io.*;
+			import java.net.Socket;
+			import java.util.Scanner;
+
+			public class Client {
+				public static void main(String[] args) throws IOException {
+					// 1. 创建Socket对象链接服务器
+					Socket socket = new Socket("localhost", 8000);
+					System.out.println("客户端链接服务器成功！！");
+
+					Scanner sc = new Scanner(System.in);
+					while (true) {
+						// 2. 从客户端发送数据给服务器
+						OutputStream os = socket.getOutputStream();
+						BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+						bw.write(sc.nextLine());
+						bw.newLine(); // 为了保证对方用readline接收数据
+						bw.flush();  // 不可以省略,否则容易接收不到数据
+
+						// 3. 客户端接收数据
+						InputStream is = socket.getInputStream();
+						BufferedReader br = new BufferedReader(new InputStreamReader(is));
+						String content = br.readLine();
+						System.out.println("从客户端发送过来的数据是:" + content);
+					}
+				}
+			}
+	
+	3 多线程实现聊天
+		sendThread：
+			// 负责发送的线程
+			package com.xyq.TCP2;
+
+			import java.io.*;
+			import java.net.Socket;
+			import java.util.Scanner;
+
+			public class SendThread extends Thread {
+				private Socket s;
+
+				public SendThread(Socket s) {
+					this.s = s;
+				}
+
+				@Override
+				public void run() {
+					Scanner sc = new Scanner(System.in);
+					while (true) {
+						try {
+							OutputStream os = s.getOutputStream();
+							BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+							bw.write(sc.nextLine());
+							bw.newLine();
+							bw.flush();
+
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+
+					}
+				}
+			}
+		
+		ReceThread：
+			// 负责接收的线程
+			
+			package com.xyq.TCP2;
+
+			import java.io.BufferedReader;
+			import java.io.IOException;
+			import java.io.InputStream;
+			import java.io.InputStreamReader;
+			import java.net.Socket;
+
+			public class ReceThread extends Thread {
+				private Socket s;
+
+				public ReceThread(Socket s){
+				   this.s = s;
+				}
+				@Override
+				public void run() {
+					// 不停的接收数据
+					while (true){
+						try {
+							InputStream is = s.getInputStream();
+							BufferedReader br = new BufferedReader(new InputStreamReader(is));
+							String content = br.readLine();
+							System.out.println("接收到的数据是:"+ content);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		
+		Server:
+			package com.xyq.TCP2;
+
+			import java.io.IOException;
+			import java.net.ServerSocket;
+			import java.net.Socket;
+
+			public class Server {
+
+				public static void main(String[] args) throws IOException {
+					ServerSocket ss = new ServerSocket(9898);
+					Socket socket = ss.accept();
+
+					// 服务器而言要不停的接收和发送数据
+					// 启动的第一个线程负责接收数据
+					ReceThread rt = new ReceThread(socket);
+					rt.start();
+					// 启动的第二个线程负责发送数据
+					SendThread sd = new SendThread(socket);
+					sd.start();
+				}
+			}
+		
+		Client:
+			package com.xyq.TCP2;
+
+			import java.io.IOException;
+			import java.net.Socket;
+
+			public class Client {
+				public static void main(String[] args) throws IOException {
+					Socket socket = new Socket("localhost", 9898);
+
+					// 客户端而言要不停的接收和发送数据
+					// 启动的第一个线程负责接收数据
+					ReceThread rt = new ReceThread(socket);
+					rt.start();
+					// 启动的第二个线程负责发送数据
+					SendThread sd = new SendThread(socket);
+					sd.start();
+
+				}
+			}
+	
+	4 UDP初步通信
+		Server:
+			package com.xyq.UDP;
+
+			import java.io.IOException;
+			import java.net.DatagramPacket;
+			import java.net.DatagramSocket;
+			import java.net.InetAddress;
+			import java.net.SocketException;
+
+			public class Server {
+				public static void main(String[] args) throws IOException {
+					DatagramSocket ds = new DatagramSocket(7890);
+					byte[] bytes = new byte[1024];
+					// 准备接收数据
+					DatagramPacket dp = new DatagramPacket(bytes, 1024); // 用来接收数据的
+					ds.receive(dp); // 接收数据
+
+					// 数据在字节数组里
+					String content = new String(bytes, 0, dp.getLength());
+					System.out.println("接收到数据是：" + content);
+
+					// 发送数据给客户端
+					byte[] bs = "你也好".getBytes();
+					DatagramPacket dp2 = new DatagramPacket(bs, bs.length, InetAddress.getByName("localhost"), 9898);
+					ds.send(dp2);
+				}
+			}
+		
+		Client:
+			package com.xyq.UDP;
+
+			import java.io.IOException;
+			import java.net.*;
+
+			public class Client {
+				public static void main(String[] args) throws IOException {
+					// 从客户端发送数据
+					// 1. 创建发送者
+					DatagramSocket ds = new DatagramSocket(9898);
+
+					byte[] bs = "你好啊".getBytes();
+					// 2. 创建包裹
+					DatagramPacket dp = new DatagramPacket(bs, bs.length, InetAddress.getByName("localhost"),7890);
+
+					// 3. 把UPD包裹发送出去
+					ds.send(dp);
+
+					// 4. 客户端接收数据
+					byte[] bytes = new byte[1024];
+					DatagramPacket dp2 = new DatagramPacket(bytes, 1024);
+					ds.receive(dp2);
+					String content = new String(bytes, 0, dp2.getLength());
+					System.out.println("客户端接收的数据:"+ content);
+				}
+			}
+	
+	5 Java请求url
+		package com.xyq;
+
+		import java.io.File;
+		import java.io.FileOutputStream;
+		import java.io.IOException;
+		import java.io.InputStream;
+		import java.net.MalformedURLException;
+		import java.net.URL;
+		import java.net.URLConnection;
+
+		public class TestUrl {
+			public static void main(String[] args) throws IOException {
+				// 1创建url对象
+				URL u = new URL("http://image.baidu.com/search/detail?ct=503316480&z=0&tn=baiduimagedetail&ipn=d&cl=2&cm=1&sc=0&lm=-1&ie=gb18030&pn=0&rn=1&di=178860&ln=30&word=%CD%BC%C6%AC&os=188573792,343995474&cs=3300305952,1328708913&objurl=http%3A%2F%2Fpic37.nipic.com%2F20140113%2F8800276_184927469000_2.png&bdtype=0&simid=4174703319,828922280&pi=0&adpicid=0&timingneed=0&spn=0&is=0,0&fr=ala&ala=1&alatpl=others&pos=1");
+				// 2. 打开链接
+				URLConnection uc = u.openConnection();
+				// 3. 读取内容
+				InputStream is = uc.getInputStream();
+				FileOutputStream fos = new FileOutputStream(new File("pic.jpg"));
+				byte [] bytes = new byte[1024];
+
+				int len = 0;
+				while ((len=is.read(bytes))!=-1){
+					fos.write(bytes,0, len);
+				}
+				fos.flush();
+				fos.close();
+				is.close();
+				System.out.println("下载完毕");
+			}
+		}
+	
+	6 TCP实现多人聊天
+		
+		SocketUtil：
+			package com.xyq.TCPChat;
+			import java.io.*;
+			import java.net.Socket;
+			import java.net.SocketException;
+
+			/**
+			 * 工具类, 负责发送和接收消息
+			 */
+			public class  SocketUtil {
+				// 1. 发送消息
+				public static void send(Socket s, String msg) throws IOException{
+						OutputStream os = s.getOutputStream();
+						BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+						bw.write(msg);
+						bw.newLine();
+						bw.flush();
+				}
+
+				// 2. 接收信息
+				public static String rece(Socket s) throws IOException {
+						InputStream is = s.getInputStream();
+						BufferedReader br = new BufferedReader(new InputStreamReader(is));
+						String msg = br.readLine();
+						return msg;
+				}
+			}
+
+		
+		ReceThread：
+			package com.xyq.TCPChat;
+
+			import java.io.IOException;
+			import java.net.Socket;
+
+			public class ReceMsgThread extends Thread{
+				private Socket s;
+				public static Boolean isConnect = true;
+				public ReceMsgThread(Socket s){
+					this.s = s;
+				}
+
+				@Override
+				public void run() {
+					while (true){
+						String msg = null;
+						try {
+							msg = SocketUtil.rece(s);
+							System.out.println(msg);
+						} catch (IOException e) {
+							System.out.println("连接已断开");
+							System.exit(1);
+						}
+					}
+				}
+			}
+		
+		SendMsgThread：
+			package com.xyq.TCPChat;
+
+			import java.io.IOException;
+			import java.net.Socket;
+			import java.util.Scanner;
+
+			public class SendMsgThread extends Thread{
+				private Socket s;
+				private Users user;
+				public SendMsgThread(Users user){
+					this.user = user;
+				}
+
+				@Override
+				public void run() {
+					while (true){
+						Scanner sc = new Scanner(System.in);
+						String content = "["+user.getNickName()+"]"+":"+sc.nextLine();
+						try {
+							SocketUtil.send(user.getS(), content);
+						} catch (IOException e) {
+							System.out.println("链接以断开");
+							break;
+						}
+					}
+				}
+			}
+
+		ServerMsgThread：
+			// 服务器消息处理线程
+			package com.xyq.TCPChat;
+
+			import java.io.IOException;
+			import java.net.Socket;
+			import java.util.List;
+
+			public class ServerMsgThread extends Thread {
+				private Socket s;
+				private List<Socket> socketList;
+
+				public ServerMsgThread(Socket s, List<Socket> socketList) {
+					this.s = s;
+					this.socketList = socketList;
+				}
+
+				@Override
+				public void run() {
+					while (true) {
+						// 接收消息, 把收到的消息发送出去 -> socketList
+						String msg = null;
+						try {
+							msg = SocketUtil.rece(this.s);
+						} catch (IOException e) {
+						   continue;
+						}
+						for (Socket s : socketList) {
+							if (s.equals(this.s)) {
+								continue;
+							}
+							try {
+								SocketUtil.send(s, msg);
+							} catch (IOException e) {
+								continue;
+							}
+						}
+					}
+
+				}
+			}
+		
+		Client：
+			package com.xyq.TCPChat;
+
+			import com.xyq.UDPChat.ReceThread;
+
+			import java.io.IOException;
+			import java.net.Socket;
+			import java.util.Scanner;
+
+			public class Client {
+				public static void main(String[] args) throws IOException {
+					// 1. 链接服务器
+					Socket s = conectServer("127.0.0.1", 8000);
+					Scanner sc = new Scanner(System.in);
+					System.out.println("请输入用户名");
+					String userName = sc.nextLine();
+					Users userObj = new Users(userName, s);
+					// 2. 不停的发送消息
+					new SendMsgThread(userObj).start();
+					// 3. 不停的接收消息
+					new ReceMsgThread(s).start();
+				}
+
+				public static Socket conectServer(String ip, int Port){
+					Socket s = null;
+					try {
+						s = new Socket("localhost", 8000);
+					} catch (IOException e) {
+						System.out.println("连接失败30秒后尝试重新连接");
+						try {
+							Thread.sleep(3000);
+							conectServer(ip,Port);
+						} catch (InterruptedException ex) {
+							ex.printStackTrace();
+						}
+					}
+					return s;
+				}
+			}
+		
+		Server：
+			package com.xyq.TCPChat;
+
+			import java.io.IOException;
+			import java.net.ServerSocket;
+			import java.net.Socket;
+			import java.util.ArrayList;
+			import java.util.List;
+
+			public class Server {
+				public static void main(String[] args) throws IOException {
+					ServerSocket ss = new ServerSocket(8000);
+					List<Socket> socketList = new ArrayList<Socket>();
+					System.out.println("服务器启动等待连接.....");
+					while (true){
+						Socket s = ss.accept();
+						System.out.println("客户端"+s.getInetAddress()+":"+s.getPort()+"连接成功");
+						socketList.add(s);
+						// 为每一个客户端启动一个线程, 用来监听线程是否有消息传递过来
+						new ServerMsgThread(s, socketList).start();
+					}
+				}
+			}
+
+		
+		
+七 知识点补充
+	
+	1 a++和++a
+		a++让a自增1 相当于a= a+1
+		++a相同也是让a自增1  
+		
+		单纯的使用a++或者++a没有区别
+		在做参数传递的时候, 如果想让(变量+1)作为参数，此时可以使用++a
+		public static void main(String[] args) {
+			int a = 10;
+			int b = 10;
+
+			// a和b都会自增1
+			// 如果进行赋值a++结果就是a ++a的结果就是a+1
+			int c = a++;
+			int d = ++b;
+			System.out.println(c); // 10
+			System.out.println(d); // 11
+
+		}
+		
+	2 自定义泛型
+		泛型的语法规则：
+			1. 类的泛型
+				publc class 类名 <泛型>{}
+			2. 接口的泛型
+				publc interface 类名 <泛型>{}
+			3. 方法的泛型
+				public<泛型>返回值 方法(参数){}
+				特点：方法的泛型会根据方法的参数进行改变
+				示例：用泛型将数组装成列表
+				public class Method{
+					publc static <E> List<E> changeArrayToList(E[] es){
+						List<E> list = new ArrayList<>();
+						for(E e: es){
+							list.add(e)
+						}
+						return list;
+						
+					} 
+				}
+				
+		类名<具体的数据类型>
+		泛型可以认为是一个变量, 这个变量在使用的时候会被赋值， 这个数据类型用来声明变量, 但是不能new
+		
+		重点：使用泛型解决问题
+		
+		Dao:
+			import java.util.List;
+
+			public interface Dao<T> {
+				public void add(T t);
+
+				public void uod(T t);
+
+				public void del(T t);
+
+				public T getById();
+
+				public List<T> getAll();
+			}
+		
+		DaoImple
+			package TestFan;
+
+			import java.util.List;
+
+			public class DaoImple<T> implements Dao<T> {
+
+				@Override
+				public void add(T t) {
+					System.out.println("新增一个"+t);
+				}
+
+				@Override
+				public void uod(T t) {
+					System.out.println("修改一个"+t);
+				}
+
+				@Override
+				public void del(T t) {
+					System.out.println("删除一个"+t);
+				}
+
+				@Override
+				public T getById() {
+					System.out.println("根据ID查询");
+					return null;
+				}
+
+				@Override
+				public List<T> getAll() {
+					System.out.println("查询所有");
+					return null;
+				}
+			}
+			
+		MenuDao:
+			import java.awt.*;
+
+			public class MenuDao extends DaoImple<Menu> {
+
+			}
+		
+		Menu:
+			package TestFan;
+
+			public class Menu {
+				@Override
+				public String toString() {
+					return "menu";
+				}
+			}
+		
+		UserDao：
+			package TestFan;
+
+			public class UserDao extends DaoImple<User> {
+
+			}
+		
+		User：
+			package TestFan;
+
+			public class User {
+				@Override
+				public String toString() {
+					return "user";
+				}
+			}
+		
+		Test：	
+			package TestFan;
+
+			public class Test {
+				public static void main(String[] args) {
+					Dao d1 = new MenuDao();
+					Dao d2 = new UserDao();
+
+					Menu n = new Menu();
+					d1.add(n);
+
+					User u = new User();
+					d2.add(u);
+				}
+			}
+	
+	
+	3 通配符
+		// 等号右边调用一个方法,这个方法返回一个list类型的数据,但是不确定list里面存放是什么类型的数据
+		List<?> list = new ArrayList<>();
+	
+		? 可以匹配所有的数据类型
+		? extends E  泛型必须是E的子类或者E本身
+		? super E 泛型必须是E的父类或者E本身
+		
+	4 内部类
+		内部类的概念：就是在一个类中定义另一个类
+		(1) 成员内部类
+			把一个类定义成一个类似成员变量
+			Person:
+				package com.xyq.inner.member;
+
+				public class Person {
+					class Dog{
+						public void chi(){
+							System.out.println("狗喜欢吃");
+						}
+					}
+
+					public void play(){
+						Dog d = new Dog();
+						d.chi();
+					}
+					int age;
+					String name;
+				}
+			Test:
+				package com.xyq.inner.member;
+
+				public class Test {
+					public static void main(String[] args) {
+						Person p = new Person();
+						p.play();
+						// 在这里向使用成员内部类
+						Person.Dog d = p.new Dog();
+					}
+				}
+
+		(2) 局部内部类
+			在方法中声明的类
+			Person:
+				package com.xyq.inner.local;
+				public class Person {
+					public void makeChild(){
+						System.out.println("嘿嘿嘿");
+						class Child{
+							public void play(){
+								System.out.println("小孩喜欢玩儿游戏");
+							}
+						}
+						Child c = new Child();
+						c.play();
+					}
+				}
+				
+			Test:
+				public class Test {
+					public static void main(String[] args) {
+						Person p = new Person();
+						p.play();
+						// 在这里向使用成员内部类
+						Person.Dog d = new Person.Dog();
+					}
+				}
+
+		(3) 匿名内部类
+			写一个没有名字的类
+				public class Person {
+					public void makeChildren(){
+						Runnable r = new Runnable() { // 接口是不能new的, 这里new的是接口的实现类
+							@Override
+							public void run() {
+								System.out.println("1232323");
+							}
+						};
+					}
+				}
+		(4) 静态内部类
+			在成员内部类前面多了一个static
+			调用方式比成员内部类舒服
+			Person:
+				package com.xyq.inner.stat;
+
+				public class Person {
+					static class Dog{
+						public void chi(){
+							System.out.println("狗喜欢吃");
+						}
+					}
+
+					public void play(){
+						Dog d = new Dog();
+						d.chi();
+					}
+					int age;
+					String name;
+				}
+			Test:
+				public class Test {
+				public static void main(String[] args) {
+					Person p = new Person();
+					p.play();
+					// 在这里向使用成员内部类
+					Person.Dog d = new Person.Dog();
+					}
+				}
+	6 枚举
+		取值范围是固定的, 是由成员来进行定义的
+		枚举的最大的作用是限定变量的取值范围
+		
+		示例1：
+			week：
+				package com.xyq.enumtype;
+
+				public enum week {
+					MON, // 这个值实际上是week类型的对象
+					TUE, // 每一个值在创建的时候都是在执行枚举的构造方法
+					WED,
+					THU,
+					FIR,
+					SAT,
+					SUN;
+					private week(){
+						System.out.println("我是枚举构造方法");
+						System.out.println(this);
+					}
+
+				}
+				
+			Test1：
+				package com.xyq.enumtype;
+
+				import jdk.swing.interop.SwingInterOpUtils;
+
+				import static com.xyq.enumtype.week.MON;
+
+				public class Test1 {
+					public static void main(String[] args) {
+						week w = MON; // 枚举类型.值
+						week w2 = MON; // 值.导包
+
+						switch (w2){
+							case MON:
+								System.out.println("星期一");
+								break;
+							case THU:
+								System.out.println("星期二");
+								break;
+							case WED:
+								System.out.println("星期三");
+								break;
+							case TUE:
+								System.out.println("星期四");
+								break;
+						}
+
+					}
+				}
+
+		
+		示例二:
+			Week2:
+				package com.xyq.enumtype;
+
+				public enum Week2 {
+					// 枚举的每一项是当前枚举类型的变量
+					// 这里执行的是枚举的构造方法
+					Mon(1, "星期一"),
+					THE(2, "星期二"),
+					WED(3, "星期三"),
+					THU(4, "星期四"),
+					FRI(5, "星期五"),
+					SAT(6, "星期六"),
+					SUN(7, "星期日");
+
+					private int id;
+					private String value;
+
+					private Week2(int id, String value) {
+						this.id = id;
+						this.value = value;
+					}
+
+					public int getId() {
+						return id;
+					}
+
+					public String getValue() {
+						return value;
+					}
+
+					/**
+					 * 通过数字拿到星期
+					 */
+					public static String getValue(int id) {
+						for (Week2 w : Week2.values()){
+							if(w.getId() == id){
+								return w.getValue();
+							}
+						}
+						return null;
+					}
+				}
+				
+			Test2:
+				package com.xyq.enumtype;
+
+				import java.util.Scanner;
+
+				public class Test2 {
+					public static void main(String[] args) {
+						Scanner sc = new Scanner(System.in);
+						int i = sc.nextInt();
+						System.out.println(Week2.getValue(i));
+					}
+				}
+	
+	7 线程池
+		线程池： 帮助我们调度和使用线程
+		(1) Cached
+			可以无限的往线程池加入子线程
+			package com.xyq.ThreadPool;
+
+			import java.util.concurrent.ExecutorService;
+			import java.util.concurrent.Executors;
+			import java.util.concurrent.atomic.AtomicInteger;
+
+			public class TestCache {
+				private static AtomicInteger i = new AtomicInteger();
+
+				public static void main(String[] args) {
+					ExecutorService es = Executors.newCachedThreadPool();
+					for (int j = 0; j < 100; j++) {
+						int key = TestCache.i.incrementAndGet();
+						System.out.println("创建子线程" + key
+						);
+						es.execute(() -> {
+							for (int i = 0; i < 1000; i++) {
+								System.out.println("子线程" + key + "==>>>" + i);
+							}
+						});
+					}
+
+					for (int i = 0; i < 1000; i++) {
+						System.out.println("主线程" + i);
+					}
+				}
+			}
+
+		(2) fixed
+			限制线程池的数量如果超出规定的线程数量后面的线程会进行排队
+			package com.xyq.ThreadPool;
+
+			import java.util.concurrent.ExecutorService;
+			import java.util.concurrent.Executors;
+			import java.util.concurrent.atomic.AtomicInteger;
+
+			public class TestFixed {
+				private static AtomicInteger i = new AtomicInteger();
+
+				public static void main(String[] args) throws InterruptedException {
+					ExecutorService es = Executors.newFixedThreadPool(4);
+					for (int j = 0; j < 100; j++) {
+						int key = TestFixed.i.incrementAndGet();
+						System.out.println("创建子线程" + key
+						);
+						es.execute(() -> {
+							for (int i = 0; i < 100; i++) {
+								System.out.println("子线程" + key + "==>>>" + i);
+							}
+							try {
+								Thread.sleep(10000);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+
+						});
+
+					}
+
+					for (int i = 0; i < 100; i++) {
+						System.out.println("主线程" + i);
+					}
+				}
+			}
+
+		(3) scheduled
+			带有任务调度的线程池
+			package com.xyq.ThreadPool;
+
+			import java.util.Date;
+			import java.util.concurrent.Executors;
+			import java.util.concurrent.ScheduledExecutorService;
+			import java.util.concurrent.TimeUnit;
+
+			public class TestSchedule {
+				public static void main(String[] args) {
+					ScheduledExecutorService ses = Executors.newScheduledThreadPool(4);
+					// 四秒后执行任务
+					ses.schedule(()->{
+						System.out.println("我是4秒之后");
+					}, 4, TimeUnit.SECONDS);
+
+					// 延迟重复执行任务
+					ses.scheduleAtFixedRate(()->{
+						System.out.println(new Date());
+					}, 3, 1, TimeUnit.SECONDS);
+					// 关闭任务
+					ses.shutdown();
+				}
+			}
+
+		
+		(4) Single
+			把多个线程进行单线程的处理，当子线程报错时程序不会终止会继续执行
+			package com.xyq.ThreadPool;
+
+			import java.util.concurrent.ExecutorService;
+			import java.util.concurrent.Executors;
+			import java.util.concurrent.atomic.AtomicInteger;
+
+			public class TestSingle {
+				private static AtomicInteger i = new AtomicInteger();
+				public static void main(String[] args) {
+					ExecutorService es = Executors.newSingleThreadExecutor();
+					for (int j = 0; j < 100; j++) {
+						int key = TestSingle.i.incrementAndGet();
+						System.out.println("创建子线程" + key
+						);
+						es.execute(() -> {
+							for (int i = 0; i < 100; i++) {
+								System.out.println("子线程" + key + "==>>>" + i);
+							}
+						});
+					}
+
+					for (int i = 0; i < 100; i++) {
+						System.out.println("主线程" + i);
+					}
+				}
+			}
+			
+八 反射
+	1 什么是反射
+		反射机制是在运行状态中，对于任意一个类，都能够知道这个类的所有属性和方法；对于任意一个对象，都能够调用它的任意一个方法和属性； 这种动态获取的信息以及动态调用对象的方法的功能称为java语言的反射机制
+	 
+	2 class对象
+		在JVM将.class文件读取到内存中的时候，都会创建这个.class文件的对象，在java.lang包下有个Class类，这个类就是.class文件的对象类型,任何类再被使用时，都会创建这个类的class对象。除此之外，在java.lang.reflect包下面的类也跟反射有关
+	
+	3 反射获取类的方法应用示例
+		import com.xyq.ThreadPool.Person;
+
+		/**
+		 * 获取.class文件的Class对象
+		 */
+		public class ReflectTest01 {
+			public static void main(String[] args) throws ClassNotFoundException {
+				// 第一种方式
+				Class clazz = Class.forName("com.xyq.ThreadPool.Person");
+
+				// 第二种方式
+				// 每个类里面都有class属性
+				Class clazz2 = Person.class;
+
+				// 第三种方式
+				Person p = new Person();
+				Class clazz3 = p.getClass();
+			}
+		}
+		
+		/**
+		 * 反射将.class文件读取到内存里
+		 */
+		public class ReflectTest02 {
+			public static void main(String[] args) throws ClassNotFoundException {
+				Class clazz = Class.forName("com.xyq.ThreadPool.Person");
+				System.out.println(clazz.getName());
+			}
+		}
+		
+	4 使用反射创建类的对象
+		/**
+		 * 使用反射创建类的对象
+		 */
+
+		public class ReflectTest03 {
+			public static void main(String[] args) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+				Class clazz =  Class.forName("com.xyq.ThreadPool.Person");
+				//创建对象
+				Object o = clazz.newInstance();
+				Class clazz1 = Class.forName("java.util.Date");
+				Object o1 = clazz1.newInstance();
+				if (o1 instanceof Date){
+					System.out.println(o1);
+				}
+
+			}
+		}
+
+	5 反射-IO流-属性文件综合使用
+		import java.io.FileReader;
+		import java.io.IOException;
+		import java.util.Properties;
+
+		/**
+		 * 属性文件, 以.properties结尾的文件
+		 * 里面存储的数据是key-value
+		 * 中间以=或者：或者空格将key和value分隔开 如：carName = moke1024.car.Audi
+		 * 如果一行中有多个等号、冒号、空格存在,则以最前面出现的作为分隔符
+		 * 在开发中,要将频繁变动的内容放到属性文件里面
+		 */
+
+		public class DriveCar {
+			public static void  main(String[] args) throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+			  // 创建Properties对象
+				Properties p = new Properties();
+				// 使用IO流将属性文件读取到内存中
+				FileReader fr = new FileReader("car.propertied");
+				// 将属性文件装载到Properties对象中
+				p.load(fr);
+				// 通过key获取value
+				System.out.println(p.getProperty("carName"));
+				Class c = Class.forName(p.getProperty("carName"));
+				Object o = c.newInstance();
+			}
+		}
+	
+	6 使用反射获取类中的属性
+		public class ReflectTest04  {
+			public static void main(String[] args) {
+				Class c = Class.forName("com.1024.User")
+				// 获取类中所有的属性
+				Field[] field = c.getDeclaredFields();
+				for(Field f: field){
+					// 获取属性变量名
+					System.out.printIn(f.getName());
+					// 获取访问权限修饰符的int值
+					System.out.printIn(f.getModifiers());
+					// 将int值转为访问权限修饰符（private public）
+					System.out.printIn(Modifier.toString(f.getModifiers()));
+					
+					// 获取属性类型的Class对象
+					Class type = f.getType();
+					type.getName();
+					// 不带包名的类名
+					type.getSimpleName();
+				}
+				// 使用反射反编译
+				StringBuffer sb = new StringBuilder(200);
+				sb.append(Modifier.toString(c.getModifiers()) + "class" + c.getSimpleName()+ "{\n");
+				for (Field f : field){
+					sb.append("\t")
+					// 访问权限修饰符
+					Strings s = Modifier.toString(f.getModifiers())
+					if(!"".equals(s)){
+						sb.append(Modifier.toString(f.getModifiers()) + " " );
+					}
+					// 属性的类型名称
+					class type = f.getType();
+					sb.append(type.getSimpleName() + " ");
+					// 属性的名字
+					sb.append(f.getName() + ";\n");
+				}
+				sb.append("}");
+			}
+		}
+		
+	7 使用反射获取类中指定的属性并且为其赋值
+		public class ReflectTest05 {
+			public static void main(String[] args) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException, InstantiationException {
+				Class c = Class.forName("user");
+				// 获取指定属性Field对象
+				Field f = c.getDeclaredField("name");
+				// 创建对象
+				Object o = c.newInstance();
+				// 给o对象上的name属性赋值张三
+				f.set(o, "张三");
+				// 获取o对象上的name属性的值
+				System.out.println(f.get(o));
+
+				Field f1 = c.getDeclaredField("age");
+				Object O1 = c.newInstance();
+				// 从外部打破封装性
+				f1.setAccessible(true);
+				f1.set(O1, 20);
+				System.out.println(f1.get(O1));
+
+			}
+		}
+	
+	8 使用反射获取类中的方法
+		public class ReflectTest06 {
+			public static void main(String[] args) throws ClassNotFoundException {
+				Class c = Class.forName("user");
+				// 获取类中所有方法
+				Method[] method = c.getDeclaredMethods();
+				for (Method m : method) {
+					// 获取方法修饰符
+					System.out.println(Modifier.toString(m.getModifiers()));
+					// 方法的返回值类型
+					Class type = m.getReturnType();
+					System.out.println(type.getSimpleName()+ " ");
+					// 方法名
+					System.out.println(m.getName() + " ");
+					// 方法的参数
+					Class[] param = m.getParameterTypes();
+					for (Class p : param) {
+						System.out.println(p.getSimpleName());
+					}
+				}
+				// 反编译将User类中的方法打印
+				StringBuilder sb = new StringBuilder(200);
+				sb.append(Modifier.toString(c.getModifiers()) + " class " + c.getSimpleName() + "{\n");
+				for (Method m : method) {
+					sb.append("\t");
+					// 方法的修饰符
+					sb.append(Modifier.toString(m.getModifiers()) + " ");
+					// 方法的返回值类型
+					Class type = m.getReturnType();
+					sb.append(type.getSimpleName() + " ");
+					// 方法名
+					sb.append(m.getName() + " ");
+					sb.append("(");
+					Class[] params = m.getParameterTypes();
+					for (int i = 0; i < params.length; i++) {
+						if(i == params.length-1){
+							sb.append(params[i].getSimpleName());
+						}else {
+							sb.append(params[i].getSimpleName());
+							sb.append(",");
+						}
+					}
+					sb.append(")");
+					sb.append("{}\n");
+				}
+				sb.append("}");
+				System.out.println(sb.toString());
+			}
+		}
+
+	9 使用反射调用类中的方法
+		public class ReflectTest07 {
+			public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, InstantiationException {
+				Class c = Class.forName("user");
+				// 获取方法
+				Method method = c.getDeclaredMethod("m5", String.class, int.class);
+				// 创建对象
+				Object o = c.newInstance();
+				Object result = method.invoke(o, "admin", 10);
+				System.out.println(result);
+
+			}
+		}
+	
+	10 使用反射获取类中的构造方法
+		public class RelectTest08 {
+			public static void main(String[] args) throws ClassNotFoundException {
+				Class c = Class.forName("java.lang.StringBuilder");
+				// 获取类中所有的构造方法
+				Constructor[] con = c.getDeclaredConstructors();
+				for(Constructor co : con){
+					// 获取修饰符
+					Modifier.toString(co.getModifiers());
+					co.getName();
+					Class[] type = co.getParameterTypes();
+					for(Class t:type){
+						// 获取方法参数
+						System.out.println(t.getSimpleName());
+					}
+				}
+			}
+		}
+
+九 java8新特性
+	1 lambda表达式
+		可以将lambda看做一个匿名方法， lambda只能用于函数式接口
+		(类型 参数，类型 参数, ...., 类型 参数)>{
+			代码块；
+			return 结果；
+		}
+		
+		主要由这几个符号构成
+		() -> {}
+		
+		lambad优点: 使用lambda表达式编写出比匿名内部类更简洁的代码
+		示例:
+			MyInterface mi2 = (int a, int b ) -> {System.out.println("lambda" + (a+b));};
+			mi2.m1()
+			
+		// 创建一个线程
+			new Thread(() -> {System.out.printIn("lambda");}).start();
+			
+	2 forEach
+		在jdk8中的java.lang.Iterable接口中新增了非抽象的forEach方法。可以使用该方法配合lambda来遍历集合
+		
+		/**
+		 * 使用 forEach+lambda表达式遍历集合
+		 */
+		public class LambadaTest03 {
+			public static void main(String[] args) {
+				List<Integer> list = new ArrayList<>(5);
+				list.add(8);
+				list.add(6);
+				list.add(2);
+				list.add(9);
+				list.add(5);
+				// 使用forEach方法+lambda表达式遍历集合
+				list.forEach((i) -> System.out.println(i));
+			}
+		}
+	
+	3 方法引用
+		一共四种类型的方法引用
+			静态方法应用， 类名::方法名
+			某个对象的引用, 对象变量名::方法名
+			特定类的任意对象的方法引用, 类名::方法名
+			构造方法, 类名::new
+			
+		/**
+		 * 方法引用
+		 */
+
+		public class LambdaTest04 {
+			public static void main(String[] args) {
+				Integer[] arr = {8, 6, 9, 5, 2};
+				// 不使用lambda表达式的写法
+				Arrays.sort(arr, new Comparator<Integer>() {
+					@Override
+					public int compare(Integer o1, Integer o2) {
+						return Integer.compare(o1, o2);
+					}
+				});
+				// 使用lambda表达式
+				Arrays.sort(arr, (x, y) -> Integer.compare(x, y));
+				// 使用方法的引用
+				Arrays.sort(arr, Integer :: compare);
+			}
+		}
+	
+	4 stream简介
+		jdk8中新增stream API, 需要注意的是该stream跟之前学习的IO流没有关系，这个stream主要是用来处理集合数据的，可以将其看做是一个高级迭代器。 在Collection接口中新增了非抽象的stream方法来获取集合的流， 使用stream后可以写出简洁的代码来处理集合中的数据
+		public class StreamTest01 {
+			public static void main(String[] args) {
+				List<Student> stuList = new ArrayList<>(10);
+				stuList.add(new Student("刘一", 85));
+				stuList.add(new Student("陈二", 90));
+				stuList.add(new Student("李四", 45));
+				stuList.add(new Student("王五", 95));
+				stuList.add(new Student("赵六", 82));
+				stuList.add(new Student("孙七", 98));
+				stuList.add(new Student("周八", 100));
+				stuList.add(new Student("郑十", 67));
+
+				List<Student> result = new ArrayList<>(10);
+				// 查找集合中分数大于等于90分的数据， 并且按照降序排序
+				for (Student s : stuList) {
+					if (s.getScore() >= 90) {
+						result.add(s);
+					}
+				}
+				// 完成降序排序， 以前的写法
+				result.sort(new Comparator<Student>() {
+					@Override
+					public int compare(Student s1, Student s2) {
+						// 降序
+						return Integer.compare(s2.getScore(), s1.getScore());
+					}
+				});
+				System.out.println(result);
+				// 使用stream来实现这个需求
+				// 1. 将集合转换为Stream对象
+				// 2. 使用filter方法过滤出分数大于等于90分的数据
+				// 3. 使用sorted方法降序排序
+				// 4. 使用collect方法将Stream类型的对象转换为了List类型的对象
+				result = stuList.stream().filter(s -> s.getScore() >=90).sorted((s1, s2) -> Integer.compare(s2.getScore(), s1.getScore())).
+				collect(Collectors.toList());
+				System.out.println(result);
+			}
+		}
+		
+	5 map-reduce
+		public class MapReduce {
+			public static void main(String[] args) {
+				List<Student> stuList = new ArrayList<>(10);
+				stuList.add(new Student("刘一", 85));
+				stuList.add(new Student("陈二", 90));
+				stuList.add(new Student("李四", 45));
+				stuList.add(new Student("王五", 95));
+				stuList.add(new Student("赵六", 82));
+				stuList.add(new Student("孙七", 98));
+				stuList.add(new Student("周八", 100));
+				stuList.add(new Student("郑十", 67));
+				// 使用map获取学生分数
+				List<Integer> score = stuList.stream()
+						.map(Student :: getScore)
+						.collect(Collectors.toList());
+				System.out.println(score);
+				// 使用map获取学生姓名的长度
+				List<Integer> lne = stuList.stream()
+						.map(Student::getName)
+						.map(String::length)
+						.collect(Collectors.toList());
+
+				// 将每人分数减10
+				List<Integer>  score1 = stuList.stream()
+						.map(Student::getScore)
+						.map(c -> c-10)
+						.collect(Collectors.toList());
+				System.out.println(score1);
+
+				// 计算学生的总分
+			   int count = stuList.stream()
+						.map(Student::getScore)
+					   // 0表示从0开始计算，后面两两计算
+						.reduce(0, (a, b) -> a + b);
+				System.out.println(count);
+
+				// reduce方法2
+				// Optional是在java8中新增的类用来解决空指针问题
+				Optional<Integer> count1 = stuList.stream()
+						.map(Student::getScore)
+						.reduce((a, b) -> a+b);
+				System.out.println(count1.get());
+				// 计算最高分
+				Optional<Integer> maxScore = stuList.stream()
+						.map(Student::getScore)
+						.reduce(Integer::max);
+			}	
+		}
+		
+	6 数字流
+		/**
+		 *  IntStream, DoubleStream, LongStream
+		 */
+
+		public class StreamTest02 {
+			public static void main(String[] args) {
+				List<Student> stuList = new ArrayList<>(10);
+				stuList.add(new Student("刘一", 84));
+				stuList.add(new Student("陈二", 95));
+				stuList.add(new Student("李四", 46));
+				stuList.add(new Student("王五", 97));
+				stuList.add(new Student("赵六", 82));
+				stuList.add(new Student("孙七", 98));
+				stuList.add(new Student("周八", 100));
+				stuList.add(new Student("郑十", 67));
+				// 计算总分
+				int sum = stuList.stream()
+						.mapToInt(Student::getScore)
+						.sum();
+				System.out.println(sum);
+
+				// 计算平均分
+				OptionalDouble average = stuList.stream()
+												.mapToInt(Student::getScore)
+												.average();
+				System.out.println(average.getAsDouble());
+				// 生成1-100之间的所有int类型数字
+				IntStream is = IntStream.rangeClosed(1, 100);
+				is.toArray();
+				// 计算1~100之间偶数的个数
+				long count = IntStream.rangeClosed(1, 100)
+									.filter(n -> n%2 == 100)
+									.count();
+				System.out.println(count);
+
+			}
+		}
+		
+	7 创建流
+		public class StreamTest05 {
+			public static void main(String[] args) {
+				// Stream.of方法
+				String[] str = {"i", "love", "this", "game"};
+				Stream.of(str).map(String::toUpperCase).forEach(System.out::println);
+				// 使用Arrays.stream
+				int[] arr = {5, 8, 6, 2};
+				IntStream is = Arrays.stream(arr);
+				int sum = is.sum();
+				System.out.println(sum);
+
+				// 使用函数创建流
+				Stream.iterate(0, n -> n+2).limit(10).forEach(System.out::println);
+			}
+		}
+	8 optional类
+		public class OptionalTest01 {
+			public static void main(String[] args) {
+				List<Student> stuList = new ArrayList<>(10);
+				stuList.add(new Student("刘一", 84));
+				stuList.add(new Student("陈二", 95));
+				stuList.add(new Student("李四", 46));
+				stuList.add(new Student("王五", 95));
+				stuList.add(new Student("赵六", 82));
+				stuList.add(new Student("孙七", 97));
+				stuList.add(new Student("周八", 25));
+				stuList.add(new Student("郑十", 66));
+
+				//  计算分数在60分以下分数和
+				Optional<Integer> score = stuList.stream().map(Student::getScore).filter(s -> s<60).reduce((a, b) -> a+b);
+				System.out.println(score.orElse(0));
+
+				Map<Integer, String> map = new HashMap<>();
+				map.put(1001, "篮球");
+				map.put(1002, "足球");
+				map.put(1003, "羽毛球");
+				map.put(1004, "乒乓球");
+				// 判断是否有值
+				String sport = Optional.ofNullable(map.get(1005)).orElse("无");
+				System.out.println(sport);
+			}
+
+
+		}
+	
+	9 日期处理相关的类
+		(1) LocalDate类
+			package stream;
+
+			import java.time.LocalDate;
+			import java.time.format.DateTimeFormatter;
+			import java.time.temporal.ChronoUnit;
+
+			public class DateTest01 {
+				public static void main(String[] args) {
+					// 获取当前日期
+					LocalDate date1 = LocalDate.now();
+					System.out.println(date1);
+					int year = date1.getYear();
+					int month =date1.getMonthValue();
+					int day = date1.getDayOfMonth();
+
+					// 日期格式化
+					String date2 = date1.format(DateTimeFormatter.ofPattern("yyyy年MM月dd日"));
+					System.out.println(date2);
+					// 是否是闰年
+					boolean leap = date1.isLeapYear();
+					// 判断当前月份的天数
+					int len = date1.lengthOfMonth();
+					// 自定义日期的方式一
+					LocalDate date3 = LocalDate.parse("2019-09-30");
+					// 自定义日期的方式二
+					LocalDate date4 = LocalDate.of(2019, 9, 30);
+					// 判断日期是否相等
+					if(date3.equals(date4)){
+						System.out.println("日期相等");
+					}
+					// 获取一周后的日期
+					LocalDate date5 = date1.plus(1, ChronoUnit.WEEKS);
+					// 获取一天后的日期
+					LocalDate date6 = date1.plus(1, ChronoUnit.DAYS);
+				}
+			}
+		
+		(2) LocatTiem类
+			public class DateTest02 {
+				public static void main(String[] args) {
+					LocalTime time1 = LocalTime.now();
+					// 获取当前时间， 不包含毫秒
+					LocalTime time2 = LocalTime.now().withNano(0);
+					System.out.println(time1);
+					System.out.println(time2);
+					// 一小时后
+					LocalTime time3 = time1.plusHours(1);
+					System.out.println(time3);
+					// 自定义时间
+					LocalTime time4 = LocalTime.parse("06:12:30");
+					LocalTime time5 = LocalTime.of(06, 30 , 12);
+
+				}
+			}
+		
+		(3) LocalDateTime类
+			public class DateTest03 {
+				public static void main(String[] args) {
+					LocalDateTime date1 = LocalDateTime.now();
+					LocalDateTime date2 = LocalDateTime.of(2019,9, 30,  13 ,20 , 15);
+
+				}
+			}
+		
+		(4) Duration和period
+			public class DateTest04 {
+				public static void main(String[] args) {
+					LocalDate date1 = LocalDate.of(2019, 9, 30);
+					LocalDate date2 = LocalDate.of(2019, 9, 10);
+					// 计算两个日期相差天数
+					Period period = Period.between(date1, date2);
+					System.out.println(period.getDays());
+					// Duration只能计算相差的时间
+			//        Duration duration = Duration.between(date1, date2);
+			//        System.out.println(duration.toDays());
+				}
+
+			}
+
+					

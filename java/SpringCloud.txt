@@ -1,0 +1,1394 @@
+一 什么是微服务
+	微服务化的核心就是将传统的一站式应用根据业务拆分成一个一个的服务，彻底地去耦合，每一个微服务提供单个业务功能的服务，一个服务做一件事，
+	从技术角度中看就是一种小尔独立的处理过程，类似进程概念，能够自行单独启动户或销毁，拥有自己独立的数据库
+	
+	例如 以前的系统会将商品/订单/交易/库存等等放在一个的工程中
+	分布式服务：各个模块/服务，各自独立出来，各自微小的一个进程，让专业的人做专业的事情
+	
+	优点：
+		每个服务足够内聚，足够小，代码容易理解
+		开发简单，开发效率高，一个服务可能就是专一的只干一件事
+		微服务能够被小团队开发
+		微服务是松耦合的，是有功能意义的服务，无论是在开发阶段或部署阶段都是独立的。
+		易于和第三方集成，如Jenkins Husdon
+		微服务只是业务逻辑代码，不会和HTML，CSS或其他界面组件混合
+		
+	缺点：
+		开发人员要处理分布式系统的复杂性
+		多服务运维难度，随着服务的增加，运维压力也在增大
+		服务部署依赖
+		服务间通信成本
+		数据一致性
+		系统集成测试
+		性能监控...
+
+二 SpringCloud简介
+	SpringCloud是关注全局的微服务协调整理治理框架， 它将SpringBoot开发的一个个单体微服务整合并管理起来
+	为各个微服务之间提供，配置管理 服务发现 断路由 路由 微代理 事件总线 全局锁 决策精选 分布式会话等待集成服务
+	SpringBoot可以离开SpringCloud独立使用开发项目, 但是SpringCloud离不开SpringBoot属于依赖的关系
+	SpringBoot专注于快速方便的开发单个微服务个体，SpringCloud关注全局的服务治理框架
+	
+	
+	SpringCloud与dubbo的区别
+		最大区别：SpringCloud抛弃了Dubbo的RPC通信，采用的是基于HTTP的REST方式。
+		严格来说，这两种方式各有优劣。虽然从一定程度上来说，后者牺牲了服务调用的性能，但也避免了上面提到的原生RPC带来的问题。
+		而且REST相比RPC更为灵活，服务提供方和调用方的依赖只依靠一纸契约，不存在代码级别的强依赖，这在强调快速演化的微服务环境下，显得更加合适。
+		
+	
+	
+三 REST微服务框架搭建
+	
+	创建整体父工程 
+		新建父工程microservicecloud，切记是Packageing是pom模式主要是定义POM文件，将后续各个子模块公用的jar包等统一提出来，类似一个抽象父类
+		<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		  <modelVersion>4.0.0</modelVersion>
+		 
+		  <modelVersion>4.0.0</modelVersion>
+		  <groupId>com.harry.springcloud</groupId>
+		  <artifactId>microservicecloud</artifactId>
+		  <version>0.0.1-SNAPSHOT</version>
+		  <packaging>pom</packaging>
+		 
+		 
+		  <properties>
+		   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		   <maven.compiler.source>1.8</maven.compiler.source>
+		   <maven.compiler.target>1.8</maven.compiler.target>
+		   <junit.version>4.12</junit.version>
+		   <log4j.version>1.2.17</log4j.version>
+		   <lombok.version>1.16.18</lombok.version>
+		  </properties>
+		 
+		  <dependencyManagement>
+		   <dependencies>
+			 <dependency>
+			   <groupId>org.springframework.cloud</groupId>
+			   <artifactId>spring-cloud-dependencies</artifactId>
+			   <version>Dalston.SR1</version>
+			   <type>pom</type>
+			   <scope>import</scope>
+			 </dependency>
+			 <dependency>
+			   <groupId>org.springframework.boot</groupId>
+			   <artifactId>spring-boot-dependencies</artifactId>
+			   <version>1.5.3.RELEASE</version>
+			   <type>pom</type>
+			   <scope>import</scope>
+			 </dependency>
+			 <dependency>
+			   <groupId>mysql</groupId>
+			   <artifactId>mysql-connector-java</artifactId>
+			   <version>5.0.4</version>
+			 </dependency>
+			 <dependency>
+			   <groupId>com.alibaba</groupId>
+			   <artifactId>druid</artifactId>
+			   <version>1.0.31</version>
+			 </dependency>
+			 <dependency>
+			   <groupId>org.mybatis.spring.boot</groupId>
+			   <artifactId>mybatis-spring-boot-starter</artifactId>
+			   <version>1.3.0</version>
+			 </dependency>
+			 <dependency>
+			   <groupId>ch.qos.logback</groupId>
+			   <artifactId>logback-core</artifactId>
+			   <version>1.2.3</version>
+			 </dependency>
+			 <dependency>
+			   <groupId>junit</groupId>
+			   <artifactId>junit</artifactId>
+			   <version>${junit.version}</version>
+			   <scope>test</scope>
+			 </dependency>
+			 <dependency>
+			   <groupId>log4j</groupId>
+			   <artifactId>log4j</artifactId>
+			   <version>${log4j.version}</version>
+			 </dependency>
+		   </dependencies>
+		  </dependencyManagement>
+		</project>
+
+	创建公共子模块 microservicecloud-api
+		pom：
+			<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+			  <modelVersion>4.0.0</modelVersion>
+			  <parent>
+				<groupId>com.harry.springcloud</groupId>
+				<artifactId>microservicecloud</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			  </parent>
+
+			  <artifactId>microservicecloud-api</artifactId><!-- 当前Module我自己叫什么名字 -->
+			  <!-- 当前Module需要用到的jar包，按自己需求添加，如果父类已经包含了，可以不用写版本号 -->
+			  <dependencies>
+			   <dependency>
+				 <groupId>org.projectlombok</groupId>
+				 <artifactId>lombok</artifactId>
+			   </dependency>
+			  </dependencies>
+			</project>
+			te goal org.apache.maven.plugins:maven-compiler-plugin:3.1:compile (default-compile) on project microservicecloud-api: Fatal error compiling: java.lang.ExceptionInInitializerError: com.sun.tools.javac.code.TypeTags 
+		新建部门Entity且配合lombok使用：
+			package com.harry.springCloud.entity;
+			import java.io.Serializable;
+
+			import lombok.Data;
+			import lombok.NoArgsConstructor;
+			import lombok.experimental.Accessors;
+
+			@SuppressWarnings("serial")
+			@NoArgsConstructor
+			@Data
+			@Accessors(chain = true)
+			public class Dept implements Serializable  // 必须序列化
+			{
+				private Long deptno; // 主键
+				private String dname; // 部门名称
+				private String db_source;// 来自那个数据库，因为微服务架构可以一个服务对应一个数据库，同一个信息被存储到不同数据库
+
+			}
+
+		mvn clean install后给其它模块引用，达到通用目的。也即需要用到部门实体的话，不用每个工程都定义一份，直接引用本模块即可。
+		
+	
+	新建microservicecloud-provider-dept-8801  部门微服务提供者Module
+		pom:
+			<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+				<modelVersion>4.0.0</modelVersion>
+				<parent>
+					<groupId>com.harry.springcloud</groupId>
+					<artifactId>microservicecloud</artifactId>
+					<version>0.0.1-SNAPSHOT</version>
+				</parent>
+				<artifactId>microservicecloud-provider-dept-8801</artifactId>
+
+				<dependencies>
+					<dependency>
+						<groupId>com.harry.springcloud</groupId>
+						<artifactId>microservicecloud-api</artifactId>
+						<version>${project.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>junit</groupId>
+						<artifactId>junit</artifactId>
+					</dependency>
+					<dependency>
+						<groupId>mysql</groupId>
+						<artifactId>mysql-connector-java</artifactId>
+					</dependency>
+					<dependency>
+						<groupId>com.alibaba</groupId>
+						<artifactId>druid</artifactId>
+					</dependency>
+					<dependency>
+						<groupId>ch.qos.logback</groupId>
+						<artifactId>logback-core</artifactId>
+					</dependency>
+					<dependency>
+						<groupId>org.mybatis.spring.boot</groupId>
+						<artifactId>mybatis-spring-boot-starter</artifactId>
+					</dependency>
+					<dependency>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-jetty</artifactId>
+					</dependency>
+					<dependency>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-web</artifactId>
+					</dependency>
+					<dependency>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-test</artifactId>
+					</dependency>
+					<!-- 修改后立即生效，热部署 -->
+
+					<dependency>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-devtools</artifactId>
+					</dependency>
+				</dependencies>
+
+
+				<build>
+					<!-- 添加资源 -->
+					<resources>
+						<resource>
+							<directory>src/main/resources</directory>
+							<!-- src/main/resources下的指定资源放行 -->
+							<includes>
+								<include>**/*.properties</include>
+								<include>**/*.yml</include>
+								<include>**/*.xml</include>
+							</includes>
+							<filtering>false</filtering>
+						</resource>
+					</resources>
+				</build>
+
+			</project>
+		YML:
+			server:
+			  port: 8001
+			  
+			mybatis:
+			  config-location: classpath:mybatis/mybatis.cfg.xml        # mybatis配置文件所在路径
+			  type-aliases-package: com.atguigu.springcloud.entities    # 所有Entity别名类所在包
+			  mapper-locations:
+				- classpath:mybatis/mapper/**/*.xml                       # mapper映射文件
+				
+			spring:
+			   application:
+				name: microservicecloud-dept 
+			   datasource:
+				type: com.alibaba.druid.pool.DruidDataSource            # 当前数据源操作类型
+				driver-class-name: org.gjt.mm.mysql.Driver              # mysql驱动包
+				url: jdbc:mysql://localhost:3306/cloudDB01              # 数据库名称
+				username: root
+				password: 123456
+				dbcp2:
+				  min-idle: 5                                           # 数据库连接池的最小维持连接数
+				  initial-size: 5                                       # 初始化连接数
+				  max-total: 5                                          # 最大连接数
+				  max-wait-millis: 200                                  # 等待连接获取的最大超时时间
+				 
+		
+		工程src/main/resources目录下新建mybatis文件夹后新建mybatis.cfg.xml文件
+			<?xml version="1.0" encoding="UTF-8" ?>
+			<!DOCTYPE configuration
+			  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+			  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+			  
+			<configuration>
+			 
+			  <settings>
+			   <setting name="cacheEnabled" value="true"/><!-- 二级缓存开启 -->
+			  </settings>
+			 
+			</configuration>
+ 
+
+		MySQL创建部门数据库脚本
+		
+			DROP DATABASE IF EXISTS cloudDB01;
+			CREATE DATABASE cloudDB01 CHARACTER SET UTF8;
+			USE cloudDB01;
+			CREATE TABLE dept
+			(
+			  deptno BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+			  dname VARCHAR(60),
+			  db_source   VARCHAR(60)
+			);
+			 
+			INSERT INTO dept(dname,db_source) VALUES('开发部',DATABASE());
+			INSERT INTO dept(dname,db_source) VALUES('人事部',DATABASE());
+			INSERT INTO dept(dname,db_source) VALUES('财务部',DATABASE());
+			INSERT INTO dept(dname,db_source) VALUES('市场部',DATABASE());
+			INSERT INTO dept(dname,db_source) VALUES('运维部',DATABASE());
+			 
+			SELECT * FROM dept;
+			
+		
+		DeptDao部门接口
+			package com.harry.springCloud.dao;
+
+			import java.util.List;
+			import org.springframework.stereotype.Repository;
+			import com.harry.springCloud.entity.Dept;
+
+			@Repository
+			public interface DeptDao {
+				public boolean addDept(Dept dept);
+
+				public Dept findById(Long id);
+
+				public List<Dept> findAll();
+			}
+		
+		工程src/main/resources/mybatis目录下新建mapper文件夹后再建DeptMapper.xml
+			<?xml version="1.0" encoding="UTF-8" ?>
+			<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+			"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+			<mapper namespace="com.harry.springCloud.dao.DeptDao">
+			 
+			  <select id="findById" resultType="com.harry.springCloud.entity.Dept" parameterType="Long">
+			   select deptno,dname,db_source from dept where deptno=#{deptno}; 
+			  </select>
+			  <select id="findAll" resultType="com.harry.springCloud.entity.Dept">
+			   select deptno,dname,db_source from dept; 
+			  </select>
+			  <insert id="addDept" parameterType="com.harry.springCloud.entity.Dept">
+			   INSERT INTO dept(dname,db_source) VALUES(#{dname},DATABASE());
+			  </insert>
+			  
+			</mapper>
+ 
+		
+		DeptService部门服务接口和实现类
+			package com.harry.springCloud.service;
+			import java.util.List;
+			import com.harry.springCloud.entity.Dept;
+			public interface DeptService {
+				  public boolean add(Dept dept);
+				  public Dept    get(Long id);
+				  public List<Dept> list();
+			}
+			
+			
+			package com.harry.springCloud.service;
+			import java.util.List;
+			import org.springframework.beans.factory.annotation.Autowired;
+			import org.springframework.stereotype.Service;
+			import com.harry.springCloud.dao.DeptDao;
+			import com.harry.springCloud.entity.Dept;
+
+			@Service
+			public class DeptServiceImpl implements DeptService {
+				@Autowired
+				private DeptDao dao;
+
+				@Override
+				public boolean add(Dept dept) {
+					return dao.addDept(dept);
+				}
+
+				@Override
+				public Dept get(Long id) {
+					return dao.findById(id);
+				}
+
+				@Override
+				public List<Dept> list() {
+					return dao.findAll();
+				}
+			}
+		
+		DeptController部门微服务提供者REST
+			package com.harry.springCloud.controller;
+
+			import java.util.List;
+
+			import org.springframework.beans.factory.annotation.Autowired;
+			import org.springframework.web.bind.annotation.PathVariable;
+			import org.springframework.web.bind.annotation.RequestBody;
+			import org.springframework.web.bind.annotation.RequestMapping;
+			import org.springframework.web.bind.annotation.RequestMethod;
+			import org.springframework.web.bind.annotation.RestController;
+
+			import com.harry.springCloud.entity.Dept;
+			import com.harry.springCloud.service.DeptService;
+
+			@RestController
+			public class DeptController {
+				@Autowired
+				private DeptService service;
+
+				@RequestMapping(value = "/dept/add", method = RequestMethod.POST)
+				public boolean add(@RequestBody Dept dept) {
+					return service.add(dept);
+				}
+
+				@RequestMapping(value = "/dept/get/{id}", method = RequestMethod.GET)
+				public Dept get(@PathVariable("id") Long id) {
+					return service.get(id);
+				}
+
+				@RequestMapping(value = "/dept/list", method = RequestMethod.GET)
+				public List<Dept> list() {
+					return service.list();
+				}
+			}
+
+		DeptProvider8001_App主启动类DeptProvider8001_App
+			package com.harry.springCloud;
+
+			import org.mybatis.spring.annotation.MapperScan;
+			import org.springframework.boot.SpringApplication;
+			import org.springframework.boot.autoconfigure.SpringBootApplication;
+			import org.springframework.context.annotation.ComponentScan;
+
+			@SpringBootApplication
+			@MapperScan("com.harry.springCloud.dao")
+			@ComponentScan({"com.harry.springCloud"})
+			public class DeptProvider8801_App {
+				public static void main(String[] args) {
+					SpringApplication.run(DeptProvider8801_App.class, args);
+
+				}
+			}
+
+	新建microservicecloud-consumer-dept-80部门微服务消费者Module	
+		POM:
+			<project xmlns="http://maven.apache.org/POM/4.0.0"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+				<modelVersion>4.0.0</modelVersion>
+				<parent>
+					<groupId>com.harry.springcloud</groupId>
+					<artifactId>microservicecloud</artifactId>
+					<version>0.0.1-SNAPSHOT</version>
+				</parent>
+				<artifactId>microservicecloud-consumer-dept-80</artifactId>
+				<description>部门微服务消费者</description>
+
+				<dependencies>
+					<dependency><!-- 引入自己定义的api通用包，可以使用Dept部门Entity -->
+						<groupId>com.harry.springcloud</groupId>
+						<artifactId>microservicecloud-api</artifactId>
+						<version>${project.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-starter-web</artifactId>
+					</dependency>
+
+					<dependency>
+						<groupId>org.springframework.boot</groupId>
+						<artifactId>spring-boot-devtools</artifactId>
+					</dependency>
+				</dependencies>
+			</project>
+		
+		YML:
+			server:
+				port: 80
+				
+		cfgbeans包下ConfigBean的编写（类似spring里面的applicationContext.xml写入的注入Bean）
+			package com.harry.springCloud.cfgbeans;
+			import org.springframework.context.annotation.Bean;
+			import org.springframework.context.annotation.Configuration;
+			import org.springframework.web.client.RestTemplate;
+
+			@Configuration
+			public class ConfigBean {
+				@Bean
+				public RestTemplate getRestTemplate() {
+					return new RestTemplate();
+				}
+			}
+			
+			
+		controller包下新建DeptController_Consumer部门微服务消费者REST
+			package com.harry.springCloud.controller;
+
+			import java.util.List;
+
+			import org.springframework.beans.factory.annotation.Autowired;
+			import org.springframework.web.bind.annotation.PathVariable;
+			import org.springframework.web.bind.annotation.RequestMapping;
+			import org.springframework.web.bind.annotation.RestController;
+			import org.springframework.web.client.RestTemplate;
+
+			import com.harry.springCloud.entity.Dept;
+
+			@RestController
+			public class DeptController_Consumer
+			{
+				private static final String REST_URL_PREFIX = "http://localhost:8801";
+				
+				@Autowired
+				private RestTemplate restTemplate;
+				
+				@RequestMapping(value="/consumer/dept/add")
+				public boolean add(Dept dept)
+				{
+					 return restTemplate.postForObject(REST_URL_PREFIX+"/dept/add", dept, Boolean.class);
+				}
+				
+				@RequestMapping(value="/consumer/dept/get/{id}")
+				public Dept get(@PathVariable("id") Long id)
+				{
+					 return restTemplate.getForObject(REST_URL_PREFIX+"/dept/get/"+id, Dept.class);
+				}
+				
+				@SuppressWarnings("unchecked")
+				@RequestMapping(value="/consumer/dept/list")
+				public List<Dept> list()
+				{
+					 return restTemplate.getForObject(REST_URL_PREFIX+"/dept/list", List.class);
+				}   
+			}
+			
+四 Eureka服务注册与发现
+	1 什么是Euraka
+		Eureka是Netflix的一个子模块，也是核心模块之一。Eureka是一个基于REST的服务，用于定位服务，以实现云端中间层服务发现和故障转移。
+		服务注册与发现对于微服务架构来说是非常重要的，有了服务发现与注册，只需要使用服务的标识符，就可以访问到服务，而不需要修改服务调用的配置文件了。功能类似于dubbo的注册中心，比如Zookeeper。
+		
+		
+	2. Euraka基本框架
+		Eureka 采用了 C-S 的设计架构。Eureka Server 作为服务注册功能的服务器，它是服务注册中心。
+		而系统中的其他微服务，使用 Eureka 的客户端连接到 Eureka Server并维持心跳连接。这样系统的维护人员就可以通过 Eureka Server 来监控系统中各个微服务是否正常运行。SpringCloud的一些其他模块（比如Zuul）就可以通过 Eureka Server 来发现系统中的其他微服务，并执行相关的逻辑。
+		
+	3.Eureka包含两个组件：Eureka Server和Eureka Client
+		Eureka Server提供服务注册服务
+		各个节点启动后，会在EurekaServer中进行注册，这样EurekaServer中的服务注册表中将会存储所有可用服务节点的信息，服务节点的信息可以在界面中直观的看到
+		EurekaClient是一个Java客户端，用于简化Eureka Server的交互，客户端同时也具备一个内置的、使用轮询(round-robin)负载算法的负载均衡器。在应用启动后，将会向Eureka Server发送心跳(默认周期为30秒)。如果Eureka Server在多个心跳周期内没有接收到某个节点的心跳，EurekaServer将会从服务注册表中把这个服务节点移除（默认90秒）
+	
+	4.创建microservicecloud-eureka-7001eureka服务注册中心Module
+		POM:
+			<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+			  <modelVersion>4.0.0</modelVersion>
+			  <parent>
+				<groupId>com.harry.springcloud</groupId>
+				<artifactId>microservicecloud</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			  </parent>
+			  <artifactId>microservicecloud-eureka-7001</artifactId>
+			  
+			   <dependencies>
+			   <!--eureka-server服务端 -->
+			   <dependency>
+				 <groupId>org.springframework.cloud</groupId>
+				 <artifactId>spring-cloud-starter-eureka-server</artifactId>
+			   </dependency>
+			 
+			 
+			   <dependency>
+				 <groupId>org.springframework.boot</groupId>
+				 <artifactId>spring-boot-devtools</artifactId>
+			   </dependency>
+			   
+			   <!--java8以上版本还需添加以下包-->
+			   	<dependency>
+					<groupId>javax.xml.bind</groupId>
+					<artifactId>jaxb-api</artifactId>
+					<version>2.3.0</version>
+					</dependency>
+				<dependency>
+					<groupId>com.sun.xml.bind</groupId>
+					<artifactId>jaxb-impl</artifactId>
+					<version>2.3.0</version>
+				</dependency>
+				<dependency>
+					<groupId>org.glassfish.jaxb</groupId>
+					<artifactId>jaxb-runtime</artifactId>
+					<version>2.3.0</version>
+				</dependency>
+				<dependency>
+					<groupId>javax.activation</groupId>
+					<artifactId>activation</artifactId>
+					<version>1.1.1</version>
+				</dependency>
+			   
+			   
+			  </dependencies>
+			  
+			</project>
+			
+		YML:
+			 
+			server: 
+			  port: 7001
+			 
+			eureka:
+			  instance:
+				hostname: localhost #eureka服务端的实例名称
+			  client:
+				register-with-eureka: false #false表示不向注册中心注册自己。
+				fetch-registry: false #false表示自己端就是注册中心，我的职责就是维护服务实例，并不需要去检索服务
+				service-url:
+				  defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/        #设置与Eureka Server交互的地址查询服务和注册服务都需要依赖这个地址。
+			 
+
+		EurekaServer7001_App主启动类:
+			package com.harry.springCloud;
+			import org.springframework.boot.SpringApplication;
+			import org.springframework.boot.autoconfigure.SpringBootApplication;
+			import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
+
+			@SpringBootApplication
+			@EnableEurekaServer//EurekaServer服务器端启动类,接受其它微服务注册进来
+			public class EurekaServer7001_App {
+				public static void main(String [] args) {
+					SpringApplication.run(EurekaServer7001_App.class, args);
+				}
+			}
+
+	5. microservicecloud-provider-dept-8801将已有的部门微服务注册进eureka服务中心
+		修改8801Pom 增加如下内容：
+		  <!-- 将微服务provider侧注册进eureka -->
+		   <dependency>
+			 <groupId>org.springframework.cloud</groupId>
+			 <artifactId>spring-cloud-starter-eureka</artifactId>
+		   </dependency>
+		   <dependency>
+			 <groupId>org.springframework.cloud</groupId>
+			 <artifactId>spring-cloud-starter-config</artifactId>
+		   </dependency>
+		YML添加如下配置：			
+			eureka:
+			  client: #客户端注册进eureka服务列表内
+				service-url: 
+				  defaultZone: http://localhost:7001/eureka
+				instance: 
+				  instance-id: microservicecloud-dept8001  #自定义服务名称信息
+				  prefer-ip-address: true     #访问路径可以显示IP地址
+				  
+		DeptProvider8001_App主启动类
+			@SpringBootApplication
+			@EnableEurekaClient //本服务启动后会自动注册进eureka服务中
+			public class DeptProvider8001_App
+			{
+			  public static void main(String[] args)
+			  {
+			   SpringApplication.run(DeptProvider8001_App.class, args);
+			  }
+			}
+			
+	6 添加微服务info内容详细信息
+		在微服务客户端POM中添加
+			 
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-actuator</artifactId>
+			</dependency>
+		总的父工程microservicecloud修改pom.xml添加构建build信息
+		
+		在客户端YML中添加：
+			info:
+			  app.name: atguigu-microservicecloud
+			  company.name: www.atguigu.com
+			  build.artifactId: $project.artifactId$
+			  build.version: $project.version$
+			  
+			  
+	7 Eureka负载均衡配置
+		(1) 创建新建microservicecloud-eureka-7002/microservicecloud-eureka-7003两个工程
+		(2) 复制7001POM到7002和7003
+		(3) 修改Host文件
+			找到C:\Windows\System32\drivers\etc路径下的hosts文件
+			127.0.0.1 eureka7001.com eureka7002.com eureka7003.com
+		(4) 修个3个微服务的yml
+			7001：
+				server: 
+				  port: 7001
+				 
+				eureka: 
+				  instance:
+					hostname: eureka7001.com #eureka服务端的实例名称
+				  client: 
+					register-with-eureka: false     #false表示不向注册中心注册自己。
+					fetch-registry: false     #false表示自己端就是注册中心，我的职责就是维护服务实例，并不需要去检索服务
+					service-url: 
+					  #单机 defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/       #设置与Eureka Server交互的地址查询服务和注册服务都需要依赖这个地址（单机）。
+					  defaultZone: http://eureka7002.com:7002/eureka/,http://eureka7003.com:7003/eureka/
+					  
+			7002：
+				server: 
+				  port: 7002
+				 
+				eureka: 
+				  instance:
+					hostname: eureka7002.com #eureka服务端的实例名称
+				  client: 
+					register-with-eureka: false     #false表示不向注册中心注册自己。
+					fetch-registry: false     #false表示自己端就是注册中心，我的职责就是维护服务实例，并不需要去检索服务
+					service-url: 
+					  #单机 defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/       #设置与Eureka Server交互的地址查询服务和注册服务都需要依赖这个地址（单机）。
+					  defaultZone: http://eureka7001.com:7001/eureka/,http://eureka7003.com:7003/eureka/ #er交互的地址查询服务和注册服务都需要依赖这个地址。
+					  
+			7003：
+				server: 
+				  port: 7003
+				 
+				eureka:
+				  instance:
+					hostname: eureka7003.com #eureka服务端的实例名称
+				  client:
+					register-with-eureka: false #false表示不向注册中心注册自己。
+					fetch-registry: false #false表示自己端就是注册中心，我的职责就是维护服务实例，并不需要去检索服务
+					service-url:
+					 defaultZone: http://eureka7001.com:7001/eureka/,http://eureka7002.com:7002/eureka/ #er交互的地址查询服务和注册服务都需要依赖这个地址。
+						
+		(5) 修改微服务8801的yml文件
+			eureka:
+			  client: #客户端注册进eureka服务列表内
+				service-url: 
+				  defaultZone: http://eureka7001.com:7001/eureka/,http://eureka7002.com:7002/eureka/,http://eureka7003.com:7003/eureka/
+			  instance:
+				instance-id: microservicecloud-dept8801   #自定义服务名称信息
+				prefer-ip-address: true     #访问路径可以显示IP地址
+				  
+	8 eureka自我保护
+		默认情况下，如果EurekaServer在一定时间内没有接收到某个微服务实例的心跳，EurekaServer将会注销该实例（默认90秒）。但是当网络分区故障发生时，微服务与EurekaServer之间无法正常通信，以上行为可能变得非常危险了——因为微服务本身其实是健康的，此时本不应该注销这个微服务。Eureka通过“自我保护模式”来解决这个问题——当EurekaServer节点在短时间内丢失过多客户端时（可能发生了网络分区故障），那么这个节点就会进入自我保护模式。一旦进入该模式，EurekaServer就会保护服务注册表中的信息，不再删除服务注册表中的数据（也就是不会注销任何微服务）。当网络故障恢复后，该Eureka Server节点会自动退出自我保护模式。
+		在自我保护模式中，Eureka Server会保护服务注册表中的信息，不再注销任何服务实例。当它收到的心跳数重新恢复到阈值以上时，该Eureka Server节点就会自动退出自我保护模式。它的设计哲学就是宁可保留错误的服务注册信息，也不盲目注销任何可能健康的服务实例。
+		
+五 Ribbon负载均衡
+	1 什么是Ribbon
+		Spring Cloud Ribbon是基于Netflix Ribbon实现的一套客户端       负载均衡的工具。
+		简单的说，Ribbon是Netflix发布的开源项目，主要功能是提供客户端的软件负载均衡算法，将Netflix的中间层服务连接在一起。
+		Ribbon客户端组件提供一系列完善的配置项如连接超时，重试等。
+		简单的说，就是在配置文件中列出Load Balancer（简称LB）后面所有的机器，Ribbon会自动的帮助你基于某种规则（如简单轮询，随机连接等）去连接这些机器。我们也很容易使用Ribbon实现自定义的负载均衡算法。
+
+	2 Ribbon的初步配置
+		(1)修改microservicecloud-consumer-dept-80工程
+			POM.XML:
+				<project xmlns="http://maven.apache.org/POM/4.0.0"
+					xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+					xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+					<modelVersion>4.0.0</modelVersion>
+					<parent>
+						<groupId>com.harry.springcloud</groupId>
+						<artifactId>microservicecloud</artifactId>
+						<version>0.0.1-SNAPSHOT</version>
+					</parent>
+					<artifactId>microservicecloud-consumer-dept-80</artifactId>
+					<description>部门微服务消费者</description>
+
+					<dependencies>
+						<dependency><!-- 引入自己定义的api通用包，可以使用Dept部门Entity -->
+							<groupId>com.harry.springcloud</groupId>
+							<artifactId>microservicecloud-api</artifactId>
+							<version>${project.version}</version>
+						</dependency>
+						<dependency>
+							<groupId>org.springframework.boot</groupId>
+							<artifactId>spring-boot-starter-web</artifactId>
+						</dependency>
+
+					
+						
+						<!-- Ribbon相关 -->
+					   <dependency>
+						 <groupId>org.springframework.cloud</groupId>
+						 <artifactId>spring-cloud-starter-eureka</artifactId>
+					   </dependency>
+					   <dependency>
+						 <groupId>org.springframework.cloud</groupId>
+						 <artifactId>spring-cloud-starter-ribbon</artifactId>
+					   </dependency>
+					   <dependency>
+						 <groupId>org.springframework.cloud</groupId>
+						 <artifactId>spring-cloud-starter-config</artifactId>
+					   </dependency>
+						
+					</dependencies>
+
+				</project>
+				
+			application.yml:
+				server:
+				  port: 80
+
+				eureka:
+				  client:
+					register-with-eureka: false
+					service-url: 
+					  defaultZone: http://eureka7001.com:7001/eureka/,http://eureka7002.com:7002/eureka/,http://eureka7003.com:7003/eureka/
+					  
+		(2) 对ConfigBean进行新注解@LoadBalanced    获得Rest时加入Ribbon的配置
+			@Configuration
+			public class ConfigBean
+			{
+			  @Bean
+			  @LoadBalanced
+			  public RestTemplate getRestTemplate()
+			  {
+			   return new RestTemplate();
+			  }
+			}
+			
+		(3) 主启动类DeptConsumer80_App添加@EnableEurekaClient
+			@SpringBootApplication
+			@EnableEurekaClient
+			public class DeptConsumer80_App
+			{
+			  public static void main(String[] args)
+			  {
+			   SpringApplication.run(DeptConsumer80_App.class, args);
+			  }
+			}
+ 
+		(4) 修改DeptController_Consumer客户端访问类
+			package com.harry.springCloud.controller;
+
+			import java.util.List;
+
+			import org.springframework.beans.factory.annotation.Autowired;
+			import org.springframework.web.bind.annotation.PathVariable;
+			import org.springframework.web.bind.annotation.RequestMapping;
+			import org.springframework.web.bind.annotation.RestController;
+			import org.springframework.web.client.RestTemplate;
+
+			import com.harry.springCloud.entity.Dept;
+
+			@RestController
+			public class DeptController_Consumer
+			{
+				//private static final String REST_URL_PREFIX = "http://localhost:8801";
+				private static final String REST_URL_PREFIX = "http://MICROSERVICECLOUD-DEPT";
+
+				@Autowired
+				private RestTemplate restTemplate;
+				
+				@RequestMapping(value="/consumer/dept/add")
+				public boolean add(Dept dept)
+				{
+					 return restTemplate.postForObject(REST_URL_PREFIX+"/dept/add", dept, Boolean.class);
+				}
+				
+				@RequestMapping(value="/consumer/dept/get/{id}")
+				public Dept get(@PathVariable("id") Long id)
+				{
+					 return restTemplate.getForObject(REST_URL_PREFIX+"/dept/get/"+id, Dept.class);
+				}
+				
+				@SuppressWarnings("unchecked")
+				@RequestMapping(value="/consumer/dept/list")
+				public List<Dept> list()
+				{
+					 return restTemplate.getForObject(REST_URL_PREFIX+"/dept/list", List.class);
+				}   
+			}
+		
+		(5) 先启动3个eureka集群后，再启动microservicecloud-provider-dept-8001并注册进eureka
+		(6) 启动microservicecloud-consumer-dept-80
+		(7) 测试http://localhost/consumer/dept/list
+	
+	3 Ribbon的负载均衡配置
+		Ribbon在工作时分成两步
+			第一步先选择 EurekaServer ,它优先选择在同一个区域内负载较少的server.
+			第二步再根据用户指定的策略，在从server取到的服务注册列表中选择一个地址。
+			其中Ribbon提供了多种策略：比如轮询、随机和根据响应时间加权。
+ 
+ 
+		(1)参考microservicecloud-provider-dept-8801，新建两份，分别命名为8802，8803
+		(2)新建8002/8003数据库，各自微服务分别连各自的数据库
+			8802:
+				 
+				DROP DATABASE IF EXISTS cloudDB02;
+				 
+				CREATE DATABASE cloudDB02 CHARACTER SET UTF8;
+				 
+				USE cloudDB02;
+				 
+				CREATE TABLE dept
+				(
+				  deptno BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+				  dname VARCHAR(60),
+				  db_source   VARCHAR(60)
+				);
+				 
+				INSERT INTO dept(dname,db_source) VALUES('开发部',DATABASE());
+				INSERT INTO dept(dname,db_source) VALUES('人事部',DATABASE());
+				INSERT INTO dept(dname,db_source) VALUES('财务部',DATABASE());
+				INSERT INTO dept(dname,db_source) VALUES('市场部',DATABASE());
+				INSERT INTO dept(dname,db_source) VALUES('运维部',DATABASE());
+				 
+				SELECT * FROM dept;
+ 
+
+
+			8803:
+				DROP DATABASE IF EXISTS cloudDB03;
+				 
+				CREATE DATABASE cloudDB02 CHARACTER SET UTF8;
+				 
+				USE cloudDB03;
+				 
+				CREATE TABLE dept
+				(
+				  deptno BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+				  dname VARCHAR(60),
+				  db_source   VARCHAR(60)
+				);
+				 
+				INSERT INTO dept(dname,db_source) VALUES('开发部',DATABASE());
+				INSERT INTO dept(dname,db_source) VALUES('人事部',DATABASE());
+				INSERT INTO dept(dname,db_source) VALUES('财务部',DATABASE());
+				INSERT INTO dept(dname,db_source) VALUES('市场部',DATABASE());
+				INSERT INTO dept(dname,db_source) VALUES('运维部',DATABASE());
+				 
+				SELECT * FROM dept;
+				
+		(3) 修改8002/8003各自YML
+		(4) 启动3个eureka集群配置区
+		(5) 客户端通过Ribbo完成负载均衡并访问上一步的Dept微服务
+			注意观察看到返回的数据库名字，各不相同，负载均衡实
+			
+	
+	4 Ribbo自定义负载均衡策略
+		(1)在启动该微服务的时候就能去加载我们自定义的Ribbon配置，从而使配置生效形如：
+			@RibbonClient(name="MICROSERVICELOUD-DEPT", configuration = MySelfRule.class)
+			
+			@SpringBootApplication
+			@EnableEurekaClient
+			@RibbonClient(name="MICROSERVICELOUD-DEPT", configuration = MySelfRule.class)
+			public class DeptConsumer80_App
+			{
+			  public static void main(String[] args)
+			  {
+			   SpringApplication.run(DeptConsumer80_App.class, args);
+			  }
+			}
+			注意官方文档明确给了警告：
+				这个自定义配置类不能放在@ComponentScan所扫描的当前包下以及子包下，否则我们自定义的这个配置类就会被所有的Ribbo客户端共享
+		(2) MySelfRule
+			
+			@Configuration
+			public class MySelfRule {
+				@Bean
+				public IRule myRule() {
+					return new RandomRule(); //Ribbo默认是轮询， 我自定义为随机
+				}
+			}
+		
+		(3) 自己定义算法
+			package com.harry.myrule;
+
+			import java.util.List;
+
+			import com.netflix.client.config.IClientConfig;
+			import com.netflix.loadbalancer.AbstractLoadBalancerRule;
+			import com.netflix.loadbalancer.ILoadBalancer;
+			import com.netflix.loadbalancer.Server;
+
+			public class RandomRule_self extends AbstractLoadBalancerRule
+			{
+
+				// total = 0 // 当total==5以后，我们指针才能往下走，
+				// index = 0 // 当前对外提供服务的服务器地址，
+				// total需要重新置为零，但是已经达到过一个5次，我们的index = 1
+				// 分析：我们5次，但是微服务只有8001 8002 8003 三台，OK？
+				// 
+				
+				
+				private int total = 0; 			// 总共被调用的次数，目前要求每台被调用5次
+				private int currentIndex = 0;	// 当前提供服务的机器号
+
+				public Server choose(ILoadBalancer lb, Object key)
+				{
+					if (lb == null) {
+						return null;
+					}
+					Server server = null;
+
+					while (server == null) {
+						if (Thread.interrupted()) {
+							return null;
+						}
+						List<Server> upList = lb.getReachableServers();
+						List<Server> allList = lb.getAllServers();
+
+						int serverCount = allList.size();
+						if (serverCount == 0) {
+							/*
+							 * No servers. End regardless of pass, because subsequent passes only get more
+							 * restrictive.
+							 */
+							return null;
+						}
+
+			//			int index = rand.nextInt(serverCount);// java.util.Random().nextInt(3);
+			//			server = upList.get(index);
+
+						
+			//			private int total = 0; 			// 总共被调用的次数，目前要求每台被调用5次
+			//			private int currentIndex = 0;	// 当前提供服务的机器号
+						if(total < 5)
+						{
+							server = upList.get(currentIndex);
+							total++;
+						}else {
+							total = 0;
+							currentIndex++;
+							if(currentIndex >= upList.size())
+							{
+							  currentIndex = 0;
+							}
+						}			
+						
+						
+						if (server == null) {
+							/*
+							 * The only time this should happen is if the server list were somehow trimmed.
+							 * This is a transient condition. Retry after yielding.
+							 */
+							Thread.yield();
+							continue;
+						}
+
+						if (server.isAlive()) {
+							return (server);
+						}
+
+						// Shouldn't actually happen.. but must be transient or a bug.
+						server = null;
+						Thread.yield();
+					}
+
+					return server;
+
+				}
+
+				@Override
+				public Server choose(Object key)
+				{
+					return choose(getLoadBalancer(), key);
+				}
+
+				@Override
+				public void initWithNiwsConfig(IClientConfig clientConfig)
+				{
+					// TODO Auto-generated method stub
+
+				}
+
+			}
+			
+六 Feign负载均衡
+	1 什么是Feign
+		与Ribbon一样, Feign也是Netfix提供的， Feign是一个声明式、模板化的Web Service客户端，它简化了开发者编写Web服务客户端的操作，
+		开发者可以通过简单的接口和注解来调用HTTP API, Spring Cloud Feign它整合了Ribbon和Hystix，具有可插拔、基于注解、负载均衡、服务熔断等一系列编辑功能。
+		
+	2 Ribbon和Feign的区别
+		相较于 Ribbon + RestTemplate 的方式，Feign 大大简化了代码的开发，Feign 支持多种注解，包括Feign 注解、JAX-RS 注解、Spring MVC 注解等，Spring Cloud 对 Feing 进行了优化，整合了 Ribbon和 Eureka，从而让 Feign 的使用更加方便。
+	
+	3 Feign的使用步骤
+		(1) 参考dept-80新建microservicecloud-consumer-dept-feign
+		(2) microservicecloud-consumer-dept-feign工程pom.xml修改，主要添加对feign的支持
+			<dependency>
+			   <groupId>org.springframework.cloud</groupId>
+			   <artifactId>spring-cloud-starter-feign</artifactId>
+			</dependency>
+		 
+		(3) 修改microservicecloud-api工程
+			pom添加对Feign的支持：
+			   <dependency>
+				 <groupId>org.springframework.cloud</groupId>
+				 <artifactId>spring-cloud-starter-feign</artifactId>
+			   </dependency>
+			   
+			 新建DeptClientService接口并新增注解@FeignClient
+				@FeignClient(value = "MICROSERVICECLOUD-DEPT")
+				public interface DeptClientService {
+					 @RequestMapping(value = "/dept/get/{id}",method = RequestMethod.GET)
+					  public Dept getDept(@PathVariable("id") long id);
+					 
+					  @RequestMapping(value = "/dept/list",method = RequestMethod.GET)
+					  public List<Dept> list();
+					 
+					  @RequestMapping(value = "/dept/add",method = RequestMethod.POST)
+					  public boolean add(Dept dept);
+
+				}
+		(4) microservicecloud-consumer-dept-feign工程修改Controller，添加上一步新建的DeptClientService接口
+			@RestController
+			public class DeptController_Consumer
+			{
+				@Autowired
+				private DeptClientService service = null;
+				
+				@RequestMapping(value="/consumer/dept/add")
+				public boolean add(Dept dept)
+				{
+					 return service.add(dept);
+				}
+				
+				@RequestMapping(value="/consumer/dept/get/{id}")
+				public Dept get(@PathVariable("id") Long id)
+				{
+					 return service.getDept(id);
+				}
+				
+
+				@RequestMapping(value="/consumer/dept/list")
+				public List<Dept> list()
+				{
+					 return service.list();
+				}   
+			}
+		Feign通过接口的方法调用Rest服务（之前是Ribbon+RestTemplate），该请求发送给Eureka服务器（http://MICROSERVICECLOUD-DEPT/dept/list）,
+		通过Feign直接找到服务接口，由于在进行服务调用的时候融合了Ribbon技术，所以也支持负载均衡作用。
+ 
+七 Hystrix断路器
+	1 分布式系统面临的问题
+		复杂分布式体系结构中的应用程序有数十个依赖关系，每个依赖关系在某些时候将不可避免地失败
+		服务雪崩：
+			多个微服务之间调用的时候，假设微服务A调用微服务B和微服务C，微服务B和微服务C又调用其它的微服务，这就是所谓的“扇出”。如果扇出的链路上某个微服务的调用响应时间过长或者不可用，对微服务A的调用就会占用越来越多的系统资源，进而引起系统崩溃，所谓的“雪崩效应”.
+			对于高流量的应用来说，单一的后端依赖可能会导致所有服务器上的所有资源都在几秒钟内饱和。比失败更糟糕的是，这些应用程序还可能导致服务之间的延迟增加，备份队列，线程和其他系统资源紧张，导致整个系统发生更多的级联故障。这些都表示需要对故障和延迟进行隔离和管理，以便单个依赖关系的失败，不能取消整个应用程序或系统。
+			
+	2. Hystrix断路器是什么
+		Hystrix是一个用于处理分布式系统的延迟和容错的开源库，在分布式系统里，许多依赖不可避免的会调用失败，比如超时、异常等，Hystrix能够保证在一个依赖出问题的情况下，不会导致整体服务失败，避免级联故障，以提高分布式系统的弹性。
+		“断路器”本身是一种开关装置，当某个服务单元发生故障之后，通过断路器的故障监控（类似熔断保险丝），向调用方返回一个符合预期的、可处理的备选响应（FallBack），而不是长时间的等待或者抛出调用方无法处理的异常，这样就保证了服务调用方的线程不会被长时间、不必要地占用，从而避免了故障在分布式系统中的蔓延，乃至雪崩。
+		
+	3 服务熔断
+		熔断机制是应对雪崩效应的一种微服务链路保护机制。
+		当扇出链路的某个微服务不可用或者响应时间太长时，会进行服务的降级，进而熔断该节点微服务的调用，快速返回"错误"的响应信息。当检测到该节点微服务调用响应正常后恢复调用链路。在SpringCloud框架里熔断机制通过Hystrix实现。Hystrix会监控微服务间调用的状况，当失败的调用到一定阈值，缺省是5秒内20次调用失败就会启动熔断机制。熔断机制的注解是@HystrixCommand。
+ 
+	4 服务熔断搭建
+		(1)参考microservicecloud-provider-dept-8801 新建microservicecloud-provider-dept-hystrix-8801
+			pom:
+				<!--  hystrix -->
+			   <dependency>
+				 <groupId>org.springframework.cloud</groupId>
+				 <artifactId>spring-cloud-starter-hystrix</artifactId>
+			   </dependency>
+			YML:
+				eureka:
+				  client: #客户端注册进eureka服务列表内
+					service-url: 
+					  defaultZone: http://eureka7001.com:7001/eureka/,http://eureka7002.com:7002/eureka/,http://eureka7003.com:7003/eureka/
+				  instance:
+					instance-id: microservicecloud-dept8001-hystrix   #自定义服务名称信息
+					prefer-ip-address: true     #访问路径可以显示IP地址
+		(2)修改DeptController  @HystrixCommand包一层后如何处理
+		
+			@RequestMapping(value = "/dept/get/{id}", method = RequestMethod.GET)
+			@HystrixCommand(fallbackMethod = "processHystrix_Get")
+			public Dept get(@PathVariable("id") Long id) {
+				return service.get(id);
+			}
+			
+			public Dept processHystrix_Get(@PathVariable("id") Long id) {
+				  return new Dept().setDeptno(id)
+						   .setDname("该ID："+id+"没有没有对应的信息,null--@HystrixCommand")
+						   .setDb_source("no this database in MySQL");
+			}		
+		
+		(3) 启动类开启熔断
+			@SpringBootApplication
+			@EnableEurekaClient
+			@EnableCircuitBreaker//对hystrixR熔断机制的支持
+			public class DeptProvider8801_App {
+				public static void main(String[] args) {
+					SpringApplication.run(DeptProvider8801_App.class, args);
+
+				}
+				}
+			}
+			
+		 如果对应的ID：112，数据库里面没有这个记录，我们报错后统一返回。
+		 
+	
+	5 消费降级是什么
+		整体资源快不够了，忍痛将某些服务先关掉，待渡过难关，再开启回	
+		服务降级处理是在客户端实现完成的，与服务端没有关系
+		
+	6 消费降级实现步骤
+		(1) 修改microservicecloud-api工程，根据已经有的DeptClientService接口新建一个实现了FallbackFactory接口的类DeptClientServiceFallbackFactory
+			@Component//不要忘记添加，不要忘记添加
+			public class DeptClientServiceFallbackFactory implements FallbackFactory<DeptClientService>
+			{
+			  @Override
+			  public DeptClientService create(Throwable throwable)
+			  {
+			   return new DeptClientService() {
+				 @Override
+				 public Dept getDept(long id)
+				 {
+				   return new Dept().setDeptno(id)
+						   .setDname("该ID："+id+"没有没有对应的信息,Consumer客户端提供的降级信息,此刻服务Provider已经关闭")
+						   .setDb_source("no this database in MySQL");
+				 }
+			 
+				 @Override
+				 public List<Dept> list()
+				 {
+				   return null;
+				 }
+			 
+				 @Override
+				 public boolean add(Dept dept)
+				 {
+				   return false;
+				 }
+			   };
+			  }
+			}
+			
+		(2) 修改microservicecloud-api工程，DeptClientService接口在注解@FeignClient中添加fallbackFactory属性值
+			@FeignClient(value = "MICROSERVICECLOUD-DEPT", fallbackFactory=DeptClientServiceFallbackFactory.class)
+			public interface DeptClientService {
+				 @RequestMapping(value = "/dept/get/{id}",method = RequestMethod.GET)
+				  public Dept getDept(@PathVariable("id") long id);
+				 
+				  @RequestMapping(value = "/dept/list",method = RequestMethod.GET)
+				  public List<Dept> list();
+				 
+				  @RequestMapping(value = "/dept/add",method = RequestMethod.POST)
+				  public boolean add(Dept dept);
+
+			}
+		(3) microservicecloud-consumer-dept-feign工程修改YML
+			feign: 
+			  hystrix: 
+				enabled: true
+
+		(4) 测试故意关闭微服务dept-8001
+			此时服务端provider已经down了，但是我们做了服务降级处理，让客户端在服务端不可用时也会获得提示信息而不会挂起耗死服务器
+	
+	7 服务监控hystrixDashboard
+			
+		除了隔离依赖服务的调用以外，Hystrix还提供了准实时的调用监控（Hystrix Dashboard），Hystrix会持续地记录所有通过Hystrix发起的请求的执行信息，并以统计报表和图形的形式展示给用户，包括每秒执行多少请求多少成功，多少失败等。Netflix通过hystrix-metrics-event-stream项目实现了对以上指标的监控。Spring Cloud也提供了Hystrix Dashboard的整合，对监控内容转化成可视化界面。
+ 
+		(1)新建工程microservicecloud-consumer-hystrix-dashboard
+			POM:
+				<dependencies>
+				   <dependency>
+					 <groupId>org.springframework.boot</groupId>
+					 <artifactId>spring-boot-starter-web</artifactId>
+				   </dependency>
+
+				   <dependency>
+					 <groupId>org.springframework.boot</groupId>
+					 <artifactId>spring-boot-devtools</artifactId>
+				   </dependency>
+				   <!-- Ribbon相关 -->
+				   <dependency>
+					 <groupId>org.springframework.cloud</groupId>
+					 <artifactId>spring-cloud-starter-eureka</artifactId>
+				   </dependency>
+				   <dependency>
+					 <groupId>org.springframework.cloud</groupId>
+					 <artifactId>spring-cloud-starter-ribbon</artifactId>
+				   </dependency>
+				   <dependency>
+					 <groupId>org.springframework.cloud</groupId>
+					 <artifactId>spring-cloud-starter-config</artifactId>
+				   </dependency>
+				   <!-- feign相关 -->
+				   <dependency>
+					 <groupId>org.springframework.cloud</groupId>
+					 <artifactId>spring-cloud-starter-feign</artifactId>
+				   </dependency>
+				   <!-- hystrix和 hystrix-dashboard相关-->
+				   <dependency>
+					   <groupId>org.springframework.cloud</groupId>
+					   <artifactId>spring-cloud-starter-hystrix</artifactId>
+				   </dependency>
+				   <dependency>
+					   <groupId>org.springframework.cloud</groupId>
+					   <artifactId>spring-cloud-starter-hystrix-dashboard</artifactId>
+				   </dependency> 
+				 </dependencies>
+			
+			YML:
+				server:
+					port: 9001
+					
+		(2) 主启动类改名+新注解@EnableHystrixDashboard
+			@SpringBootApplication
+			@EnableHystrixDashboard
+			public class DeptConsumer_DashBoard_App
+			{
+			  public static void main(String[] args)
+			  {
+			   SpringApplication.run(DeptConsumer_DashBoard_App.class,args);
+			  }
+			}
+		(3) 所有Provider微服务提供类(8801/8802/8803)都需要监控依赖配置
+			<!-- actuator监控信息完善 -->
+		   <dependency>
+			 <groupId>org.springframework.boot</groupId>
+			 <artifactId>spring-boot-starter-actuator</artifactId>
+		   </dependency>
+		   
+		   <!--  hystrix -->
+		   <dependency>
+			 <groupId>org.springframework.cloud</groupId>
+			 <artifactId>spring-cloud-starter-hystrix</artifactId>
+		   </dependency>
+			   
+		(4) 启动microservicecloud-consumer-hystrix-dashboard该微服务监控消费端 http://localhost:9001/hystrix
+			启动3个eureka集群
+			启动microservicecloud-provider-dept-hystrix-8001
+			
+			实心圆：共有两种含义。它通过颜色的变化代表了实例的健康程度，它的健康度从绿色<黄色<橙色<红色递减。
+			该实心圆除了颜色的变化之外，它的大小也会根据实例的请求流量发生变化，流量越大该实心圆就越大。所以通过该实心圆的展示，就可以在大量的实例中快速的发现故障实例和高压力实例。
+			
+			曲线：用来记录2分钟内流量的相对变化，可以通过它来观察到流量的上升和下降趋势。
+			
+			
+八 Zuul路由网关
+	Zuul包含了对请求的路由和过滤两个最主要的功能：
+		其中路由功能负责将外部请求转发到具体的微服务实例上，是实现外部访问统一入口的基础而过滤器功能则负责对请求的处理过程进行干预，是实现请求校验、服务聚合等功能的基础
+		Zuul和Eureka进行整合，将Zuul自身注册为Eureka服务治理下的应用，同时从Eureka中获得其他微服务的消息，也即以后的访问微服务都是通过Zuul跳转后获得。
+	
+	1 路由基本配置
+		(1) 新建Module模块microservicecloud-zuul-gateway-9527
+			POM:
+				<!-- zuul路由网关 -->
+			   <dependency>
+				 <groupId>org.springframework.cloud</groupId>
+				 <artifactId>spring-cloud-starter-zuul</artifactId>
+			   </dependency> 
+			   <dependency>
+				 <groupId>org.springframework.cloud</groupId>
+				 <artifactId>spring-cloud-starter-eureka</artifactId>
+			   </dependency>
+			   <!-- actuator监控 -->
+			   <dependency>
+				 <groupId>org.springframework.boot</groupId>
+				 <artifactId>spring-boot-starter-actuator</artifactId>
+			   </dependency>
+			   <!--  hystrix容错-->
+			   <dependency>
+				 <groupId>org.springframework.cloud</groupId>
+				 <artifactId>spring-cloud-starter-hystrix</artifactId>
+			   </dependency>
+			   <dependency>
+				 <groupId>org.springframework.cloud</groupId>
+				 <artifactId>spring-cloud-starter-config</artifactId>
+			   </dependency>
+			   <!-- 日常标配 -->
+
+			   <dependency>
+				 <groupId>org.springframework.boot</groupId>
+				 <artifactId>spring-boot-starter-jetty</artifactId>
+			   </dependency>
+			   <dependency>
+				 <groupId>org.springframework.boot</groupId>
+				 <artifactId>spring-boot-starter-web</artifactId>
+			   </dependency>
+			   <dependency>
+				 <groupId>org.springframework.boot</groupId>
+				 <artifactId>spring-boot-starter-test</artifactId>
+			   </dependency>
+			
+			YML:
+				server: 
+				  port: 9527
+				 
+				spring: 
+				  application:
+					name: microservicecloud-zuul-gateway
+				 
+				eureka: 
+				  client: 
+					service-url: 
+					  defaultZone: http://eureka7001.com:7001/eureka,http://eureka7002.com:7002/eureka,http://eureka7003.com:7003/eureka  
+				  instance:
+					instance-id: gateway-9527.com
+					prefer-ip-address: true 
+
+				info:
+				  app.name:  microservicecloud
+				  company.name: www.harry.com
+				  build.artifactId: $project.artifactId$
+				  build.version: $project.version$
+
+		
+		(2) 修改Host文件
+			127.0.0.1  myzuul.com
+		
+		(3) 启动配置类
+			@SpringBootApplication
+			@EnableZuulProxy
+			public class Zuul_9527_StartSpringCloudApp
+			{
+			  public static void main(String[] args)
+			  {
+			   SpringApplication.run(Zuul_9527_StartSpringCloudApp.class, args);
+			  }
+			}
+			
+		(4) 测试
+			无路由：http://localhost:8801/dept/get/2
+			有路由：http://myzuul.com:9527/microservicecloud-dept/dept/get/2
+			
+	2 路由访问映射规则
+		

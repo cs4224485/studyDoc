@@ -1,0 +1,314 @@
+一 贪心算法
+贪心算法(又称贪婪算法)是指在对问题求解时，总是做出在当前看来最好的选择。也就是说，不从整体最优上加以考虑
+他所做出的是某种意义上的局部优解
+贪心算法并不保证会得到最优解, 但是在某些问题上贪心算法的解就是最优解。要会判断一个问题能否用贪心算法来计算
+
+1 找零问题
+假设商店老板需要找零n元钱， 钱币的面额有：100元 50元 20元 5元 1元，如何找零使得所需钱币的数量最少？
+
+t = [100, 50, 20, 5, 1] # 钱的面额
+def change(t, n):
+    m = [0 for _ in range(len(t))] # 每个面额 找零的数量
+    for i, money in enumerate(t):	
+        m[i] = n // money
+        n = n% money
+    return m, n
+
+print(change(t, 376))
+
+2 背包问题
+一个小偷在某个商店发现n个商品，第i个商品价值Vi元，重量Wi千克。它希望拿走的价值尽量高，但是他的背部最多能容纳W千克的东西，他应该拿走哪些商品?
+0-1背包：对于一个商品，小偷要么把它完整拿走,要么留下。不能只拿走一部分，或把一个商品拿走多次。（商品为金条）
+分数背包： 对于一个商品，小偷可以拿走其中任意一部分(商品为金砂)
+
+举例：
+	商品1：V1=60 	W1=10
+	商品2：V2=100	W2=20
+	商品3：V3=120	W3=30
+	背包容量：W=50
+对于0-1背包和分数背包，贪心算法是否能得到最优解？为什么？
+分数背包实现：
+		goods = [(60, 10), (100, 20), (120, 30)]  # 每个元素表示(价格,重量)
+		goods.sort(key=lambda x: x[0] / x[1], reverse=True)  # 安商品价值排序 倒序
+
+
+		def fractional_backpack(goods, w):
+			m = [0 for _ in range(len(goods))]
+			total_v = 0
+			for i, (price, weight) in enumerate(goods):
+				if w >= weight:
+					m[i] = 1
+					w -= weight
+					total_v += price# 总价值
+				else:
+					m[i] = w / weight
+					w = 0
+					total_v += m[i] * price
+					break
+			return total_v, m
+
+		print(fractional_backpack(goods, 50))
+		
+3 拼接最大数字问题
+	有n个非负整数, 将其按照字符串拼接的方式拼接为一个整数。如何拼接可以使得得到的整数最大？
+	例如：32,94,128,1286,6,71 可以拼接的最大整数位94716321286128
+	from functools import cmp_to_key
+
+	li = [32, 94, 128, 1286, 6, 71]
+
+	def xy_cmp(x, y):
+		if x+y < y+x:
+			return 1
+		elif x+y > y+x:
+			return -1
+		else:
+			return 0
+
+	def number_join(li):
+		li = list(map(str, li))
+		li.sort(key=cmp_to_key(xy_cmp))
+		return "".join(li)
+	print(number_join(li))
+	
+4 活动选择问题
+	假设有n个活动， 这些活动要占用同一片场地，而场地在某时刻只能供一个活动使用
+	每个活动都有一个开始时间Si和结束时间Fi(题目中时间以整数表示),表示活动在[Si,Fi)区间占用场地
+	问：安排哪些活动能够使该场地举办的活动个数最多
+	
+	贪心结论： 最先结束的活动一定是最优解的一部分
+	证明：假设a是所有活动中最先结束的活动,b是最优解中最先结束的活动
+		如果 a = b 结论成立
+		如果 a !=b 则b的结束时间一定晚于a的结束时间, 则此时用a替换掉最优解中的b, a一定不与最优解中的其他活动时间重叠,因此替换后的解也是最优解。
+
+二 动态规划算法
+	1 从斐波那契数列看动态规划
+		(1) 递归
+			# 子问题的重复计算
+			def fibnacci(n):
+				if n == 1 or n ==2:
+					return 1
+				else:
+					return fibnacci(n-1) + fibnacci(n-2)
+
+		（2) 非递归
+			# 动态规划（DP）的思想 = 递推式
+			def fibnacci_no_recurision(n):
+				f = [0, 1, 1]
+				if n>2:
+					for i in range(n-2):
+						num = f[-1] + f[-2]
+						f.append(num)
+				return f[-1]
+
+			print(fibnacci_no_recurision(100))
+	2 钢条切割问题：
+		(1) 自顶向下递归实现
+			时间复杂度O(2)
+			
+		p = [0, 1, 5, 8, 9, 10, 17, 17, 20, 21, 23, 24, 26, 27, 27, 28, 30, 33, 36, 39, 40]
+
+		def cut_rod_recurision(p, n):
+			if n == 0:
+				return 0
+			else:
+				res = p[n]
+				for i in range(1, n):
+					res = max(res, cut_rod_recurision(p, i) + cut_rod_recurision(p, n - i))
+			return res
+
+
+		print(cut_rod_recurision(p, 9))
+
+
+		def cut_rod_recurision(p, n):
+			if n == 0:
+				return 0
+			else:
+				res = 0
+				for i in range(1, n+1):
+					res = max(res, p[i] + cut_rod_recurision(p, n-i))
+				return res
+
+		print(cut_rod_recurision(p, 20))
+		
+	(2) 自底向上递归实现
+		def cut_rop_dp(p, n):
+			r = [0]
+			for i in range(1, n+1):
+				res = 0
+				for j in range(1, i+1):
+					res = max(res, p[j]+r[i-j])
+				r.append(res)
+			return r[n]
+
+		print(cut_rop_dp(p, 20))
+		
+	(3) 钢条切割重构解：
+		def cut_rod_solution(p, n):
+			'''
+			计算切割方案结果
+			:param p:
+			:param n:
+			:return:
+			'''
+			r,s = cut_rod_extend(p, n)
+			ans = []
+			while n > 0:
+				ans.append(s[n])
+				n -= s[n]
+			return ans
+
+		print(cut_rod_solution(p, 7))
+		
+	3 最长公共子序列
+		一个序列的子序列是在该序列中删去若干元素后得到的序列。
+			例如：“ABCD”和"BDF"都是“ABCDEFG”的子序列
+		最长公共子序列(LCS)问题：给定两个序列X和Y,求X和Y长度最大公共子序列
+			例如：X="ABBCBED" Y="DBBCDB" LCS(X,Y)="BBCD"
+		应用场景：字符串相似度比对
+		
+		def lcs_length(x, y):
+			m = len(x)
+			n = len(y)
+			c = [[0 for _ in range(n + 1)] for _ in range(m + 1)]
+			for i in range(1, m + 1):
+				for j in range(1, n + 1):
+					if x[i - 1] == y[j - 1]:  # i j位置上的字符匹配的时候， 来自于左上方+1
+						c[i][j] = c[i - 1][j - 1] + 1
+					else:
+						c[i][j] = max(c[i - 1][j], c[i][j - 1])
+			return c[m][n]
+		def lcs(x, y):
+			'''
+			记录最长公共子序列路径
+			:param x:
+			:param y:
+			:return:
+			'''
+			m = len(x)
+			n = len(y)
+			c = [[0 for _ in range(n + 1)] for _ in range(m + 1)]
+			b = [[0 for _ in range(n + 1)] for _ in range(m + 1)] # 1 左上方 2 上方 3 左方
+			for i in range(1, m + 1):
+				for j in range(1, n + 1):
+					if x[i - 1] == y[j - 1]:  # i j位置上的字符匹配的时候， 来自于左上方+1
+						c[i][j] = c[i - 1][j - 1] + 1
+						b[i][j] = 1
+					elif c[i-1][j] > c[i][j-1]:  # 来自于上方
+						c[i][j] = c[i-1][j]
+						b[i][j] = 2
+					else:
+						c[i][j] = c[i][j-1]
+						b[i][j] = 3
+			return c[m][n], b
+
+		def lcs_traceback(x, y):
+			c, b =lcs(x, y)
+			i = len(x)
+			j = len(y)
+			res = []
+
+			while i > 0 and j >0:
+				if b[i][j] == 1:  # 来自左上方=>匹配
+					res.append(x[i-1])
+					i -= 1
+					j -= 1
+				elif b[i][j] == 2: # 来自上方=>不匹配
+					i -= 1
+				else:# == 来自左方=>不匹配
+					j -= 1
+			return "".join(reversed(res))
+
+		print(lcs_length("ABCDBAB", "BDCABA"))
+
+		# 输出公共最长子序列
+		print(lcs_traceback("ABCBDAB", "BDCABA"))
+		
+三 欧几里德算法
+
+1 最大公约数
+约数：如果整数a能被整数b整除,那么a叫做b的倍数，b叫做a的约数
+给定两个整数a,b 两个数的所有公共约数中的最大值即为最大公约数
+例如：12与16的最大公约数是4
+欧几里德算法：gcb(a,b) = gcb(b,a mod b)
+	例如：gcb(60,21) = gcb(21,18) = gcb(18,3) = gcb(3,0)= 3 
+
+	def gcb(a,b):
+		if b == 0:
+			return a
+		else:
+			return gcb(a, a%b)
+
+	def gcb2(a,b):
+		'''
+		非递归
+		:param a:
+		:param b:
+		:return:
+		'''
+		while b > 0:
+			r = a % b
+			a = b
+			b = r
+		return a
+	print(gcb(12, 16))
+
+2 应用实现分数计算
+  利用欧几里得算法实现一个分数类, 支持分数的四则运算
+  class Fraction:
+		def __init__(self, a, b):
+			self.a = a
+			self.b = b
+			x = self.gcb2(a, b)
+			self.a /= x
+			self.b /= x
+
+		def gcb2(self, a, b):
+			'''
+			非递归
+			:param a:
+			:param b:
+			:return:
+			'''
+			while b > 0:
+				r = a % b
+				a = b
+				b = r
+			return a
+
+		def zgs(self, a, b):
+			'''
+			计算最小公倍数
+			:param a:
+			:param b:
+			:return:
+			'''
+			# 12 16 最大公约数 4
+			# 3*4*4 = 48 # 最小公倍数
+			x = self.gcb2(a, b)
+			return a * b / x
+
+		def __add__(self, other):
+			# 1/12 + 1/20
+			a = self.a
+			b = self.b
+			c = other.a
+			d = other.b
+			denominator = self.zgs(b, d)
+			numerator = a * (denominator / b) + c * (denominator / d)
+			return Fraction(numerator, denominator)
+
+		def __str__(self):
+			return "%d/%d" % (self.a, self.b)
+
+
+	a = Fraction(1, 3)
+	b = Fraction(1, 2)
+
+	print(a + b)
+
+四 RSA加密算法
+传统密码： 加密算法是秘密的
+现代密码系统： 加密算法是公开的, 密钥是秘密的
+	* 对称加密
+	* 非对称加密

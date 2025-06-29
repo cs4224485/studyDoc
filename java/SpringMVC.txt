@@ -1,0 +1,1464 @@
+一 Spring MVC简介
+	Spring MVC有些地方也叫作Spring Web MVC，看名字就能知道这是一个表现层框架。在没有学习Spring MVC或者struts之类的框架的时候，一般会使用JavaEE中的servlet来接收和处理前台发送的请求，这种方式使用起来有一些不方便的地方，比如做一个增删改查，我们需要在servlet中编写判断逻辑来处理相应的增删改查的请求，这样代码显得冗余，而且不同的开发者可能会有不同的写法，在实际开发中当一个项目大到一定程度之后，需要将一些重复冗余的代码抽象出来，此时你就会发现，这些代码其实就是java常用的那些框架的原型。
+	这些框架抽象了一些冗余代码，还提供了一些好用的类和方法，因此在实际开发中，通常会使用框架，而掌握这些框架技术也成为企业招聘的一些硬性要求了。
+	Spring MVC是大名鼎鼎的Spring框架的一部分，是Spring3.0版本之后发布的，它可以与Spring框架无缝集成，这也是Spring MVC越来越受开发者喜爱的原因之一，除此以外，它还提供了很多类和方法，我们在实际开发中直接拿来使用就行。
+
+二 第一个Spring MVC程序
+	第一步：
+		创建一个项目，这里我们来创建一个maven的项目，通过maven来帮我们管理相关的jar文件，当然你也可以创建一个web项目，不过这样的话，就需要你手动的去下载Spring MVC相关的jar包了。
+	
+	第二步：
+		导入相关Jar包，这里使用maven来帮我们管理，下面是pom.xml文件中的内容,目前只是写了一个非常简单的Spring MVC，所以只使用maven导入了spring-webmvc相关的包即可：
+			<?xml version="1.0" encoding="UTF-8"?>
+			<project xmlns="http://maven.apache.org/POM/4.0.0"
+					 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+					 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+				<modelVersion>4.0.0</modelVersion>
+
+				<groupId>FirstMVC</groupId>
+				<artifactId>FirstMVC</artifactId>
+				<version>1.0-SNAPSHOT</version>
+				<dependencies>
+					<dependency>
+						<groupId>junit</groupId>
+						<artifactId>junit</artifactId>
+						<version>3.8.1</version>
+						<scope>test</scope>
+					</dependency>
+					<dependency>
+						<groupId>javax.servlet</groupId>
+						<artifactId>javax.servlet-api</artifactId>
+						<version>3.1.0</version>
+					</dependency>
+					<dependency>
+						<groupId>org.springframework</groupId>
+						<artifactId>spring-webmvc</artifactId>
+						<version>5.0.4.RELEASE</version>
+					</dependency>
+
+				</dependencies>
+				<build>
+					<finalName>FirstMVC</finalName>
+					<plugins>
+						<!-- 编译插件，指定编译用的的jdk版本 -->
+						<plugin>
+							<groupId>org.apache.maven.plugins</groupId>
+							<artifactId>maven-compiler-plugin</artifactId>
+							<configuration>
+								<!-- jdk的版本号 -->
+								<source>1.11</source>
+								<target>1.11</target>
+								<encoding>UTF-8</encoding>
+							</configuration>
+						</plugin>
+					</plugins>
+				</build>
+			</project>
+			
+	第三步
+		注册Spring MVC的中央控制器DispatcherServlet，打开web.xml文件，在里面加入下面内容：
+		
+			<!-- 注册spring MVC中央控制器 -->
+			<servlet>
+				<servlet-name>springMVC</servlet-name>
+				<!-- spring MVC中的核心控制器 -->
+				<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+				<init-param>
+					<param-name>contextConfigLocation</param-name>
+					<param-value>classpath:springmvc.xml</param-value>
+				</init-param>
+				<load-on-startup>1</load-on-startup>
+			</servlet>
+			<servlet-mapping>
+				<servlet-name>springMVC</servlet-name>
+				<url-pattern>*.do</url-pattern>
+			</servlet-mapping>
+			
+	第四步
+		maven项目中有个src/main/resources目录，在该目录下创建Spring MVC配置文件springmvc.xml，该xml配置文件可以任意命名，需要跟第三步中的init-param中的param-value保持一致即可。
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				   xmlns:p="http://www.springframework.org/schema/p"
+				   xmlns:context="http://www.springframework.org/schema/context"
+				   xmlns:mvc="http://www.springframework.org/schema/mvc"
+				   xsi:schemaLocation="http://www.springframework.org/schema/beans
+			 http://www.springframework.org/schema/beans/spring-beans.xsd
+			 http://www.springframework.org/schema/context
+			 http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+			</beans>     
+	
+	第五步
+		创建一个类去实现org.springframework.web.servlet.mvc.Controller接口，通常我们称这样的类为Controller，它的作用有些类似之前学习的servlet，或者可以认为在Spring MVC里面，就是使用了Controller来代替了servlet，它提供了比servlet更加丰富的功能。
+			package com.harry.controller;
+
+			import org.springframework.web.servlet.ModelAndView;
+			import org.springframework.web.servlet.mvc.Controller;
+
+			import javax.servlet.http.HttpServletRequest;
+			import javax.servlet.http.HttpServletResponse;
+
+			public class HelloSpringMVC implements Controller {
+				@Override
+				public ModelAndView handleRequest(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws Exception {
+					ModelAndView mv = new ModelAndView();
+					mv.addObject("hello", "hello first spring mvd");
+					mv.setViewName("/WEB-INF/jsp/first.jsp");
+					return mv;
+				}
+			}
+
+	第六步
+		在springmvc.xml配置文件中注册第五步创建的Controller，添加下面内容：
+			<bean id="/hello.do" class="com.harry.controller.HelloSpringMVC"/>
+	
+	第七步：
+		在WEB-INF目录中创建一个目录jsp，在这个jsp目录下创建一个first.jsp的文件。
+			<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+			<html>
+			<head>
+				<title>Title</title>
+			</head>
+			<body>
+				${hello}
+			</body>
+			</html>
+			
+三 Spring MVC程序分析
+	在第三步中，我们在web.xml中注册了一个中央控制器DispatcherServlet，这个其实就是相当于注册了一个servlet，关于该servlet，我们添加了如下配置：
+		load-on-startup：设置为1，表示该servlet的创建优先级高，并且在web服务器（tomcat）启动的时候就创建其对象，并且调用其init方法，这样就可以保证Spring MVC的正常工作了。
+		init-param：因为Spring MVC的配置文件可以任意命名，所以该内容主要告诉Spring MVC我们编写的配置文件的路径和名称，这样在中央控制器中就可以获取该配置文件中的信息了。通过源码可以看到DispatcherServlet继承了FrameworkServlet，在这个类中有个setContextConfigLocation方法，所以在param-name中将其命名为contextConfigLocation。
+		url-pattern：这里配置的是*.do,即所有以.do结尾的请求都会匹配到Spring MVC的核心控制器DispatcherServlet中。当然，你可以配置为/，只不过这样写的话会有问题，后面再细说。
+		
+	在第四步和第六步中我们创建和配置了springmvc.xml的文件，这个文件的命名是随意，所以需要在web.xml中的init-param标签进行配置。我们通过bean标签来注册一个Controller,即当请求的url是hello.do结尾的时候，中央控制器DispatcherServlet就会将请求分发到我们编写的HelloSpringMVC中。
+	在第五步中，我们编写了一个Controller，里面我们使用了ModelAndView类，分别调用了两个方法：
+		mv.addObject("hello", "hello first spring mvc");
+	
+	表示我们向ModelAndView这个对象中添加一条数据，名字是hello，内容是hello first spring mvc,这个跟之前学习的map有些类似，实际上，addObject方法的底层就是一个map。在ModelAndView对象里面添加的数据，可以从jsp中获取，上面是直接使用EL表达式获取的数据。
+		mv.setViewName("/WEB-INF/jsp/first.jsp");
+		
+	配置视图解析器
+		在controller中我们在ModelAndView中的setViewName方法里面传入要跳转的jsp的路径和名字，如果有多个controller的话，需要在每个里面都编写路径和jsp的名字，这样的话比较繁琐，这时可以通过使用Spring MVC给我们提供的一个视图解析器来解决这个问题。
+		打开springmvc.xml的配置文件，在里面添加一个视图解析器：
+			<!-- 视图解释类 -->
+			<bean
+				class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+				<property name="prefix" value="/WEB-INF/jsp/" />
+				<property name="suffix" value=".jsp" />
+			</bean>
+	
+	
+	Spring MVC执行流程
+		1. 由浏览器发送请求localhost:8080/01-first/hello.do，该请求到达web服务器（tomcat）后，会在web.xml文件中查找与之匹配的servlet，我们在web.xml文件中设置的所有以.do结尾的请求都会匹配到Spring MVC的核心控制器DispatcherServlet上。
+		2. DispatcherServlet会去我们开发者编写的springmvc.xml配置文件中查找与hello.do请求匹配的Controller，这里配置的是com.monkey1024.controller.HelloSpringMVC。
+		3.DispatcherServlet会将请求转到HelloSpringMVC类上，并调用该类中的handleRequest方法来处理这个请求。
+		4.在handleRequest方法中执行完成后会将ModelAndView对象返回给DispatcherServlet，然后DispatcherServlet将jsp响应给浏览器，流程结束。
+		
+四 URL-pattern的写法
+	之前我们在web.xml文件中配置DispatcherServlet的时候，将url-pattern配置为*.do的方式，其实除了这种方式之外你还可以配置为其他任意方式：
+		*.action
+		*.abc
+		*.123
+		
+	设置url-pattern为/*
+		如果将url-pattern设置为/*之后，web项目中的jsp都不能访问了会报出404的错误，这是因为DispatcherServlet会将向JSP页面的跳转请求也当作是一个普通的 Controller 请求，会对其进行处理，而此时是找不到与其相应的controller。
+		其实说的简单一点就是/*这种配置会被web服务器（这里是tomcat）匹配到.jsp上面。
+		在实际开发中最好不要这样配置url-pattern。
+		
+	设置url-pattern为/
+		如果将url-pattern设置为/之后，只要是在web.xml文件中找不到匹配的URL，它们的访问请求都将交给DispatcherServlet处理，静态资源：css文件,js文件,图片也会被拦截并交给DispatcherServlet处理。
+		该配置方式不会拦截.jsp文件和.jspx文件，因为这个在tomcat中的conf目录里面的web.xml文件中已经添加的相应的处理方式了，他会交给org.apache.jasper.servlet.JspServlet来处理。即我们可以正常访问系统中的jsp文件。
+	
+	解决静态资源不能访问的问题，解决方式有三种：
+		使用defaultServlet
+			打开tomcat中conf/web.xml,在这个文件中有一个叫做DefaultServlet的配置,当系统找不到处理某次url请求该交由谁处理的时候，就会交给这个servlet处理。我们可以通过使用这个DefaultServlet来处理静态资源，在你的系统中的web.xml文件中添加下面配置，要添加在DispatcherServlet的前面，这样系统就会将带有下面后缀名的请求交给defaultservlet来处理：
+				<servlet-mapping>
+					<servlet-name>default</servlet-name>
+					<url-pattern>*.jpg</url-pattern>
+				</servlet-mapping>
+				<servlet-mapping>
+					<servlet-name>default</servlet-name>
+					<url-pattern>*.js</url-pattern>
+				</servlet-mapping>
+				<servlet-mapping>
+					<servlet-name>default</servlet-name>
+					<url-pattern>*.css</url-pattern>
+				</servlet-mapping>
+				
+		使用mvc:default-servlet-handler
+			在springmvc.xml文件中添加下面配置即可，该方式会对所有的请求进行处理，然后交由相应的servlet，这种方式其实最终也是由DefaultServlet来处理：
+				<mvc:default-servlet-handler/> 
+				
+		使用mvc:resources
+			在spring mvc中提供了mvc:resources标签用来解决静态资源无法访问的问题，只需要在springmvc.xml的配置文件中添加下面内容即可，这样会交给spring mvc的ResourceHttpRequestHandler类来处理：
+				<mvc:resources mapping="/images/**" location="/images/" />
+				mapping 表示对该资源的请求。注意，后面是两个星号**。
+				location 表示静态资源所在目录，在我的项目中就在webapp下创建一个images文件夹，我会将所有的图片放到这个文件夹下。
+
+五 使用注解编写Spring MVC程序
+	在实际开发中，我们会创建很多Controller来满足业务方面的需求，这样就会导致一个问题，需要在springmvc.xml配置文件中配置大量的bean导致该配置文件变的臃肿起来，为了解决这个问题，spring MVC提供了一系列的注解，通过设置注解，可以使springmvc.xml配置文件变的简洁。
+	注册扫描器
+		在配置文件中我们只需要注册一个组件扫描器即可，其中base-package写上你的包名即可，下面这种写法表示会扫描com.harry下的所有包和类，该组件扫描器是spring中的内容。
+		    <!-- 注册组件扫描器 -->
+			<context:component-scan base-package="com.harry.*"/>
+		
+		注意：如果在你的springmvc.xml文件中配置了静态资源则需要添加以下配置
+			<!--注解驱动-->
+			<mvc:annotation-driven/>
+			
+	定义处理器
+		在controller中修改成如下代码：
+			@Controller
+			@RequestMapping("/test")// 表示一个命名空间,namespace
+			public class TestController02 {
+				@RequestMapping("/test2.do")
+				public ModelAndView test2(HttpServletRequest request, HttpServletResponse response) throws Exception{
+					ModelAndView mv = new ModelAndView();
+					mv.addObject("hello", "test2");
+					mv.setViewName("test1");
+					return mv;
+				}
+				@RequestMapping({"/hello.do", "/world.do"})
+				public ModelAndView test3(HttpServletRequest request, HttpServletResponse response) throws Exception{
+					ModelAndView mv = new ModelAndView();
+					mv.addObject("hello", "hello world");
+					mv.setViewName("test1");
+					return mv;
+				}
+
+			}
+			
+	处理器中的注解
+		@Controller：表示当前类为一个Controller
+		@RequestMapping：表示当前方法为Controller中的方法，该方法要对 value 属性所指定的 URL进行处理与响应，被注解的方法的名称是可以随意命名的。当有多个请求可以匹配该方法时，可以写上一个String类型的数组，如上示例中的test2方法。
+		@RequestMapping注解还可以定义在类上面，在上面的示例中，test1方法和test2方法中的url路径中都包含了/test，此时我们把这些相同的url抽取出来，放到类上的注解@RequestMapping中，此时可以称之为命名空间。
+		
+	请求的提交方式
+		在@RequestMapping中有一个method属性，改属性可以设置接收请求的提交方式：
+			@RequestMapping(value = "/test2.do", method = RequestMethod.GET)
+			public ModelAndView test2(HttpServletRequest request, HttpServletResponse response) throws Exception{
+				ModelAndView mv = new ModelAndView();
+				mv.addObject("hello", "test2");
+				mv.setViewName("test1");
+				return mv;
+			}
+			
+	请求中携带的参数
+		在RequestMapping中还有一个属性是params，通过这个属性我们可以指定请求中必须携带的参数。
+			要求请求中必须携带请求参数 name 与 age
+			@RequestMapping(value="/test.do" ,  params={"name" , "age"}) 
+			
+			要求请求中必须携带请求参数 age，但必须不能携带参数 name
+			@RequestMapping(value="/test.do" , params={"!name" , "age"}) 
+			
+			要求请求中必须携带请求参数 name，且其值必须为jack；必须携带参数 age，其值必须为 23
+			@RequestMapping(value="/test.do" , params={"name=jack" , "age=23"}) 
+			
+			要求请求中必须携带请求参数name，且其值必须不能为jack
+			@RequestMapping(value="/test.do" , params="name!=jack") 
+	
+六 向SpringMvc提交参数
+	
+	编写一个带有表单的jsp：
+		<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+		<html>
+		<head>
+			<title>Title</title>
+		</head>
+		<body>
+		<form method="post" action="${pageContext.request.contextPath}/user/params01.do">
+			姓名:<input type="text" name="username"><br>
+			年龄:<input type="text" name="age">
+			<input type="submit" value="提交">
+		</form>
+		</body>
+		</html>
+		
+	之后创建一个controller来接收这个表单提交的值：
+		package com.harry.controller;
+
+		import org.springframework.stereotype.Controller;
+		import org.springframework.web.bind.annotation.RequestMapping;
+		import org.springframework.web.servlet.ModelAndView;
+
+		@Controller
+		@RequestMapping("/user")
+		public class ParamsController01 {
+			@RequestMapping("/params01")
+			public ModelAndView getParam01(String username, int age) throws Exception{
+				// 方法的参数名需要跟前台页面中的表单里面的input的name一致
+				ModelAndView mv = new ModelAndView();
+				mv.addObject("username", username);
+				mv.addObject("age", age);
+				mv.setViewName("result");
+				return mv;
+			}
+		}
+
+	创建result.jsp
+		<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+		<html>
+		<head>
+			<title>Title</title>
+		</head>
+		<body>
+		姓名：${username}
+		<br>
+		年龄：${age}
+
+		</body>
+		</html>
+	在上面的controller中，我们在regist1方法后面的参数列表中写上了两个参数username和age，因为这两个参数与表单中input中的name一致，所以spring MVC会自动为其赋值，通过这种方式就可以在controller中获取表单提价的数据了。
+	在controller的方法里面，我们可以写多个参数，也可以一个都不写，不过spring mvc只会自动为以下五个参数进行自动赋值：
+		HttpServletRequest
+		HttpServletResponse
+		HttpSession
+		请求携带的参数
+		用于承载数据的Model
+		
+	获取请求参数乱码
+		在上面的示例中，倘若你输入了中文，那很有可能出现乱码问题，我们可以使用spring MVC为开发者提供的CharacterEncodingFilter来解决乱码问题，这个其实就是一个过滤器。我们需要在web.xml文件中进行配置，最好将其设置在其他过滤器之前，因为过滤器是按照web.xml中的顺序执行的：
+			<!--字符编码过滤器-->
+			<filter>
+				<filter-name>characterEncodingFilter</filter-name>
+				<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+
+				<!--指定字符编码-->
+				<init-param>
+					<param-name>encoding</param-name>
+					<param-value>utf-8</param-value>
+				</init-param>
+
+				<!--强制指定字符编码，即如果在request中指定了字符编码，那么也会为其强制指定当前设置的字符编码-->
+				<init-param>
+					<param-name>forceEncoding</param-name>
+					<param-value>true</param-value>
+				</init-param>
+
+			</filter>
+			<filter-mapping>
+				<filter-name>characterEncodingFilter</filter-name>
+				<url-pattern>/*</url-pattern>
+			</filter-mapping>
+			
+	参数名不一致的情况
+		在实际开发中有可能会有这样的问题，就是表单中input的name和spring mvc方法中的参数名不一致，这时可以使用@RequestParam()注解来解决这个问题，这个注解中有三个属性：
+			value：指定请求参数的名称，即表单中input的name值。
+			name：同value，两者只能使用一个
+			required：指定该参数是否是必须传入的，boolean类型。若为 true，则表示请求中所携带的参数中必须包含当前参数。若为 false，则表示有没有均可。
+			defaultValue：指定当前参数的默认值。如果请求中没有该参数，则当前方法参数将取该默认值。
+			
+		在controller的方法中的参数名与表单中的参数名不一致,使用@RequestParam：
+			@Controller
+			@RequestMapping("/user")
+			public class ParamsController01 {
+				@RequestMapping("/params01")
+				public ModelAndView getParam01(@RequestParam(name="username") String t_username, @RequestParam(name="age") int t_age) throws Exception{
+					// 方法的参数名需要跟前台页面中的表单里面的input的name一致
+					ModelAndView mv = new ModelAndView();
+					mv.addObject("username", t_username);
+					mv.addObject("age", t_age);
+					mv.setViewName("result");
+					return mv;
+				}
+			}
+		设置defaultValue属性，当在jsp中没有填写年龄时，spring mvc会默认将其赋值为18
+			@RequestMapping("/params01")
+			public ModelAndView getParam01(@RequestParam(name="username") String t_username, @RequestParam(name="age", defaultValue = "18") int t_age) throws Exception{
+				// 方法的参数名需要跟前台页面中的表单里面的input的name一致
+				ModelAndView mv = new ModelAndView();
+				mv.addObject("username", t_username);
+				mv.addObject("age", t_age);
+				mv.setViewName("result");
+				return mv;
+			}
+			
+		设置required=true，此时系统会报出400的错误，因为请求参数中没有sex。
+			@RequestMapping("/regist.do")
+			public ModelAndView regist(@RequestParam(name="username") String t_username, @RequestParam(name="age",defaultValue = "18") int t_age, @RequestParam(required = true) String sex) throws Exception{
+
+				ModelAndView mv = new ModelAndView();
+				mv.addObject("username", t_username);
+				mv.addObject("age", t_age);
+				mv.setViewName("result");
+				return mv;
+			}
+			
+	使用对象接收表单参数
+		在之前的接收表单提交参数的示例中有个问题，倘若表单中的参数较多的话，需要在controller的方法里面把这些参数都写上，这样就不太方便了，我们可以定义一个javabean，将表单中的参数都写到javabean的属性里面，然后将这个bean作为参数写到controller的方法中。
+		定义一个Student类，里面的属性名跟表单的name保持一致
+			package com.harry.bean;
+
+			public class Student {
+				private String name;
+				private int age;
+				// 将school对象作为Student中的一个属性
+				private School school;
+
+				public School getSchool() {
+					return school;
+				}
+
+				public void setSchool(School school) {
+					this.school = school;
+				}
+
+				public String getName() {
+					return name;
+				}
+
+				public void setName(String name) {
+					this.name = name;
+				}
+
+				public int getAge() {
+					return age;
+				}
+
+				public void setAge(int age) {
+					this.age = age;
+				}
+			}
+		定义Controller，在方法中将Student作为参数传入：
+			public class StudentController {
+				@RequestMapping("/add1")
+				public ModelAndView add1(Student student) throws Exception{
+					ModelAndView mv = new ModelAndView();
+					mv.addObject("name", student.getName());
+					mv.addObject("age", student.getAge());
+					mv.setViewName("studentInfo");
+					return mv;
+				}
+			}
+			
+	对象属性参数的接收
+		当请求中的参数是一个对象属性中的属性时，我们可以在表单中的name中写上对象属性.属性的方式进行处理。
+		定义一个School类：
+			package com.harry.bean;
+
+			public class School {
+				private String schoolName;
+				private String address;
+
+				public String getSchoolName() {
+					return schoolName;
+				}
+
+				public void setSchoolName(String schoolName) {
+					this.schoolName = schoolName;
+				}
+
+				public String getAddress() {
+					return address;
+				}
+
+				public void setAddress(String address) {
+					this.address = address;
+				}
+			}
+		修改regist.jsp:
+			<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+			<html>
+			<head>
+				<title>Title</title>
+			</head>
+			<body>
+			<form method="post" action="${pageContext.request.contextPath}/student/add2.do">
+				姓名:<input type="text" name="name"><br>
+				年龄:<input type="text" name="age"><br>
+				<!-- 用协程对象属性.属性的方式 -->
+				学校名称：<input type="text" name="school.schoolName"><br>
+				学校地址：<input type="text" name="school.address"><br>
+
+				<input type="submit" value="提交">
+			</form>
+			</body>
+			</html>
+		修改StudentController
+			public class StudentController {
+				@RequestMapping("/add2")
+				public ModelAndView add2(Student student) throws Exception{
+					ModelAndView mv = new ModelAndView();
+					mv.addObject("name", student.getName());
+					mv.addObject("age", student.getAge());
+					mv.addObject("schoolName", student.getSchool().getSchoolName());
+					mv.addObject("address", student.getSchool().getAddress());
+					mv.setViewName("studentInfo");
+					return mv;
+				}
+			}
+			
+			
+	路径变量PathVariable
+		Controller除了可以接收表单提交的数据之外，还可以获取url中携带的变量，即路径变量，此时需要使用@PathVariable注解来设置，其中包含下面几个属性。
+			value：指定请求参数的名称，即url中的值，当url中的名称和方法参数名称不一致时，可以使用该属性解决。
+			name：同value，两者只能使用一个
+			required：指定该参数是否是必须传入的，boolean类型。若为 true，则表示请求中所携带的参数中必须包含当前参数。若为 false，则表示有没有均可。
+			package com.harry.controller;
+
+			import org.springframework.stereotype.Controller;
+			import org.springframework.web.bind.annotation.PathVariable;
+			import org.springframework.web.bind.annotation.RequestMapping;
+			import org.springframework.web.bind.annotation.RequestParam;
+			import org.springframework.web.servlet.ModelAndView;
+
+			/**
+			 * 获取url中的数据
+			 */
+			@Controller
+			@RequestMapping("/user")
+			public class PathController {
+				@RequestMapping("/{username}/{age}/path.do")
+				public ModelAndView getPath(@PathVariable("username") String name, @PathVariable int age) throws Exception{
+					// 方法的参数名需要跟前台页面中的表单里面的input的name一致
+					ModelAndView mv = new ModelAndView();
+					mv.addObject("username", name);
+					mv.addObject("age", age);
+					mv.setViewName("result");
+					return mv;
+				}
+			}
+
+七 Controller中方法的返回值
+	在我们之前写的Controller的方法中，返回值都写的是ModelAndView，其实还可以返回其他类型的对象，在实际应用中需要根据不同的情况来使用不同的返回值：
+		ModelAndView
+		String
+		void
+		自定义类型
+	
+	返回ModelAndView
+		如果Controller的方法执行完毕后，需要跳转到jsp或其他资源，且又要传递数据， 此时方法返回ModelAndView比较方便。
+		如果只传递数据，或者只跳转jsp或其他资源的话，使用ModelAndView就显得有些多余了。
+	
+	返回String类型
+		如果controller中的方法在执行完毕后，需要跳转到jsp或者其他资源上，此时就可以让该方法返回String类型。
+		返回内部资源:
+			package com.harry.controller;
+
+			import org.springframework.stereotype.Controller;
+			import org.springframework.web.bind.annotation.RequestMapping;
+
+			/**
+			 * 方法中返回String类型
+			 * 如果只希望方法执行完毕后跳转JSP或其他资源，此时可以使用String作为方法的返回值
+			 */
+
+			@Controller
+			public class ReturnStringController {
+				@RequestMapping("/welcome.do")
+				public String welcome() throws Exception{
+
+					return "welcome";
+				}
+			}
+		返回外部资源
+			如果你需要在controller的方法中跳转到外部资源，比如跳转到百度
+			此时需要在springmvc.xml文件中配置一个BeanNameViewResolver类，这个类被称作是视图解析器。在springmvc.xml文件中添加下面内容：
+			    <!-- 定义外部资源view对象 主义要定义在内部资源解析器上面 -->
+				<bean id="baidu" class="org.springframework.web.servlet.view.RedirectView">
+					<property name="url" value="https://www.baidu.com/"/>
+				</bean>
+				<!-- 视图解析器 -->
+				<bean class="org.springframework.web.servlet.view.BeanNameViewResolver"/>
+			其中id是controller中的方法返回值，value是要跳转的外部资源的地址。
+			之后修改controller中的方法返回值：
+				@RequestMapping("/baidu.do")
+				public String goToBaidu() throws Exception{
+					// 此处返回的字符串需要跟SpringMVC.xml配置文件中的bean的id保持一致
+					return "baidu";
+				}
+				
+	返回Model对象
+		它是一个接口，写在controller的方法中的时候，spring mvc会为其进行赋值。我们可以使用Model对象来传递数据，也就是说我们可以使用Model传递数据并且将方法返回值设置为String类型，通过这种方式实现与方法返回ModelAndView一样的功能。
+			/**
+			 * model接口， 可以用来传递数据
+			 */
+
+			@Controller
+			public class ModelController {
+				@RequestMapping("/modeData.do")
+				public String modelData(Model model, String name){
+					model.addAttribute("username", name);
+					return "welcome";
+				}
+			}
+	
+	返回void
+		如果你不用spring mvc帮你完成资源的跳转，此时可以将controller中的方法返回值设置为void。一般情况下有下面两个应用场景：
+			通过原始的servlet来实现跳转
+			ajax响应
+		
+		@Controller
+		public class ReturnVoidController {
+			@RequestMapping(value = "/servletjump.do", method = {RequestMethod.GET, RequestMethod.POST})
+			public void servletJump(HttpServletRequest request, HttpServletResponse response, Student student) throws Exception{
+				request.setAttribute("student", student);
+				request.getRequestDispatcher("/jsp/welcome.jsp").forward(request, response);
+
+			}
+
+			/**
+			 * 返回Ajax的请求
+			 * @param request
+			 * @param response
+			 * @param student
+			 * @throws Exception
+			 */
+			@RequestMapping("/ajaxResponse.do")
+			public  void ajaxResponse(HttpServletRequest request, HttpServletResponse response, Student student) throws Exception{
+				Writer out = response.getWriter();
+				String  jsonString = JSON.toJSONString(student);
+				out.write(jsonString);
+			}
+		}
+		
+	返回Object类型
+		若需要controller中的方法返回Object类型，需要先配置下面内容：
+			添加jackson的jar包，在Spring mvc中使用了jackson来进行json数据格式的转换。
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>2.10.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>2.10.0</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-annotations</artifactId>
+				<version>2.10.0</version>
+			</dependency>
+			
+		在springmvc.xml文件中添加注解驱动。
+			<mvc:annotation-driven/>
+			
+		返回字符串和MAP
+			之前在controller方法中返回字符串，spring mvc会根据那个字符串跳转到相应的jsp中。这里返回的字符串会添加到响应体中传递到jsp页面中，此时需要在方法上添加一个注解@ResponseBody即可。
+			@Controller
+			public class ReturnObjectController {
+				@RequestMapping(name = "/returnString.do", produces = "text/html;charset=utf-8")
+				@ResponseBody // 将返回值添加到响应体中
+				public Object returnString() throws Exception{
+					return "harry.cai,蔡";
+				}
+				@RequestMapping("/returnMap.do")
+				@ResponseBody
+				public Object returnMap() throws Exception{
+					Map<String, String> map = new HashMap<>();
+					map.put("hello", "你好");
+					map.put("world", "世界");
+					return map;
+				}
+			}
+
+八 spring mvc的转发与重定向
+	
+	spring mvc底层其实就是一个servlet，因此在spring mvc中也存在转发和重定向的概念。对于转发的页面，可以是在WEB-INF目录下的页面；而重定向的页面，是不能在WEB-INF目录下的。因为重定向相当于用户再次发出一次请求，而用户是不能直接访问WEB-INF目录下的资源的。
+	根据索要跳转的的资源，可以分为跳转到jsp页面和跳转到其他controller。
+	
+	返回ModelAndView时的请求转发
+		当controller中的方法返回ModelAndView的时候，默认是使用的转发。当然，我们也可以显式的指出要使用转发，此时，需在 setViewName()指定的视图前添加forward:，此时springmvc.xml文件中配置的视图解析器将会失效，即需要在setViewName中写上jsp相对于项目根的路径。
+		@Controller
+		public class ForwardController {
+			/**
+			 * 返回ModelAndView对象的装发
+			 *
+			 * @return
+			 * @throws Exception
+			 */
+			@RequestMapping("/forwardMAV.do")
+			public ModelAndView forwardMAV() throws Exception{
+				ModelAndView mv = new ModelAndView();
+				mv.addObject("type", "返回ModelAndView对象的转发");
+			    //默认情况下使用转发
+				//mv.setViewName("/result");
+
+				//手动显式指定使用转发，此时springmvc.xml配置文件中的视图解析器将会失效
+				mv.setViewName("forward:/jsp/result.jsp");
+				return mv;
+			}
+		}
+	
+	返回ModelAndView时的重定向
+		如果要实现重定向，则需在setViewName()指定的视图前添加redirect:，此时springmvc.xml文件中配置的视图解析器将会失效，即需要在setViewName中写上jsp相对于项目根的路径。重定向的方式在request域中的数据会失效，此时可以通过ModelAndView来传递数据，但是只能传递基本数据类型和String类型，因为spring mvc会将传递的数据以请求参数的方式放到url的后面，此时任何数据类型都会被转换为普通的字符串。另外，我们在jsp中取值的时候需要使用 EL 表达式中的请求参数param读取。
+		/**
+		 * 重定向返回ModelAndView对象
+		 * @return
+		 * @throws Exception
+		 */
+		@RequestMapping("/redirectMAV.do")
+		public ModelAndView redirectMAV(School school,String name)throws Exception{
+
+			ModelAndView mv = new ModelAndView();
+
+			//在重定向中可以使用ModelAndView传递数据，但是只能传递基本数据类型和String类型
+			mv.addObject("school",school);
+			mv.addObject("name", name);
+
+			//使用重定向，此时springmvc.xml配置文件中的视图解析器将会失效
+			mv.setViewName("redirect:/jsp/result.jsp");
+			return mv;
+	
+	返回String类型的转发
+		这个整体上跟之前ModelAndView差不多，只不过在controller中的方法参数会被自动的放到request域中。
+		@RequestMapping("/forwardStr.do")
+		public String forwardStr(School school)throws Exception{
+
+			//默认会使用转发
+			//return "result";
+			//显式的使用转发
+			return "forward:/jsp/result.jsp";
+		}
+		result.jsp中直接通过request域获取数据，以下两种方式均可。
+		${requestScope.school.schoolName}
+		${school.schoolName}
+		
+	返回String类型的重定向
+		这里要想传递数据的话，需要使用之前介绍过的Model实现，这里的数据同样会放在url中，所以只能传递基本数据类型和String类型。
+		@RequestMapping("/redirectStr.do")
+		public String redirectStr(School school, Model model)throws Exception{
+
+			//这里的数据同样会放在url中，所以只能传递基本数据类型和String类型
+			model.addAttribute("schoolName", school.getSchoolName());
+			model.addAttribute("address", school.getAddress());
+
+			return "redirect:/jsp/result.jsp";
+		}
+		
+		result.jsp中需要通过param来获取数据：
+		${param.schoolName}
+		${param.address}
+		
+	返回void的重定向和转发
+		当方法没有返回值即返回void的时候，重定向和转发操作都是使用的servlet的api，就是：
+		转发：request.getRequestDispatcher("/jsp/result.jsp").forward(request, response);
+		重定向：response.sendRedirect(request.getContextPath()+"/jsp/result.jsp");
+		
+	
+九 SpringMVC的异常处理	
+
+	在Spring MVC中也可以进行一些异常的处理，常用的方式有三种：
+		使用spring mvc中的异常处理器 SimpleMappingExceptionResolver
+		使用自定义异常处理器
+		使用异常处理注解
+		
+	1. SimpleMappingExceptionResolver
+		当系统出现异常之后，我们可以让spring mvc跳转到指定的jsp中，这样子对于用户来说体验比较好，对于开发者来说也比较好定位问题，这里先来看下使用SimpleMappingExceptionResolver的方式来处理异常。
+		首先我们来自定义一个异常：
+			package com.harry.myexecption;
+			public class MyExecption extends Exception {
+				public MyExecption() {
+					super();
+
+				}
+				public MyExecption(String  msg){
+					super(msg);
+				}
+
+			}
+	
+		定义一个controller，在里面分别抛出自定义MyException和jdk自带的Exception：
+			/**
+			 * 异常处理controller
+			 */
+			@Controller
+			public class ExceptionController {
+				@RequestMapping("/myException.do")
+				public ModelAndView myException(String name) throws Exception{
+					ModelAndView mv = new ModelAndView();
+					if ("jack".equals(name)){
+						throw  new MyExecption("我的自定义异常");
+					}
+					if (!"jack".equals(name)){
+						throw new Exception("异常");
+					}
+					return mv;
+				}
+			}
+
+		接下来需要修改一下springmvc.xml配置文件，添加异常处理相关的配置:
+			<!--异常处理, 在jsp页面中的el表达式可以直接获取value中的值-->
+			<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+				<property name="exceptionMappings">
+					<props>
+						<!-- 这里可以添加多个自定义异常 -->
+						<prop key="com.harry.myexecption.MyExecption">error/myerror</prop>
+					</props>
+				</property>
+				<!-- 默认的异常调整页面 -->
+				<property name="defaultErrorView" value="error/error"/>
+				<!-- 异常信息 -->
+				<property name="exceptionAttribute" value="ex"/>
+			</bean>
+			
+		自定义异常响应的页面，在jsp目录中创建error目录，将相关的异常响应页面都放到这个目录中。
+			MyError.jsp:
+				<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+				<html>
+				<head>
+					<title>Title</title>
+				</head>
+				<body>
+				自定义异常跳转的页面<br>
+				${ex}
+				</body>
+				</html>
+			
+			error.jsp：
+				<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+				<html>
+				<head>
+					<title>Title</title>
+				</head>
+				<body>
+				默认异常跳转的页面<br>
+				${ex}
+				</body>
+				</html>
+	
+	2.自定义异常处理器
+		倘若我们要在项目中捕获特定的异常，然后再根据捕获的异常做一些操作的时候，按照以前的写法，我们需要在每次捕获异常之后或者抛出之前进行操作，这段代码就会重复的出现在很多类里面，导致代码冗余，此时，我们可以通过自定义异常处理器来解决。
+		自定义异常处理器，需要实现org.springframework.web.servlet.HandlerExceptionResolver接口，并且该类需要在Springmvc.xml
+		首先来自定义一个异常实现HandlerExceptionResolver接口，只要有异常发生，都会自动执行接口方法resolveException()。
+			/**
+			 * 自定义异常处理器
+			 */
+			public class MyExceptionResolver implements HandlerExceptionResolver {
+				/**
+				 * 只要程序中有异常抛出,那么就会执行该方法
+				 * @param httpServletRequest
+				 * @param httpServletResponse
+				 * @param o
+				 * @param e
+				 * @return
+				 */
+				@Override
+				public ModelAndView resolveException(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, Exception e) {
+					ModelAndView mv = new ModelAndView();
+					mv.addObject("ex", e);
+					mv.setViewName("error/error");
+					// 判断异常对象是否是MyExecption对象
+					if(e instanceof MyExecption){
+						// 记录日志
+						// 设置跳转页面
+						mv.setViewName("error/myerror");
+					}else if(e instanceof NullPointerException){
+						// 记录日志
+						//...
+					}
+					return mv;
+				}
+			}
+		在springmvc.xml文件中配置异常处理：
+			<bean class="com.harry.myexecption.MyExceptionResolver"/>
+
+	3.使用注解处理异常
+		使用注解@ExceptionHandler 可以将一个方法指定为异常处理方法，该注解只有一个可选属性value，是一个 Class<?>数组，用于指定该注解的方法所要处理的异常类，当controller中抛出的异常在这个Class数组中的时候才会调用该异常处理方法。
+		而被注解的异常处理方法，其返回值可以是 ModelAndView、String，或 void，方法名随意，方法参数可以是 Exception 及其子类对象、HttpServletRequest、HttpServletResponse 等。系统会自动为这些方法参数赋值。
+		@Controller
+		public class AnnotationExceptionController {
+
+			@RequestMapping("/regist.do")
+			public ModelAndView regist(String name) throws Exception{
+				ModelAndView mv = new ModelAndView();
+				if("jack".equals(name)){
+					throw  new MyExecption("自定义异常");
+				}
+				return mv;
+			}
+			
+			/**
+			 * 处理MyException异常的方法
+			 * @param ex
+			 * @return
+			 */
+			@ExceptionHandler(MyExecption.class)
+			public ModelAndView handleMyException(Exception ex){
+				ModelAndView mv = new ModelAndView();
+				mv.addObject("ex", ex);
+				mv.setViewName("/error/MyError");
+				return mv;
+			}
+		}
+		
+		上面使用ExceptionHandler注解标注了一个处理MyException的异常，不过只有在当前的controller中抛出MyException之后才会被该方法处理，其他controller的方法中抛出MyException异常时候是不会被处理的，解决这个问题的办法就是单独定义一个处理异常方法的Controller，然后让其他Controller来继承它，但是这样做的弊端就是继承这个类之后就不能继承其他类了。
+		定义一个异常处理基类：
+			public class BaseExceptionController {
+				/**
+				 * 处理MyException异常的方法
+				 * @param ex
+				 * @return
+				 */
+				@ExceptionHandler(MyException.class)
+				public ModelAndView handleMyException(Exception ex){
+					ModelAndView mv = new ModelAndView();
+					mv.addObject("ex", ex);
+					mv.setViewName("/error/MyError");
+					return mv;
+				}
+
+				/**
+				 * 其他异常处理，注解中不用写value属性
+				 * @param ex
+				 * @return
+				 */
+				@ExceptionHandler
+				public ModelAndView handleException(Exception ex){
+					ModelAndView mv = new ModelAndView();
+					mv.addObject("ex", ex);
+					mv.setViewName("/error/error");
+					return mv;
+				}
+			}
+
+		之后只要让会抛出异常的controller继承上面的BaseExceptionController即可：	
+			@Controller
+			@RequestMapping("/user")
+			public class UserController extends BaseExceptionController {
+				@RequestMapping("/addUser.do")
+				public ModelAndView addUser(Exception ex, String name) throws Exception {
+					ModelAndView mv = new ModelAndView();
+					if ("jack".equals(name)) {
+						throw new MyException("用户名不能是jack");
+					}
+
+					return mv;
+				}
+			}
+
+	4.三种异常处理方式的总结
+		使用spring mvc中的异常处理器 SimpleMappingExceptionResolver
+			这种方式会产生大量的冗余代码，不建议使用
+		使用自定义异常处理器
+			这种方式将异常处理统一编写到一个类中，便于管理和维护，建议使用。
+		使用异常处理注解
+			如果将异常处理的方法都放到一个基类中，其他类在继承这个类之后就不能继承其他类了，扩展性较差。
+
+十 spring mvc中的类型转换器
+	从前台提交到controller中方法的表单数据会根据我们在方法参数中定义的类型来自动转换，不用再强制的去转换了：
+		表单数据：
+			<form action="/regist.do" method="post">
+				姓名:<input type="text" name="name"><br>
+				年龄:<input type="text" name="age"><br>
+				<input type="submit" value="提交">
+			</form>
+		controller中的方法会自动将age转为int类型：
+			@Controller
+			@RequestMapping("/user")
+			public class UserController{
+
+				@RequestMapping("/addUser.do")
+				public ModelAndView addUser(String name,int age) throws Exception{
+
+					ModelAndView mv = new ModelAndView();
+					mv.addObject("name", name);
+					mv.addObject("age", age);
+
+					mv.setViewName("user");
+					return mv;
+				}
+			}
+			
+		这个是通过spring mvc中的默认类型转换器（converter）来实现的，不过这些默认转换器不是万能的，有些类型就不能转换，比如日期类型，此时我们可以自定义一个类型转换器来进行日期类型的转换。
+		
+
+	自定义类型转换器
+		创建一个类实现Converter接口，该接口中的泛型，前面的类是待转换的类型，后面的是转换之后的类型。
+			/**
+			 * 日期转换器
+			 */
+			public class DateConverter implements Converter<String, Date>{
+				@Override
+				public Date convert(String s) {
+					if(s != null && !"".equals(s)){
+						SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+						try {
+							return sdf.parse(s);
+						} catch (ParseException e) {
+							e.printStackTrace();
+						}
+					}
+
+					return null;
+				}
+			}
+			
+		配置springmvc.xml文件：
+			<!--注解驱动-->
+			<mvc:annotation-driven conversion-service="conversionService"/>
+			<!-- 注册类型转换器 -->
+			<bean id="dateConverter" class="com.harry.converter.DateConverter"/>
+			<!-- 注册类型转换服务的bean -->
+			<bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+				<property name="converters" ref="dateConverter"/>
+			</bean>
+			
+		controller：
+			@Controller
+			@RequestMapping("/user")
+			public class UserController extends BaseExceptionController {
+				@RequestMapping("/addUser.do")
+				public ModelAndView addUser(String name, int age, Date birthday) throws Exception {
+					ModelAndView mv = new ModelAndView();
+					mv.addObject("name", name);
+					mv.addObject("age", age);
+					mv.addObject("birthady", birthday);
+					mv.setViewName("result");
+					return mv;
+				}
+			}
+			
+	
+	@DateTimeFormat注解
+		后来spring中新增了@DateTimeFormat注解，通过该注解可以进行日期类型的转换，这样子我们就不用单独编写日期类型的转换器了。@DateTimeFormat注解支持joda time，在jdk7之前的api中，关于日期处理相关的类都不太好用，而joda time提供非常好用的日期处理相关的api，因此joda time深受很多开发者的喜爱，在jdk8中已经将joda time的类纳入，就是之前说过的LocalDate等。
+		如果你使用的是jdk8（不含）之前的版本，并且要使用@DateTimeFormat注解的话，需要引入joda time相关的jar包：
+			<dependency>
+			  <groupId>joda-time</groupId>
+			  <artifactId>joda-time</artifactId>
+			  <version>2.9.9</version>
+			</dependency>
+		
+		controller：
+			@Controller
+			@RequestMapping("/user")
+			public class UserController extends BaseExceptionController {
+				@RequestMapping("/addUser.do")
+				public ModelAndView addUser(String name, int age, @DateTimeFormat(pattern = "yyyy-MM-dd") Date birthday) throws Exception {
+					ModelAndView mv = new ModelAndView();
+					mv.addObject("name", name);
+					mv.addObject("age", age);
+					mv.addObject("birthady", birthday);
+					mv.setViewName("result");
+					return mv;
+				}
+			}
+
+		这里还可以将日期转换为LocalDate类型，不过需要注意的是，如果你要将日期转换为LocalDate类型，那么需要将这个属性写到javabean里面，不能使用controller中的方法参数的方式，此时会报出错误。
+			public class User {
+
+				private String name;
+
+				private int age;
+
+				@DateTimeFormat(pattern = "yyyy-MM-dd")
+				private LocalDate birthday;
+
+				/*
+					省略setter和getter
+				 */
+			}
+			
+		在controller的方法参数中添加User
+			@RequestMapping("/addUser.do")
+			public ModelAndView addUser(User user) throws Exception{
+
+				ModelAndView mv = new ModelAndView();
+
+				mv.addObject("name",user.getName());
+				mv.addObject("age", user.getAge());
+				mv.addObject("birthday", user.getBirthday());
+				mv.setViewName("user");
+				return mv;
+			}
+
+十一 spring mvc数据校验	
+
+	数据校验
+		在java中有一个bean validation的数据验证规范，该规范的实现者有很多，其中hibernate validator使用的较多一些，这里的hibernate validator是hibernate框架下的一款用于数据校验的框架，以前我们统称的hibernate一般特指的是hibernate orm。
+		这里我们来用下6.0.9的版本，该版本需要jdk8+。先来使用maven导入相关jar包：
+			<dependency>
+			   <groupId>org.hibernate</groupId>
+			   <artifactId>hibernate-validator</artifactId>
+			   <version>6.0.9.Final</version>
+			</dependency>
+			
+		编写javabean，在需要校验的属性上面添加相应的注解
+			public class User {
+				@NotEmpty(message = "姓名不能为空")
+				@Size(min = 4, max = 20, message = "姓名长度必须在{min}-{max}之间")
+				private String name;
+				@Min(value = 0, message = "年龄不能小于{value}")
+				@Max(value = 120, message = "年龄不能大于{value}")
+				private String age;
+				@Pattern(regexp =  "^1([358][0-9]|4[579]|66|7[0135678]|9[89])[0-9]{8}$", message = "手机号码不正确")
+				private String phone;
+
+							
+				/*
+					省略setter和getter
+				 */
+			}
+			
+		修改springmvc.xml配置文件，注册一个验证器，这里使用的是HibernateValidator实现的验证器：
+			<mvc:annotation-driven validator="harryValidation"/>
+			<!--注册hibernate Validation -->
+			<bean id="harryValidation" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+				<property name="providerClass" value="org.hibernate.validator.HibernateValidator"/>
+			</bean>
+			
+		创建controller，在方法的参数中写上User和BindingResult，在User前面添加@Validated注解，这里需要注意:不能将@Validated 注解在String类型和基本类型的形参前，BindingResult参数可以获取到所有验证异常的信息，当校验不通过的时候将提示信息放到ModelAndView中传递到jsp里面。
+			@Controller
+			@RequestMapping("/user")
+			public class UserController {
+				// @Validated不能加载String类型或者是基本数据类型的前面
+				// BindingResult可以获取所有验证异常的信息
+				@RequestMapping("/register")
+				public ModelAndView register(@Validated User user, BindingResult br){
+					ModelAndView mv = new ModelAndView();
+					List<ObjectError> allErrors = br.getAllErrors();
+					// 如果数据校验不通过，就会进入到下面的判断中
+					if (allErrors != null && allErrors.size() > 0){
+						FieldError nameError = br.getFieldError("name");
+						FieldError ageError = br.getFieldError("age");
+						FieldError phoneError = br.getFieldError("phone");
+						if (nameError != null){
+							mv.addObject("nameError", nameError.getDefaultMessage());
+						}
+						if (ageError != null){
+							mv.addObject("ageError", ageError.getDefaultMessage());
+						}
+						if (phoneError != null){
+							mv.addObject("phoneError", phoneError.getDefaultMessage());
+						}
+						mv.setViewName("register");
+						return mv;
+					}
+					mv.addObject("msg", "注册成功");
+					mv.setViewName("user");
+					return mv;
+				}
+			}
+			
+		创建jsp，获取校验信息：
+			<form action="/user/register.do" method="get">
+				姓名:<input type="text" name="name">${nameError}<br>
+				年龄:<input type="text" name="age">${ageError}<br>
+				手机:<input type="text" name="phone">${phoneError}<br>
+				<input type="submit" value="提交">
+			</form>
+			
+			
+		Hibernate Validator 中常用的验证注解
+			@AssertFalse 验证注解的元素值是 false
+			@AssertTrue 验证注解的元素值是 true
+			@DecimalMax（value=x） 验证注解的元素值小于等于指定的十进制value 值
+			@DecimalMin（value=x） 验证注解的元素值大于等于指定的十进制value 值
+			@Digits(integer=整数位数, fraction=小数位数)验证注解的元素值的整数位数和小数位数上限
+			@Future 验证注解的元素值（日期类型）比当前时间晚
+			@Max（value=x） 验证注解的元素值小于等于指定的 value值
+			@Min（value=x） 验证注解的元素值大于等于指定的 value值
+			@NotNull 验证注解的元素值不是 null
+			@Null 验证注解的元素值是 null
+			@Past 验证注解的元素值（日期类型）比当前时间早
+			@Pattern(regex=正则表达式) 验证注解的元素值不指定的正则表达式匹配
+			@Size(min=最小值, max=最大值) 验证注解的元素值的在 min 和 max （包含）指定区间之内，如字符长度、集合大小
+			@Valid 该注解主要用于字段为一个包含其他对象的集合或map或数组的字段，或该字段直接为一个其他对象的引用，这样在检查当前对象的同时也会检查该字段所引用的对象。
+			@NotEmpty 验证注解的元素值不为 null 且不为空（字符串长度不为 0、集合大小不为 0）
+			@Range(min=最小值, max=最大值)验证注解的元素值在最小值和最大值之间
+			@NotBlank 验证注解的元素值不为空（不为 null、去
+			除首位空格后长度为 0），不同于@NotEmpty， @NotBlank 只应用于字符串且在比较时会去除字符串的空格
+			@Length(min=下限, max=上限) 验证注解的元素值长度在 min 和 max 区间内
+			@Email 验证注解的元素值是 Email，也可以通过正则表达式和 flag 指定自定义的 email 格式
+			
+十二 SpringMVC文件上传
+	编写文件上传的jsp中的表单：
+		<form enctype="multipart/form-data" method="post" action="/upload.do">
+			图片:<input type="file" name="photo"><br>
+			<input type="submit" value="上传">
+		</form>
+		
+	编写处理文件上传的controller，在处理文件上传的方法中需要添加MultipartFile类型的参数，MultipartFile本身是一个接口，里面提供了一些文件上传的操作的方法：
+		getOriginalFilename()
+		获得文件名
+		isEmpty()
+		判断是否上传了文件，如果没有选择文件上传的话，此时结果为true
+		getContentType()
+		获得上传文件的文件类型
+		transferTo(File file)
+		将文件上传至指定目录中
+		getName()
+		获取表单中input的name值
+		getBytes()
+		获取上传文件的byte数组
+		getInputStream()
+		获取上传文件的InputStream对象
+		
+	方法中的另外一个参数HttpSession的主要作用就是获取服务器中用来存放上传文件的路径。
+		/**
+		 * 文件上传
+		 */
+		@Controller
+		public class UploadController  {
+			@RequestMapping("/upload")
+			public ModelAndView upload1(MultipartFile photo, HttpSession session) throws Exception{
+				ModelAndView mv = new ModelAndView();
+				// 判断用户是否上传了文件
+				if(!photo.isEmpty()){
+					// 获取服务器中文件上传的路径
+					String path = session.getServletContext().getRealPath("/upload");
+					// 获取文件上传的名称
+					String fileName = photo.getOriginalFilename();
+					// 限制文件上传的类型
+					if("image/png".equals(photo.getContentType())){
+						File file = new File(path, fileName);
+						// 完成文件上传
+						photo.transferTo(file);
+					}else {
+						mv.addObject("msg", "请选择PNG格式的图片上传");
+						mv.setViewName("upload_fail");
+						return mv;
+					}
+				}else {
+					mv.addObject("msg", "请上传一张png格式的图片");
+					mv.setViewName("upload_fail");
+					return mv;
+				}
+				// 跳转到成功页面
+				mv.setViewName("upload_success");
+				return mv;
+			}
+		}
+	
+		在spring mvc中支持两种上传文件的方式：
+			使用apache的commons-io和commons-fileupload实现文件上传
+			使用servlet3.0实现文件上传
+		
+	
+	使用commons组件实现文件上传
+		导入相关jar包：
+		    <dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>2.5</version>
+			</dependency>
+
+			<dependency>
+				<groupId>commons-fileupload</groupId>
+				<artifactId>commons-fileupload</artifactId>
+				<version>1.4</version>
+			</dependency>
+			
+		
+		在springmvc.xml配置文件中添加multipartResolver，这里的id必须要写成multipartResolver，会有DispatcherServlet来调用，我们可以在这里设置上传文件大小、字符编码等内容：
+			<!-- 注册一个multipartResolver  由DispatcherServlet来调用 -->
+			<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+				<!--设置字符编码防止文件名乱码-->
+				<property name="defaultEncoding" value="utf-8"/>
+				<!--设置上传文件的总大小，单位是字节b-->
+				<property name="maxUploadSize" value="1048576"/>
+				<!--设置单个上传文件的大小，单位是字节b-->
+				<property name="maxUploadSizePerFile" value="1048576"/>
+				<!--设置内存缓冲区的大小，当超过该值的时候会写入到临时目录-->
+				<property name="maxInMemorySize" value="1048576"/>
+				<!--设置临时目录-->
+				<property name="uploadTempDir" value="tempupload"/>
+				<!--默认是false，如果设置为true的话，不会将文件路径去除，在IE浏览器下上传时会将路径名也作为文件名上传：D:\image\monkey.png-->
+				<property name="preserveFilename" value="false"/>
+				<!--是否使用懒加载，默认是false-->
+				<property name="resolveLazily" value="true"/>
+			</bean>
+			设置临时上传文件目录的作用：
+				提高安全性
+				客户端上传的文件直接传到临时目录，这样子对于客户端来说隐藏了真实的文件存放目录
+				便于管理
+				当用户取消上传或上传失败的话，直接操作临时目录即可，无需再去修改真实目录中的文件
+				
+	使用servlet3.0实现文件上传
+		在web.xml中的中央控制器的servlet配置里面添加下面内容，location的标签需要写在multipart-config中的第一行：
+			<!-- 使用servlet3.0实现文件上传-->
+			<multipart-config>
+				<!--临时文件路径-->
+				<location>/temp</location>
+				<!--单个上传文件的最大值，单位是byte-->
+				<max-file-size>104876</max-file-size>
+				<!--总上传文件的最大值-->
+				<max-request-size>52428800</max-request-size>
+				<!--内存缓冲区的大小,当超过该值时，会写入到临时文件中，单位是byte-->
+				<file-size-threshold>1024</file-size-threshold>
+			</multipart-config>
+			
+		然后需要在springmvc.xml文件中配置multipartResolver
+		    <!-- 注册使用servlet3.0实现文件上传的bean -->
+			<bean id="multipartResolver" class="org.springframework.web.multipart.support.StandardServletMultipartResolver"/>
+			
+		上传文件超出设定大小的异常处理
+			当上传文件超出指定大小时，会抛出 MaxUploadSizeExceededException 异常。通过之前的spring mvc异常处理方式来进行处理，给用户一个友好的提示信息。
+		
+		
+		
+	上传多个文件	
+		修改jsp，多个input的name相同：
+			<form enctype="multipart/form-data" method="post" action="/upload.do">
+				图片1:<input type="file" name="photos"><br>
+				图片2:<input type="file" name="photos"><br>
+				图片3:<input type="file" name="photos"><br>
+				<input type="submit" value="上传">
+			</form>
+		
+		在controller中添加方法，方法参数中需要添加MultipartFile[]，并且要在其前面加上@RequestParam注解：
+			@Controller
+			public class UploadController  {
+				/**
+				 * 处理多个文件上传
+				 * @param photos
+				 * @param session
+				 * @return
+				 * @throws Exception
+				 */
+				@RequestMapping("/upload")
+				public ModelAndView upload1(@RequestParam MultipartFile[] photos, HttpSession session) throws Exception{
+					ModelAndView mv = new ModelAndView();
+					// 获取服务器中文件上传的路径
+					String path = session.getServletContext().getRealPath("/upload");
+					for(MultipartFile photo:photos){
+						// 判断用户是否上传了文件
+						if(!photo.isEmpty()){
+							// 获取文件上传的名称
+							String fileName = photo.getOriginalFilename();
+							// 限制文件上传的类型
+							if("image/png".equals(photo.getContentType())){
+								File file = new File(path, fileName);
+								// 完成文件上传
+								photo.transferTo(file);
+							}else {
+								mv.addObject("msg", "请选择PNG格式的图片上传");
+								mv.setViewName("upload_fail");
+								return mv;
+							}
+						}else {
+							mv.addObject("msg", "请上传一张png格式的图片");
+							mv.setViewName("upload_fail");
+							return mv;
+						}
+					}
+
+					// 跳转到成功页面
+					mv.addObject("msg", "上传成功");
+					mv.setViewName("upload_success");
+					return mv;
+				}
+			}
+
+十二 spring mvc中的拦截器
+	拦截器（interceptor）是spring mvc中提供的一种类似filter过滤器的技术，只不过拦截器只能拦截controller的请求，而filter可以过滤所有请求，其他内容大体上两者是近似的。
+	定一个类实现HandlerInterceptor接口，这样就创建了一个拦截器，该接口中有三个方法：
+		preHandle(request, response, Object handler)：
+			该方法在controller中的方法执行之前执行。其返回值为 boolean，若为 true，则紧接着会执行controller方法，且会将afterCompletion()方法压栈进入入到一个专门的方法栈中等待执行。
+		postHandle(request, response, Object handler, modelAndView)：
+			该方法在controller方法执行之后执行。controller方法若最终未被执行，则该方法不会执行。由于该方法是在controller方法执行完后执行，且该方法参数中包含 ModelAndView，所以该方法可以修改controller方法的处理结果数据，且可以修改跳转方向。
+		afterCompletion(request, response, Object handler, Exception ex)：
+			当 preHandle()方法返回 true 时，会将该方法放到专门的方法栈中，等到对请求进行响应的所有工作完成之后才执行该方法。即该方法是在中央调度器渲染（数据填充）了响应页面之后执行的，此时对 ModelAndView 再操作也对响应无济于事。
+	
+	拦截器的使用：
+		自定义一个拦截器：
+			/**
+			 * 拦截器
+			 * 只拦截controller的请求
+			 */
+			public class MyInterceptor implements HandlerInterceptor {
+				@Override
+				public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+					System.out.println("拦截器中preHandle方法");
+					return true;
+				}
+
+				@Override
+				public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+					System.out.println("拦截器中的postHandle");
+				}
+
+				@Override
+				public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+					System.out.println("拦截器中的afterCompletion方法");
+				}
+			}
+			
+		在springmvc.xml文件中注册拦截器，/** 表示对所有controller拦截：
+			<!-- 注册拦截器 -->
+			<mvc:interceptors>
+				<mvc:interceptor>
+					<mvc:mapping path="/**"/>
+					<bean class="com.harry.intercepetor.MyInterceptor"/>
+				</mvc:interceptor>
+			</mvc:interceptors>
+			
+		创建一个controller：
+			@Controller
+			public class TestController03 {
+				@RequestMapping("/test3.do")
+				public ModelAndView test() throws Exception{
+					ModelAndView mv = new ModelAndView();
+					System.out.println("test方法");
+					mv.setViewName("result");
+					return mv;
+				}
+			}
+		当有请求被该方法处理的时候，可以看到控制台中打印下面内容：
+			过滤器
+			拦截器中的preHandle方法
+			test方法
+			拦截器中的postHandle方法
+			拦截器中的afterCompletion方法
+			
+	拦截器的使用案例：权限控制
+		在实际应用中，我们可以使用拦截器来控制权限，比如，这里做一个这样的小功能，判断用户名是否登录
+		先来定一个controller：
+			@Controller
+			public class LoginController {
+				@RequestMapping("/welcome")
+				public ModelAndView welcome() throws Exception{
+					ModelAndView mv = new ModelAndView();
+					mv.addObject("welcome", "欢迎登录本系统");
+					mv.setViewName("/welcome");
+					return mv;
+				}
+			}
+		welcome.jsp:
+			<body>
+				${welcome}<br>
+			</body>
+			
+		定义PermissionInterceptor拦截器：
+			/**
+			 * 权限拦截器
+			 */
+			public class PermissionInterceptor implements HandlerInterceptor {
+				@Override
+				public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+					Object user = (String)request.getSession().getAttribute("user");
+					 // 判断用户名为harry的用户是否已经登录
+					if(!"harry".equals(user)){
+						request.getRequestDispatcher("/jsp/fail.jsp").forward(request, response);
+						// 不进行后续的处理
+						return false;
+					}
+					return true;
+				}
+
+				@Override
+				public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+
+				}
+
+				@Override
+				public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+
+				}
+			}
+			
+		fail.jsp:
+			<body>
+				请先登录系统，否则无权访问该系统
+			</body>
+			
+		login.jsp
+			<body>
+				<!--当访问该页面的时候，就表示用户已登录-->
+				<%
+					request.getSession().setAttribute("user", "monkey1024");
+				%>
+			</body>

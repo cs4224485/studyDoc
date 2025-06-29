@@ -1,0 +1,168 @@
+linux下配置python环境 django创建helloworld项目
+linux下配置python环境
+
+1、linux下安装python3
+
+a、 准备编译环境(环境如果不对的话，可能遇到各种问题，比如wget无法下载https链接的文件)
+
+yum groupinstall 'Development Tools'
+yum install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel
+
+2、下载 Python3.5代码包
+
+wget https://www.python.org/ftp/python/3.5.0/Python-3.5.0.tar.xz
+在安装包中有一个README的文件，里面有写如何安装
+
+tar Jxvf Python-3.5.0.tar.xz
+cd Python-3.5.0
+./configure --prefix=/usr/local/python3
+make && make install
+
+提示：Ignoring ensurepip failure: pip 7.1.2 requires SSL/TLS
+
+这是原因没有安装或升级oenssl:
+
+yum install openssl-devel
+
+再次重复编译方案python3.5:
+
+成功后会提示成功安装pip-7.12与setuptools！
+
+pip3与pip都提示没有错误！
+
+做软链：
+
+ln -s /usr/local/python3/bin/pip3.5 /usr/local/bin/pip
+升级pip到最新版本：
+
+pip install --upgrade pip
+
+pip安装成功啦！
+
+注：--no-check-certificate 表示安装时“不检查证书”，不加上可能无法安装。
+
+3、安装包
+
+requests包：
+pip install requests
+
+pyquery包：
+pip install pyquery
+
+pymysql包：
+pip install pymysql
+
+ 
+
+4、如果机器中存在旧版本python，安装完成后，需要建立软连接和其它处理
+
+4.1、将老版本改名 
+mv /usr/bin/python /usr/bin/python_old
+
+4.2、建立新版本的链接 
+ln -s /usr/local/python3/bin/python3 /usr/bin/python
+
+4.3、检查最新的python版本 
+python --version
+
+ 
+
+5、安装django并创建helloworld项目
+
+5.1、使用pip安装django
+# pip install Django
+或指定安装版本
+# pip install Django==1.10.5
+
+5.1、使用django创建hello项目
+下面我们就来创建我们的HelloWorld项目，在你想保存项目代码的目录下执行
+django-admin.py startproject hello
+
+5.2、开启服务
+# python hello/manage.py runserver 0.0.0.0:8090
+
+打开网页访问：127.0.0.1:8090就会看到django默认页面
+It worked!
+Congratulations on your first Django-powered page.
+
+Ps：
+报错1：
+bash: django-admin.py:command not found
+解决办法：
+找到django-admin.py，一般在/usr/local/python3/目录下，找到后添加软链
+# ln -s /usr/local/python3/bin/python-admin.py /usr/local/bin/python-admin.py
+查看软链是否添加成功
+# cd /usr/local/bin
+# ls -il
+
+报错2：
+$ yum 
+File "/usr/bin/yum", line 30
+except KeyboardInterrupt, e:
+^
+SyntaxError: invalid syntax
+
+原因：
+这是因为yum采用Python作为命令解释器，这可以从/usr/bin/yum文件中第一行#!/usr/bin/python发现。而python版本之间兼容性不太好，使得2.X版本与3.0版本之间存在语法不一致问题。而CentOS 5自带的yum采用的是python2.7，当系统将python升级到2.7或3.0后，出现语法解释错误。
+
+解决办法：
+很简单，一是升级yum，一是修改yum的解释器为旧版本python2.7（如果你没有采用覆盖升级的话）。
+升级yum的作法就不详述了。修改yum的解释器为旧版本python2.7：
+$ vi /usr/bin/yum
+将第一行"#!/usr/bin/python" 改为 "#!/usr/bin/python2.7"即可。
+# vi /usr/bin/yum
+FROM:
+#!/usr/bin/python
+TO:
+#!/usr/bin/python2.7
+
+报错3：
+File "/usr/libexec/urlgrabber-ext-down", line 28
+except OSError, e:
+^
+SyntaxError: invalid syntax
+
+原因:
+同错误2原因
+
+解决办法：
+$ vi /usr/libexec/urlgrabber-ext-down
+将第一行"#!/usr/bin/python" 改为 "#!/usr/bin/python2.7"即可。
+# vi /usr/libexec/urlgrabber-ext-down
+FROM:
+#!/usr/bin/python
+TO:
+#!/usr/bin/python2.7
+
+报错4：Django - No module named _sqlite3
+解决：
+1，首先安装 sqlite-devel
+yum install sqlite-devel
+2，重新编译安装Python
+./configure --prefix=/usr/local/python3
+make && make install
+
+ 
+
+6、视图和 URL 配置。
+在先前创建的 mysite 目录下，新建一个 views.py 文件，并键入代码：
+from django import HttpResponse
+def hello(request):
+    return HttpResponse("Hello world ! ")
+
+接着，绑定 URL 与视图函数。打开 urls.py 文件，将代码修改为：
+
+from django.conf.urls import url
+from django.contrib import admin
+from hello.views import helloworld
+
+urlpatterns = [
+    url(r'^admin/', admin.site.urls),
+    url(r'^hello/', helloworld),
+]
+
+完成后，启动 Django 开发服务器（一直将它运行着也是可以的。开发服务器会自动监测代码改动并自动重新载入，所以不需手动重启）。打开浏览器并访问：
+http://127.0.0.1:8090/hello/
+即可看到想要的输出：Hello world !
+
+ 
