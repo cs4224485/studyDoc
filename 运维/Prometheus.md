@@ -348,6 +348,7 @@ scrape_configs:
 
 除了通过使用“up”表达式查询当前所有Instance的状态以外，还可以通过Prometheus UI中的Targets页面查看当前所有的监控采集任务，以及各个任务下所有实例的状态:
 
+
 ![image-20250406192301192](images\image-20250406192301192.png)
 
 ## 表示方式
@@ -467,8 +468,15 @@ http_requests_total{code="200",handler="graph",instance="localhost:9090",job="pr
 除了使用m表示分钟以外，PromQL的时间范围选择器支持其它时间单位：
 
 - s - 秒
+
 - m - 分钟
+
 - h - 小时
+
 - d - 天
+
 - w - 周
-- y - 年
+
+  
+
+  
