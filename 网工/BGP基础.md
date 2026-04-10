@@ -138,44 +138,6 @@ Opensent状态，发送第一个Open报文，并等待接收邻居的Open报文
 
 # BGP——6种邻居状态讲解
 
-![img](https://csdnimg.cn/release/blogv2/dist/pc/img/original.png)
-
-​                    [静下心来敲木鱼](https://blog.csdn.net/m0_49864110)                    ![img](https://csdnimg.cn/release/blogv2/dist/pc/img/newUpTime2.png)                    已于 2022-08-01 18:46:40 修改                    ![img](https://csdnimg.cn/release/blogv2/dist/pc/img/articleReadEyes2.png)                    1873                                            ![img](https://csdnimg.cn/release/blogv2/dist/pc/img/tobarCollect2.png)                                                收藏                                                    11                                                                
-
-​                            分类专栏：                                [路由交换协议理论讲解](https://blog.csdn.net/m0_49864110/category_11694606.html)                            文章标签：                                [网络](https://so.csdn.net/so/search/s.do?q=网络&t=all&o=vip&s=&l=&f=&viparticle=)                                [tcp/ip](https://so.csdn.net/so/search/s.do?q=tcp%2Fip&t=all&o=vip&s=&l=&f=&viparticle=)                                [网络协议](https://so.csdn.net/so/search/s.do?q=网络协议&t=all&o=vip&s=&l=&f=&viparticle=)                                [BGP](https://so.csdn.net/so/search/s.do?q=BGP&t=all&o=vip&s=&l=&f=&viparticle=)                    
-
-​                    版权                
-
-​                        [                             ![img](https://img-blog.csdnimg.cn/9990405b77e74cee88af57dd8931afaf.jpeg?x-oss-process=image/resize,m_fixed,h_224,w_224)                                                                                               路由交换协议理论讲解                                     专栏收录该内容                                                                                       ](https://blog.csdn.net/m0_49864110/category_11694606.html)                    
-
-​                        62 篇文章                        44 订阅                    
-
-​                            订阅专栏                    
-
-**目录**
-
-[TCP建立阶段](https://blog.csdn.net/m0_49864110/article/details/126107254?csdn_share_tail={"type"%3A"blog"%2C"rType"%3A"article"%2C"rId"%3A"126107254"%2C"source"%3A"m0_49864110"}&ctrtid=uJYPb#t0)
-
-[Idle](https://blog.csdn.net/m0_49864110/article/details/126107254?csdn_share_tail={"type"%3A"blog"%2C"rType"%3A"article"%2C"rId"%3A"126107254"%2C"source"%3A"m0_49864110"}&ctrtid=uJYPb#t1)
-
-[Connect](https://blog.csdn.net/m0_49864110/article/details/126107254?csdn_share_tail={"type"%3A"blog"%2C"rType"%3A"article"%2C"rId"%3A"126107254"%2C"source"%3A"m0_49864110"}&ctrtid=uJYPb#t2)
-
-[Active](https://blog.csdn.net/m0_49864110/article/details/126107254?csdn_share_tail={"type"%3A"blog"%2C"rType"%3A"article"%2C"rId"%3A"126107254"%2C"source"%3A"m0_49864110"}&ctrtid=uJYPb#t3)
-
-[BGP参数协商邻居建立阶段](https://blog.csdn.net/m0_49864110/article/details/126107254?csdn_share_tail={"type"%3A"blog"%2C"rType"%3A"article"%2C"rId"%3A"126107254"%2C"source"%3A"m0_49864110"}&ctrtid=uJYPb#t4)
-
-[OpentSent](https://blog.csdn.net/m0_49864110/article/details/126107254?csdn_share_tail={"type"%3A"blog"%2C"rType"%3A"article"%2C"rId"%3A"126107254"%2C"source"%3A"m0_49864110"}&ctrtid=uJYPb#t5)
-
-[OpenCofirm](https://blog.csdn.net/m0_49864110/article/details/126107254?csdn_share_tail={"type"%3A"blog"%2C"rType"%3A"article"%2C"rId"%3A"126107254"%2C"source"%3A"m0_49864110"}&ctrtid=uJYPb#t6)
-
-[Established](https://blog.csdn.net/m0_49864110/article/details/126107254?csdn_share_tail={"type"%3A"blog"%2C"rType"%3A"article"%2C"rId"%3A"126107254"%2C"source"%3A"m0_49864110"}&ctrtid=uJYPb#t7)
-
-[BGP邻居状态机](https://blog.csdn.net/m0_49864110/article/details/126107254?csdn_share_tail={"type"%3A"blog"%2C"rType"%3A"article"%2C"rId"%3A"126107254"%2C"source"%3A"m0_49864110"}&ctrtid=uJYPb#t8)
-
-------
-
-
-
 # TCP建立阶段
 
 ## Idle

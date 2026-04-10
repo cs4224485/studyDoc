@@ -8,7 +8,7 @@ Spring 是一个 IOC(DI) 和 AOP 容器框架
 
 ### Spring 模块
 
-![image-20200515170159431](images\image-20200515170159431.png)
+![image-20200515170159431](.\images\image-20200515170159431.png)
 
 ### 安装 SPRING TOOL SUITE
 
